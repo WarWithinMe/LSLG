@@ -11,6 +11,7 @@ import Cocoa
 class LSLGWCButton: NSView {
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    override var mouseDownCanMoveWindow:Bool { return false }
     
     var hovering:Bool  = false
     var isClicked:Bool = false
@@ -18,14 +19,7 @@ class LSLGWCButton: NSView {
     init(x:CGFloat, y:CGFloat) {
         super.init(frame: NSMakeRect(x, y-12, 12, 12))
         self.autoresizingMask = NSAutoresizingMaskOptions.ViewMinYMargin
-        self.addTrackingArea(
-            NSTrackingArea(
-                rect     : self.bounds
-              , options  : NSTrackingAreaOptions.MouseEnteredAndExited | NSTrackingAreaOptions.ActiveInActiveApp
-              , owner    : self
-              , userInfo : nil
-            )
-        )
+        self.addTrackingRect(self.bounds, owner: self, userData: nil, assumeInside: false)
     }
     
     override func acceptsFirstMouse(theEvent: NSEvent) -> Bool { return true }
@@ -181,7 +175,7 @@ class LSLGWCOpacityBtn: LSLGWCButton {
             context.restoreGraphicsState()
             
             context.compositingOperation = NSCompositingOperation.CompositeSourceOut
-            CGContextSetAlpha(context.CGContext, 0.8)
+            CGContextSetAlpha(context.CGContext, self.hovering ? 0.8 : 0.3)
             NSBezierPath(ovalInRect: NSMakeRect(0, 0, 12, 12)).fill()
             
         } else {

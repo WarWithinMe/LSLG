@@ -17,6 +17,7 @@ class LSLGWindow: NSWindow {
     func canBecomeKeyWindow()->Bool { return true; }
     
     var realContentView:NSView!
+    var renderControl:LSLGRenderControl!
     
     init() {
         let frame = NSScreen.mainScreen()!.frame
@@ -42,7 +43,10 @@ class LSLGWindow: NSWindow {
         layer.cornerRadius = 5.0
         layer.backgroundColor = NSColor(calibratedWhite:0.076, alpha:1.0).CGColor
         layer.borderColor = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
-        layer.borderWidth = 1.0 / NSScreen.mainScreen()!.backingScaleFactor
+        layer.borderWidth = 1.0
+        if let screen = self.screen {
+            layer.borderWidth = 1.0 / screen.backingScaleFactor
+        }
         
         // Gradient BG
         var gradientLayer = CAGradientLayer()
@@ -62,6 +66,10 @@ class LSLGWindow: NSWindow {
         self.contentView.addSubview( LSLGWCOnTopBtn  (x:22, y:self.frame.height-6) )
         self.contentView.addSubview( LSLGWCOpacityBtn(x:38, y:self.frame.height-6) )
         
+        // Render controls
+        self.renderControl = LSLGRenderControl( x:self.frame.width - 12, y:12 )
+        self.renderControl.addDefaultItems()
+        self.contentView.addSubview( self.renderControl )
     }
     
     func setContent(aview:NSView) {
@@ -80,7 +88,7 @@ class LSLGWindow: NSWindow {
 
 class LSLGTitle: NSView {
     
-    func mouseDownCanMoveWindow()->Bool { return true }
+    override var mouseDownCanMoveWindow:Bool { return true }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
