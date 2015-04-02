@@ -57,6 +57,11 @@ class LSLGWindow: NSWindow {
             LSLGTitle(frame: NSMakeRect(0, self.contentView.frame.height-25, self.contentView.frame.width, 25))
         )
         
+        // Title controls
+        self.contentView.addSubview( LSLGWCCloseBtn  (x:6,  y:self.frame.height-6) )
+        self.contentView.addSubview( LSLGWCOnTopBtn  (x:22, y:self.frame.height-6) )
+        self.contentView.addSubview( LSLGWCOpacityBtn(x:38, y:self.frame.height-6) )
+        
     }
     
     func setContent(aview:NSView) {

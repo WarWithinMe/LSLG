@@ -12,6 +12,7 @@
 		A5DDD3E21ACA89F400303D71 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5DDD3E11ACA89F400303D71 /* Images.xcassets */; };
 		A5DDD3E51ACA89F400303D71 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A5DDD3E31ACA89F400303D71 /* MainMenu.xib */; };
 		A5DDD3F11ACA89F400303D71 /* LSLGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DDD3F01ACA89F400303D71 /* LSLGTests.swift */; };
+		A5EBA47A1ACBEF5300790C5B /* LSLGWindowControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EBA4791ACBEF5300790C5B /* LSLGWindowControl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 		A5DDD3EA1ACA89F400303D71 /* LSLGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LSLGTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5DDD3EF1ACA89F400303D71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A5DDD3F01ACA89F400303D71 /* LSLGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LSLGTests.swift; sourceTree = "<group>"; };
+		A5EBA4791ACBEF5300790C5B /* LSLGWindowControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindowControl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,10 +79,11 @@
 			isa = PBXGroup;
 			children = (
 				A5DDD3DF1ACA89F400303D71 /* AppDelegate.swift */,
+				A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */,
+				A5EBA4791ACBEF5300790C5B /* LSLGWindowControl.swift */,
 				A5DDD3E11ACA89F400303D71 /* Images.xcassets */,
 				A5DDD3E31ACA89F400303D71 /* MainMenu.xib */,
 				A5DDD3DD1ACA89F400303D71 /* Supporting Files */,
-				A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */,
 			);
 			path = LSLG;
 			sourceTree = "<group>";
@@ -210,6 +213,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5EBA47A1ACBEF5300790C5B /* LSLGWindowControl.swift in Sources */,
 				A5DDD3E01ACA89F400303D71 /* AppDelegate.swift in Sources */,
 				A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */,
 			);

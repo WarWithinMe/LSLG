@@ -12,7 +12,9 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
     
     var window:NSWindow!
-
+    
+    func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool { return true }
+    
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         
         let screen:NSScreen! = NSScreen.mainScreen()
