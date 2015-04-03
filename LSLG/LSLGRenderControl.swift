@@ -7,29 +7,26 @@
 //
 
 import Cocoa
+import CoreText
 
 class LSLGIcon: NSObject {}
 
 class LSLGRenderControl: NSView {
     
     class LSLGRCItem : NSObject {
+        
         var parent:LSLGRenderControl?
         var icon:LSLGIcon? {
             didSet { self.tryUpdateParent() }
         }
-        var width:Int { return self.__width }
-        var content:String = "" {
+        var width:CGFloat  { return self.__width }
+        var content:NSString = "" {
             didSet { self.tryUpdateParent() }
-        }
-        var visible:Bool = true {
-            didSet {
-                if self.visible != oldValue { self.tryUpdateParent() }
-            }
         }
         
         init(content:String) {
             super.init()
-            self.content = content
+            self.content = content as NSString
             self.calcWidth()
         }
         
@@ -39,25 +36,30 @@ class LSLGRenderControl: NSView {
             self.calcWidth()
         }
         
-        private var __width:Int = 16
+        private var __width:CGFloat  = 16.0
         
         func tryUpdateParent() {
             if let p = self.parent {
                 p.updateFrame()
-                p.needsDisplay = true
             }
         }
         
-        func calcWidth() {}
-        func render(inRect:NSRect) {}
+        func calcWidth() {
+            self.__width  = round(self.content.sizeWithAttributes( [NSFontAttributeName:NSFont(name: "Verdana", size:10.0 )!] ).width) + 8 // 4pt padding for both left and right
+            self.parent?.updateFrame()
+        }
     }
     
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var mouseDownCanMoveWindow:Bool { return false }
     
-    var trackingRectTag:NSTrackingRectTag?
-    var items = [LSLGRCItem]()
+    var items  = [LSLGRCItem]()
+    var trTags = [NSTrackingRectTag]()
+    
+    var textLayer:CALayer!
+    var hlLayer:CALayer!
+    var hoveringIdx:Int = -1
     
     // The {x,y} is bottom-right coordinate
     init(x:CGFloat, y:CGFloat) {
@@ -70,16 +72,40 @@ class LSLGRenderControl: NSView {
         var bgLayer = CAGradientLayer()
         bgLayer.frame = self.bounds
         bgLayer.borderWidth  = 0.5
-        bgLayer.borderColor  = NSColor(calibratedWhite: 0.4, alpha: 0.38).CGColor
+        bgLayer.borderColor  = NSColor(calibratedWhite: 0.4, alpha: 0.25).CGColor
         bgLayer.cornerRadius = self.frame.height / 2
         bgLayer.autoresizingMask = CAAutoresizingMask.LayerWidthSizable
+        bgLayer.locations = [0,0.4,0.6,1]
         bgLayer.colors = [
-            NSColor(calibratedWhite:0.174, alpha:0.85 ).CGColor
-          , NSColor(calibratedWhite:0.039, alpha:0.80 ).CGColor
-          , NSColor(calibratedWhite:0.174, alpha:0.85 ).CGColor
+            NSColor(calibratedWhite:0.174, alpha:0.56 ).CGColor
+          , NSColor(calibratedWhite:0.039, alpha:0.52 ).CGColor
+          , NSColor(calibratedWhite:0.039, alpha:0.52 ).CGColor
+          , NSColor(calibratedWhite:0.174, alpha:0.56 ).CGColor
         ]
         self.layer!.addSublayer(bgLayer)
         
+        var maskLayer = CALayer()
+        maskLayer.frame = self.bounds
+        maskLayer.cornerRadius = self.frame.height / 2
+        maskLayer.backgroundColor = NSColor.blackColor().CGColor
+        maskLayer.autoresizingMask = CAAutoresizingMask.LayerNotSizable
+        
+        // Add a highlight layer to indicate hover
+        self.hlLayer = CALayer()
+        self.hlLayer.backgroundColor = NSColor.whiteColor().CGColor
+        self.hlLayer.frame = self.bounds
+        self.hlLayer.hidden = true
+        self.hlLayer.opacity = 0.06
+        self.hlLayer.mask = maskLayer
+        self.layer!.addSublayer(self.hlLayer)
+        
+        // Since we use layer to draw the background, we also need to use layer
+        // to draw the content. Otherwise the content will be behind the background.
+        self.textLayer = CALayer()
+        self.textLayer.frame = self.bounds
+        self.textLayer.autoresizingMask = CAAutoresizingMask.LayerWidthSizable
+        self.textLayer.delegate = self
+        self.layer!.addSublayer(self.textLayer)
     }
     
     func addDefaultItems() {
@@ -89,6 +115,7 @@ class LSLGRenderControl: NSView {
         self.items.append( LSLGRCItem(content:"Fragment") )
         self.items.append( LSLGRCItem(content:"Geometry") )
         self.items.append( LSLGRCItem(content:"Vertex") )
+        self.updateFrame()
     }
     
     func addItem(aItem:LSLGRCItem, atItex idx:Int = -1 ) {
@@ -114,68 +141,120 @@ class LSLGRenderControl: NSView {
     }
     
     func updateFrame() {
-        if let tag = self.trackingRectTag {
-            self.removeTrackingRect( tag )
+        
+        var w:CGFloat = 8
+        for item in self.items {
+            w += item.width
         }
-        self.trackingRectTag = self.addTrackingRect(self.bounds, owner: self, userData: nil, assumeInside: false)
+        
+        self.frame = NSMakeRect(
+            self.frame.origin.x + self.frame.width - w
+          , self.frame.origin.y
+          , w
+          , self.frame.height
+        )
+        
+        for tag in self.trTags { self.removeTrackingRect(tag) }
+        
+        var rect = self.bounds
+        self.trTags.removeAll(keepCapacity: true)
+        for var i = self.items.count - 1; i >= 0; --i {
+            var item = self.items[i]
+            rect.size.width = item.width
+            self.trTags.insert(self.addTrackingRect(rect, owner: self, userData: nil, assumeInside: false), atIndex: 0)
+            rect.origin.x += item.width
+        }
+        
+        self.needsDisplay = true
+        self.textLayer.setNeedsDisplay()
+    }
+    
+    override func viewDidMoveToWindow() {
+        if let screen = self.window?.screen {
+            self.textLayer.contentsScale = screen.backingScaleFactor
+        }
+    }
+    
+    override func drawLayer(layer: CALayer!, inContext ctx: CGContext!) {
+        
+        if layer != self.textLayer { return }
+        
+        CGContextSetTextDrawingMode(ctx, kCGTextFill)
+        CGContextSetFontSize(ctx, 16)
+        
+        var font = NSFont(name: "Verdana", size:10.0 )!
+        var dict:[NSObject:AnyObject] = [
+            kCTFontAttributeName:font
+          , kCTForegroundColorAttributeName:NSColor(calibratedWhite: 0.407, alpha: 1).CGColor
+        ]
+        
+        var x:CGFloat = 8
+        let y:CGFloat = (self.bounds.height-NSLayoutManager().defaultLineHeightForFont(font))/2 + 2
+        var sep = NSMakeRect(4, 4, 1, self.bounds.height-8)
+        
+        if let screen = self.window?.screen {
+            sep.size.width /= screen.backingScaleFactor
+        }
+        
+        for var i = self.items.count - 1; i >= 0; --i {
+            var item = self.items[i]
+            
+            sep.origin.x += item.width
+                
+            CGContextSetTextPosition(ctx, x, y)
+            CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(string:item.content, attributes:dict) ) , ctx)
+            if i != 0 {
+                CGContextSetGrayFillColor(ctx, 0.329, 0.9)
+                CGContextFillRect( ctx, sep )
+            }
+            
+            x += item.width
+        }
     }
     
     override func drawRect(dirtyRect: NSRect) {
-        
-//        var ctx   = NSGraphicsContext.currentContext()!
-//        var cgctx = ctx.CGContext
-//        
-//        var backingScaleFactor:CGFloat = 1.0
-//        if let screen = self.window!.screen {
-//            backingScaleFactor = screen.backingScaleFactor
-//        }
-//        
-//        var frame = self.bounds
-//        frame.size.width  -= 1
-//        frame.size.height -= 1
-//        //frame.origin.x    += 1
-//        //frame.origin.y    += 1
-//        
-//        CGContextSaveGState(cgctx)
-//        
-//        NSColor.redColor().setFill()
-//        var bg = NSBezierPath(roundedRect: frame, xRadius: frame.height/2, yRadius: frame.height/2)
-//        bg.lineWidth = 0
-//        
-//        NSColor(calibratedWhite: 0.4, alpha: 0.45).setStroke()
-//        NSColor(calibratedWhite: 1, alpha: 1).setStroke()
-//        
-//        
-//        var cfm = CGAffineTransformMakeTranslation(5, 0.3)
-//        CGContextSetLineWidth(cgctx, 0.5)
-//        
-//        withUnsafePointer(&cfm) { (p) in
-//            CGContextAddPath( cgctx, CGPathCreateWithRoundedRect(
-//                CGRectMake(frame.origin.x, frame.origin.y, frame.width, frame.height),
-//                frame.height/2,
-//                frame.height/2,
-//                p
-//            ))
-//        }
-//        
-//        //CGContextStrokePath(cgctx)
-//        CGContextRestoreGState(cgctx)
-    }
-    
-    override func mouseDown(theEvent: NSEvent) {
-        self.needsDisplay = true
     }
     
     override func mouseUp(theEvent: NSEvent) {
-        self.needsDisplay = true
+        if self.hoveringIdx >= 0 && self.hoveringIdx < self.items.count {
+            self.removeItem( self.items[self.hoveringIdx] )
+        }
     }
     
     override func mouseEntered(theEvent: NSEvent) {
-        self.needsDisplay = true
+        var x:CGFloat = 4
+        var r = self.bounds
+        
+        for var i = self.items.count - 1; i >= 0; --i {
+            var item = self.items[i]
+            if self.trTags[i] != theEvent.trackingNumber {
+                x += item.width
+                continue
+            }
+            
+            r.size.width = item.width
+            if i == 0 { r.size.width += 4 }
+            if i == self.items.count - 1 {
+                x -= 4
+                r.size.width += 4
+            }
+            r.origin.x = x
+            CATransaction.begin()
+            CATransaction.setValue(kCFBooleanTrue, forKeyPath: kCATransactionDisableActions)
+            self.hlLayer.frame = r
+            self.hlLayer.hidden = false
+            r.size.width = self.frame.width
+            r.origin.x   = -x
+            self.hlLayer.mask.frame = r
+            CATransaction.commit()
+            self.hoveringIdx = i
+            break
+        }
     }
     
     override func mouseExited(theEvent: NSEvent) {
-        self.needsDisplay = true
+        self.hlLayer.hidden = true
+        self.hoveringIdx = -1
     }
     
 }

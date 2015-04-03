@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A543C5C41ACE5BAB00C9F0E8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */; };
 		A5A6E6821ACD1180004DA4B9 /* LSLGRenderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A6E6811ACD1180004DA4B9 /* LSLGRenderControl.swift */; };
 		A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */; };
 		A5DDD3E01ACA89F400303D71 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DDD3DF1ACA89F400303D71 /* AppDelegate.swift */; };
@@ -27,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		A5A6E6811ACD1180004DA4B9 /* LSLGRenderControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGRenderControl.swift; sourceTree = "<group>"; };
 		A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindow.swift; sourceTree = "<group>"; };
 		A5DDD3DA1ACA89F400303D71 /* LSLG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LSLG.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -45,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A543C5C41ACE5BAB00C9F0E8 /* CoreText.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +64,7 @@
 		A5DDD3D11ACA89F400303D71 = {
 			isa = PBXGroup;
 			children = (
+				A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */,
 				A5DDD3DC1ACA89F400303D71 /* LSLG */,
 				A5DDD3ED1ACA89F400303D71 /* LSLGTests */,
 				A5DDD3DB1ACA89F400303D71 /* Products */,
