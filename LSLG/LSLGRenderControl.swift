@@ -9,34 +9,39 @@
 import Cocoa
 import CoreText
 
-class LSLGIcon: NSObject {}
+let LSLSInvisibleTrackingRectTag:NSTrackingRectTag = -1
 
-class LSLGRenderControl: NSView {
+class LSLGSegmentedControl: NSView {
     
     class LSLGRCItem : NSObject {
         
-        var parent:LSLGRenderControl?
+        var id:String="";
+        var parent:LSLGSegmentedControl?
         var icon:LSLGIcon? {
             didSet { self.tryUpdateParent() }
         }
-        var width:CGFloat  { return self.__width }
+        var width:CGFloat  { return self.visible ? self.__width : 0 }
         var content:NSString = "" {
             didSet { self.tryUpdateParent() }
         }
+        var visible:Bool = true {
+            didSet { self.tryUpdateParent() }
+        }
         
-        init(content:String) {
+        init(content:String, id:String="") {
             super.init()
+            self.id = id
             self.content = content as NSString
             self.calcWidth()
         }
         
-        init(icon:LSLGIcon) {
+        init(icon:LSLGIcon, id:String="") {
             super.init()
+            self.id = id
             self.icon = icon
-            self.calcWidth()
         }
         
-        private var __width:CGFloat  = 16.0
+        private var __width:CGFloat  = 24.0
         
         func tryUpdateParent() {
             if let p = self.parent {
@@ -49,7 +54,6 @@ class LSLGRenderControl: NSView {
             self.parent?.updateFrame()
         }
     }
-    
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var mouseDownCanMoveWindow:Bool { return false }
@@ -108,13 +112,15 @@ class LSLGRenderControl: NSView {
         self.layer!.addSublayer(self.textLayer)
     }
     
-    func addDefaultItems() {
-        self.items.append( LSLGRCItem(content:"Settings") )
-        self.items.append( LSLGRCItem(content:"Log") )
-        self.items.append( LSLGRCItem(content:"Model") )
-        self.items.append( LSLGRCItem(content:"Fragment") )
-        self.items.append( LSLGRCItem(content:"Geometry") )
-        self.items.append( LSLGRCItem(content:"Vertex") )
+    func appendItems(items:[LSLGRCItem]) {
+        for item in items {
+            if let op = item.parent {
+                op.removeItem(item)
+            }
+            
+            self.items.append(item)
+            item.parent = self
+        }
         self.updateFrame()
     }
     
@@ -160,6 +166,11 @@ class LSLGRenderControl: NSView {
         self.trTags.removeAll(keepCapacity: true)
         for var i = self.items.count - 1; i >= 0; --i {
             var item = self.items[i]
+            if !item.visible {
+                self.trTags.insert(LSLSInvisibleTrackingRectTag, atIndex: 0)
+                continue
+            }
+            
             rect.size.width = item.width
             self.trTags.insert(self.addTrackingRect(rect, owner: self, userData: nil, assumeInside: false), atIndex: 0)
             rect.origin.x += item.width
@@ -188,6 +199,7 @@ class LSLGRenderControl: NSView {
           , kCTForegroundColorAttributeName:NSColor(calibratedWhite: 0.407, alpha: 1).CGColor
         ]
         
+        let iconY:CGFloat = (self.frame.height - 16)/2 + 16
         var x:CGFloat = 8
         let y:CGFloat = (self.bounds.height-NSLayoutManager().defaultLineHeightForFont(font))/2 + 2
         var sep = NSMakeRect(4, 4, 1, self.bounds.height-8)
@@ -196,28 +208,44 @@ class LSLGRenderControl: NSView {
             sep.size.width /= screen.backingScaleFactor
         }
         
+        var firstItem = true
+        
         for var i = self.items.count - 1; i >= 0; --i {
             var item = self.items[i]
+            if !item.visible {
+                continue
+            }
             
-            sep.origin.x += item.width
-                
-            CGContextSetTextPosition(ctx, x, y)
-            CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(string:item.content, attributes:dict) ) , ctx)
-            if i != 0 {
+            if !firstItem {
+                // Draw seperator
+                sep.origin.x = x-4
                 CGContextSetGrayFillColor(ctx, 0.329, 0.9)
                 CGContextFillRect( ctx, sep )
             }
             
+            if let icon = item.icon {
+                CGContextTranslateCTM( ctx, x, iconY )
+                CGContextAddPath( ctx, icon.path )
+                CGContextSetGrayFillColor(ctx, 0.407, 1)
+                CGContextEOFillPath( ctx )
+                CGContextBeginPath( ctx )
+                CGContextTranslateCTM( ctx, -x, -iconY )
+            } else {
+                CGContextSetTextPosition(ctx, x, y)
+                CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(string:item.content, attributes:dict) ) , ctx)
+            }
+            
             x += item.width
+            firstItem = false
         }
     }
     
-    override func drawRect(dirtyRect: NSRect) {
-    }
-    
     override func mouseUp(theEvent: NSEvent) {
+        for item in self.items {
+            item.visible = true
+        }
         if self.hoveringIdx >= 0 && self.hoveringIdx < self.items.count {
-            self.removeItem( self.items[self.hoveringIdx] )
+            self.items[self.hoveringIdx].visible = false
         }
     }
     
@@ -225,19 +253,29 @@ class LSLGRenderControl: NSView {
         var x:CGFloat = 4
         var r = self.bounds
         
+        var hasVisibleSiblings = 0
+        
         for var i = self.items.count - 1; i >= 0; --i {
             var item = self.items[i]
+            if item.visible { ++hasVisibleSiblings }
+            
             if self.trTags[i] != theEvent.trackingNumber {
                 x += item.width
                 continue
             }
             
+            // Check if the item is the first visible item
             r.size.width = item.width
-            if i == 0 { r.size.width += 4 }
-            if i == self.items.count - 1 {
+            if i == self.items.count - 1 || hasVisibleSiblings == 1 {
                 x -= 4
                 r.size.width += 4
             }
+    
+            // Check if this item is the last visible item
+            hasVisibleSiblings = 0
+            for var j = i-1; j >= 0; --j { if self.items[j].visible { ++hasVisibleSiblings } }
+            if hasVisibleSiblings == 0 { r.size.width += 4 }
+            
             r.origin.x = x
             CATransaction.begin()
             CATransaction.setValue(kCFBooleanTrue, forKeyPath: kCATransactionDisableActions)
@@ -257,4 +295,23 @@ class LSLGRenderControl: NSView {
         self.hoveringIdx = -1
     }
     
+}
+
+
+class LSLGRenderControl:LSLGSegmentedControl {
+    
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    override init(x:CGFloat, y:CGFloat) {
+        super.init(x: x, y: y)
+        
+        self.appendItems([
+            LSLGRCItem(icon:LSLGIcon(type: LSLGIconType.Setting), id:"Setting")
+          , LSLGRCItem(icon:LSLGIcon(type: LSLGIconType.Log),     id:"Log")
+          , LSLGRCItem(icon:LSLGIcon(type: LSLGIconType.Suzanne), id:"Model")
+          , LSLGRCItem(content:"Fragment", id:"Fragment")
+          , LSLGRCItem(content:"Geometry", id:"Geometry")
+          , LSLGRCItem(content:"Vertex",   id:"Vertex")
+        ])
+    }
 }

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		A543C5C41ACE5BAB00C9F0E8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */; };
+		A543C5CC1ACE97F800C9F0E8 /* PocketSVG.m in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */; };
+		A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */; };
 		A5A6E6821ACD1180004DA4B9 /* LSLGRenderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A6E6811ACD1180004DA4B9 /* LSLGRenderControl.swift */; };
 		A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */; };
 		A5DDD3E01ACA89F400303D71 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DDD3DF1ACA89F400303D71 /* AppDelegate.swift */; };
@@ -29,6 +31,10 @@
 
 /* Begin PBXFileReference section */
 		A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		A543C5C91ACE97F800C9F0E8 /* LSLG-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LSLG-Bridging-Header.h"; sourceTree = "<group>"; };
+		A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketSVG.h; sourceTree = "<group>"; };
+		A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PocketSVG.m; sourceTree = "<group>"; };
+		A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGIcon.swift; sourceTree = "<group>"; };
 		A5A6E6811ACD1180004DA4B9 /* LSLGRenderControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGRenderControl.swift; sourceTree = "<group>"; };
 		A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindow.swift; sourceTree = "<group>"; };
 		A5DDD3DA1ACA89F400303D71 /* LSLG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LSLG.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,9 +94,13 @@
 				A5A6E6811ACD1180004DA4B9 /* LSLGRenderControl.swift */,
 				A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */,
 				A5EBA4791ACBEF5300790C5B /* LSLGWindowControl.swift */,
+				A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */,
+				A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */,
+				A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */,
 				A5DDD3E11ACA89F400303D71 /* Images.xcassets */,
 				A5DDD3E31ACA89F400303D71 /* MainMenu.xib */,
 				A5DDD3DD1ACA89F400303D71 /* Supporting Files */,
+				A543C5C91ACE97F800C9F0E8 /* LSLG-Bridging-Header.h */,
 			);
 			path = LSLG;
 			sourceTree = "<group>";
@@ -220,10 +230,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */,
 				A5EBA47A1ACBEF5300790C5B /* LSLGWindowControl.swift in Sources */,
 				A5A6E6821ACD1180004DA4B9 /* LSLGRenderControl.swift in Sources */,
 				A5DDD3E01ACA89F400303D71 /* AppDelegate.swift in Sources */,
 				A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */,
+				A543C5CC1ACE97F800C9F0E8 /* PocketSVG.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,10 +350,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = LSLG/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "LSLG/LSLG-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -349,10 +364,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = LSLG/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "LSLG/LSLG-Bridging-Header.h";
 			};
 			name = Release;
 		};

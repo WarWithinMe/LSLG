@@ -68,7 +68,6 @@ class LSLGWindow: NSWindow {
         
         // Render controls
         self.renderControl = LSLGRenderControl( x:self.frame.width - 12, y:12 )
-        self.renderControl.addDefaultItems()
         self.contentView.addSubview( self.renderControl )
     }
     
