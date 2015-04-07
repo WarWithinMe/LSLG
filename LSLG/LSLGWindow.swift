@@ -28,7 +28,6 @@ class LSLGWindow: NSWindow {
           , defer       : false
         )
         
-        self.setFrameAutosaveName("LSLGWindow")
         self.movableByWindowBackground = true
         
         self.minSize = NSMakeSize(200, 200)

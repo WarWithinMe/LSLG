@@ -9,7 +9,7 @@
 import Cocoa
 import CoreText
 
-let LSLSInvisibleTrackingRectTag:NSTrackingRectTag = -1
+private let LSLSInvisibleTrackingRectTag:NSTrackingRectTag = -1
 
 class LSLGSegmentedControl: NSView {
     

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A531407B1AD3D76D00419887 /* LSLGLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A531407A1AD3D76D00419887 /* LSLGLogView.swift */; };
+		A531407D1AD3DA8400419887 /* LSLGWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A531407C1AD3DA8400419887 /* LSLGWindowController.swift */; };
 		A543C5C41ACE5BAB00C9F0E8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */; };
 		A543C5CC1ACE97F800C9F0E8 /* PocketSVG.m in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */; };
 		A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */; };
@@ -30,6 +32,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A531407A1AD3D76D00419887 /* LSLGLogView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGLogView.swift; sourceTree = "<group>"; };
+		A531407C1AD3DA8400419887 /* LSLGWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindowController.swift; sourceTree = "<group>"; };
 		A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		A543C5C91ACE97F800C9F0E8 /* LSLG-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LSLG-Bridging-Header.h"; sourceTree = "<group>"; };
 		A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketSVG.h; sourceTree = "<group>"; };
@@ -93,8 +97,10 @@
 				A5DDD3DF1ACA89F400303D71 /* AppDelegate.swift */,
 				A5A6E6811ACD1180004DA4B9 /* LSLGRenderControl.swift */,
 				A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */,
+				A531407C1AD3DA8400419887 /* LSLGWindowController.swift */,
 				A5EBA4791ACBEF5300790C5B /* LSLGWindowControl.swift */,
 				A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */,
+				A531407A1AD3D76D00419887 /* LSLGLogView.swift */,
 				A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */,
 				A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */,
 				A5DDD3E11ACA89F400303D71 /* Images.xcassets */,
@@ -231,7 +237,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */,
+				A531407B1AD3D76D00419887 /* LSLGLogView.swift in Sources */,
 				A5EBA47A1ACBEF5300790C5B /* LSLGWindowControl.swift in Sources */,
+				A531407D1AD3DA8400419887 /* LSLGWindowController.swift in Sources */,
 				A5A6E6821ACD1180004DA4B9 /* LSLGRenderControl.swift in Sources */,
 				A5DDD3E01ACA89F400303D71 /* AppDelegate.swift in Sources */,
 				A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */,

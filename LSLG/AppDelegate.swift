@@ -11,17 +11,13 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     
-    var window:NSWindow!
+    var window:LSLGWindowController!
     
     func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool { return true }
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-        
-        let screen:NSScreen! = NSScreen.mainScreen()
-        
         // Create default window
-        window = LSLGWindow()
-        window.makeKeyAndOrderFront(nil)
+        LSLGWindowController()
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
