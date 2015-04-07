@@ -603,15 +603,8 @@ unichar const invalidCommand		= '*';
         CGPathRelease(path);
     }
     
-    //TODO:
-    //At this stage, immutablePath is upside down. I'm currently flipping it back using CGAffineTransforms,
-    //the path rotates fine, but its positioning needs to be fixed.
-    
-    CGAffineTransform flip = CGAffineTransformMake(1, 0, 0, -1, 0, CGPathGetBoundingBox(immutablePath).size.height);
-    CGAffineTransform moveDown = CGAffineTransformMakeTranslation(0, -100);
-    CGAffineTransform trans = CGAffineTransformConcat(flip, moveDown);
-    CGPathRef betterPath = CGPathCreateCopyByTransformingPath(immutablePath, &trans);
-    return betterPath;
+    CGAffineTransform flip = CGAffineTransformMake(1, 0, 0, -1, 0, 0);
+    return CGPathCreateCopyByTransformingPath(immutablePath, &flip);
 }
 #endif
 
