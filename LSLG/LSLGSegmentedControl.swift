@@ -21,7 +21,7 @@ class LSLGSegmentedControl: NSView {
             didSet { self.tryUpdateParent() }
         }
         var width:CGFloat  { return self.visible ? self.__width : 0 }
-        var content:NSString = "" {
+        var content:String = "" {
             didSet { self.tryUpdateParent() }
         }
         var visible:Bool = true {
@@ -34,7 +34,7 @@ class LSLGSegmentedControl: NSView {
         init(content:String, id:String="") {
             super.init()
             self.id = id
-            self.content = content as NSString
+            self.content = content
             self.calcWidth()
         }
         
@@ -252,7 +252,7 @@ class LSLGSegmentedControl: NSView {
             } else {
                 CGContextSetTextPosition(ctx, x, y)
                 CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(
-                    string : item.content
+                    string     : item.content
                   , attributes : item.selected ? selectedText : normalText
                 )) , ctx)
             }

@@ -14,7 +14,7 @@ class LSLGWindow: NSWindow {
         super.init(coder: coder)
     }
     
-    func canBecomeKeyWindow()->Bool { return true; }
+    override var canBecomeKeyWindow:Bool { return true; }
     
     var realContentView:NSView!
     var renderControl:LSLGRenderControl!
@@ -34,7 +34,7 @@ class LSLGWindow: NSWindow {
         self.backgroundColor = NSColor.clearColor()
         self.opaque = false
         
-        var contentView = self.contentView as NSView
+        var contentView = self.contentView as! NSView
         contentView.wantsLayer = true
         
         // Background & Border

@@ -21,7 +21,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     var logs:[LogEntry] = []
     var logSepTimer:NSTimer?
     
-    override init() {
+    init() {
         super.init(window:nil)
         
         self.windowFrameAutosaveName = "LSLGWindow"
@@ -66,8 +66,8 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     /* Tear Down */
     func windowWillClose(notification: NSNotification) {
-        if notification.object?.windowController() as LSLGWindowController == self {
-            WindowControllerArray.removeAtIndex( find( WindowControllerArray, self)! )
+        if notification.object?.windowController() as! LSLGWindowController == self {
+            WindowControllerArray.removeAtIndex( find(WindowControllerArray, self)! )
             if let t = self.logSepTimer {
                 t.invalidate()
             }
