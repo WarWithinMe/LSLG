@@ -10,11 +10,15 @@ import Cocoa
 
 private var WindowControllerArray = [LSLGWindowController]()
 
+let LSLGWindowLogUpdate = "LSLGWindowLogUpdate"
+
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
+    
+    typealias LogEntry = (time:NSDate, log:String, isError:Bool)
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
-    var logs = [(NSDate,String)]()
+    var logs:[LogEntry] = []
     var logSepTimer:NSTimer?
     
     override init() {
@@ -26,38 +30,41 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = self
         self.window = window
         window.makeKeyAndOrderFront(nil)
+        WindowControllerArray.append(self)
+        
         
         self.appendLog("aaa")
-        
-        WindowControllerArray.append(self)
     }
     
-    func appendLog(aLog:String) {
-        self.logs.append((NSDate(), aLog))
+    
+    /* Log Related Functions */
+    func appendLog(aLog:String, isError:Bool = false) {
+        self.logs.append( (time:NSDate(), log:aLog, isError:isError) )
         self.logUpdated()
         
         if self.logSepTimer == nil { self.setLogTimer(30) }
     }
     
-    func logUpdated() { NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:"LSLGLogUpdate", object:self) ) }
+    func logUpdated() { NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) ) }
     func setLogTimer(sec:NSTimeInterval) { self.logSepTimer = NSTimer(timeInterval: sec, target: self, selector: "onTimer:", userInfo: nil, repeats: false) }
     
     func onTimer(aTimer:NSTimer) {
         if let lastLog = self.logs.last {
             let interval:NSTimeInterval = 30 - lastLog.0.timeIntervalSinceDate( NSDate() )
             if interval >= 0 {
-                // Re-schedule the timer, because we just received new log when the timer is on.
+                // Re-schedule the timer, because we just received new log after the timer is on.
                 self.setLogTimer( interval )
                 return
             }
         }
         
-        self.logSepTimer = nil
         // Add a blank line to indicate that previous message is old.
-        self.logs.append((NSDate(),""))
-        self.logUpdated()
+        self.appendLog("")
+        self.logSepTimer = nil
     }
     
+    
+    /* Tear Down */
     func windowWillClose(notification: NSNotification) {
         if notification.object?.windowController() as LSLGWindowController == self {
             WindowControllerArray.removeAtIndex( find( WindowControllerArray, self)! )
