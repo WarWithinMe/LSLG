@@ -27,6 +27,9 @@ class LSLGSegmentedControl: NSView {
         var visible:Bool = true {
             didSet { self.tryUpdateParent() }
         }
+        var selected:Bool = false {
+            didSet { self.tryUpdateParent() }
+        }
         
         init(content:String, id:String="") {
             super.init()
@@ -41,7 +44,10 @@ class LSLGSegmentedControl: NSView {
             self.icon = icon
         }
         
+        var __trackingRect:NSTrackingRectTag = -1
         private var __width:CGFloat  = 24.0
+        
+        func toggleSelected() { self.selected = !self.selected }
         
         func tryUpdateParent() {
             if let p = self.parent {
@@ -53,13 +59,13 @@ class LSLGSegmentedControl: NSView {
             self.__width  = round(self.content.sizeWithAttributes( [NSFontAttributeName:NSFont(name: "Verdana", size:10.0 )!] ).width) + 8 // 4pt padding for both left and right
             self.parent?.updateFrame()
         }
+        
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var mouseDownCanMoveWindow:Bool { return false }
     
     var items  = [LSLGRCItem]()
-    var trTags = [NSTrackingRectTag]()
     
     var textLayer:CALayer!
     var hlLayer:CALayer!
@@ -140,6 +146,10 @@ class LSLGSegmentedControl: NSView {
     
     func removeItem(aItem:LSLGRCItem) {
         if let idx = find(self.items, aItem) {
+            if aItem.__trackingRect != -1 {
+                self.removeTrackingRect( aItem.__trackingRect )
+                aItem.__trackingRect = -1
+            }
             self.items.removeAtIndex(idx)
             self.updateFrame()
             aItem.parent = nil
@@ -147,37 +157,46 @@ class LSLGSegmentedControl: NSView {
     }
     
     func updateFrame() {
-        
-        var w:CGFloat = 8
         for item in self.items {
-            w += item.width
+            if item.__trackingRect != -1 {
+                self.removeTrackingRect( item.__trackingRect )
+                item.__trackingRect = -1
+            }
+        }
+        
+        var rect  = self.bounds
+        let range = self.visibleItemRange()
+        
+        for i in lazy( range.1 ... range.0 ).reverse() {
+            var item = self.items[i]
+            if !item.visible { continue }
+            
+            rect.size.width = item.width
+            if i == range.0 || i == range.1 { rect.size.width += 4 }
+            item.__trackingRect = self.addTrackingRect(rect, owner: self, userData: nil, assumeInside: false)
+            rect.origin.x += rect.size.width
         }
         
         self.frame = NSMakeRect(
-            self.frame.origin.x + self.frame.width - w
+            self.frame.origin.x + self.frame.width - rect.origin.x
           , self.frame.origin.y
-          , w
+          , rect.origin.x
           , self.frame.height
         )
-        
-        for tag in self.trTags { self.removeTrackingRect(tag) }
-        
-        var rect = self.bounds
-        self.trTags.removeAll(keepCapacity: true)
-        for var i = self.items.count - 1; i >= 0; --i {
-            var item = self.items[i]
-            if !item.visible {
-                self.trTags.insert(LSLSInvisibleTrackingRectTag, atIndex: 0)
-                continue
-            }
-            
-            rect.size.width = item.width
-            self.trTags.insert(self.addTrackingRect(rect, owner: self, userData: nil, assumeInside: false), atIndex: 0)
-            rect.origin.x += item.width
-        }
-        
+    
         self.needsDisplay = true
         self.textLayer.setNeedsDisplay()
+    }
+    
+    private func visibleItemRange() -> (Int, Int) {
+        // First Visible Item ( in reversed order )
+        var firstVIndex = self.items.count - 1
+        for ; firstVIndex >= 0; --firstVIndex { if self.items[firstVIndex].visible { break } }
+        
+        // Last Visible Item
+        var lastVIndex = 0
+        for ; lastVIndex <= firstVIndex; ++lastVIndex { if self.items[lastVIndex].visible { break } }
+        return (firstVIndex, lastVIndex)
     }
     
     override func viewDidMoveToWindow() {
@@ -193,11 +212,11 @@ class LSLGSegmentedControl: NSView {
         CGContextSetTextDrawingMode(ctx, kCGTextFill)
         CGContextSetFontSize(ctx, 16)
         
-        var font = NSFont(name: "Verdana", size:10.0 )!
-        var dict:[NSObject:AnyObject] = [
-            kCTFontAttributeName:font
-          , kCTForegroundColorAttributeName:NSColor(calibratedWhite: 0.407, alpha: 1).CGColor
-        ]
+        var font  = NSFont(name: "Verdana", size:10.0 )!
+        var normalColor   = NSColor(calibratedWhite: 0.407, alpha: 1).CGColor
+        var selectedColor = NSColor(red:0.171, green:0.522, blue:1, alpha:1).CGColor
+        var normalText:[NSObject:AnyObject]   = [ kCTFontAttributeName:font , kCTForegroundColorAttributeName:normalColor ]
+        var selectedText:[NSObject:AnyObject] = [ kCTFontAttributeName:font , kCTForegroundColorAttributeName:selectedColor ]
         
         let iconY:CGFloat = (self.frame.height - 16)/2 + 16
         var x:CGFloat = 8
@@ -226,13 +245,16 @@ class LSLGSegmentedControl: NSView {
             if let icon = item.icon {
                 CGContextTranslateCTM( ctx, x, iconY )
                 CGContextAddPath( ctx, icon.path )
-                CGContextSetGrayFillColor(ctx, 0.407, 1)
+                CGContextSetFillColorWithColor( ctx, item.selected ? selectedColor : normalColor )
                 CGContextEOFillPath( ctx )
                 CGContextBeginPath( ctx )
                 CGContextTranslateCTM( ctx, -x, -iconY )
             } else {
                 CGContextSetTextPosition(ctx, x, y)
-                CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(string:item.content, attributes:dict) ) , ctx)
+                CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(
+                    string : item.content
+                  , attributes : item.selected ? selectedText : normalText
+                )) , ctx)
             }
             
             x += item.width
@@ -245,45 +267,41 @@ class LSLGSegmentedControl: NSView {
             item.visible = true
         }
         if self.hoveringIdx >= 0 && self.hoveringIdx < self.items.count {
-            self.items[self.hoveringIdx].visible = false
+            self.items[self.hoveringIdx].toggleSelected()
         }
     }
     
     override func mouseEntered(theEvent: NSEvent) {
+        
+        let visibleRange = self.visibleItemRange()
+        
         var x:CGFloat = 4
-        var r = self.bounds
+        var margin:CGFloat = 0
         
-        var hasVisibleSiblings = 0
-        
-        for var i = self.items.count - 1; i >= 0; --i {
+        for var i = visibleRange.0; i >= visibleRange.1; --i {
             var item = self.items[i]
-            if item.visible { ++hasVisibleSiblings }
-            
-            if self.trTags[i] != theEvent.trackingNumber {
+            if item.__trackingRect != theEvent.trackingNumber {
                 x += item.width
                 continue
             }
             
-            // Check if the item is the first visible item
-            r.size.width = item.width
-            if i == self.items.count - 1 || hasVisibleSiblings == 1 {
+            // The first visible item has 4px left margin
+            if i == visibleRange.0 {
                 x -= 4
-                r.size.width += 4
+                margin += 4
             }
-    
-            // Check if this item is the last visible item
-            hasVisibleSiblings = 0
-            for var j = i-1; j >= 0; --j { if self.items[j].visible { ++hasVisibleSiblings } }
-            if hasVisibleSiblings == 0 { r.size.width += 4 }
             
-            r.origin.x = x
+            // The last visible item has 4px right margin
+            if i == visibleRange.1 { margin += 4 }
+        
             CATransaction.begin()
             CATransaction.setValue(kCFBooleanTrue, forKeyPath: kCATransactionDisableActions)
-            self.hlLayer.frame = r
+            
+            self.hlLayer.frame = NSMakeRect(x, 0, item.width+margin, self.frame.height)
             self.hlLayer.hidden = false
-            r.size.width = self.frame.width
-            r.origin.x   = -x
-            self.hlLayer.mask.frame = r
+            // Mask's frame must set after its content
+            self.hlLayer.mask.frame = NSMakeRect(-x, 0, self.frame.width, self.frame.height)
+            
             CATransaction.commit()
             self.hoveringIdx = i
             break
