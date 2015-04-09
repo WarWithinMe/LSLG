@@ -55,6 +55,11 @@ class LSLGWindow: NSWindow {
         gradientLayer.backgroundColor  = NSColor.greenColor().CGColor
         layer.addSublayer( gradientLayer )
         
+        // Real content view, this is the content view wrapper
+        self.realContentView = NSView(frame:self.contentView.frame)
+        self.realContentView.autoresizingMask = NSAutoresizingMaskOptions.ViewHeightSizable | NSAutoresizingMaskOptions.ViewWidthSizable
+        self.contentView.addSubview( self.realContentView )
+        
         // Title, which makes the window draggable
         self.contentView.addSubview(
             LSLGTitle(frame: NSMakeRect(0, self.contentView.frame.height-25, self.contentView.frame.width, 25))
@@ -71,16 +76,17 @@ class LSLGWindow: NSWindow {
     }
     
     func setContent(aview:NSView) {
-        if (aview.isEqualTo(self.realContentView)) { return; }
-        
-        if let rcv = self.realContentView {
-            self.contentView.removeView(rcv)
+        if let rcv:AnyObject = self.realContentView.subviews.first {
+            if rcv === aview {
+                return
+            } else {
+                rcv.removeFromSuperview()
+            }
         }
         
-        self.realContentView = aview
         aview.autoresizingMask = NSAutoresizingMaskOptions.ViewHeightSizable | NSAutoresizingMaskOptions.ViewWidthSizable
         aview.frame = self.contentView.bounds
-        self.contentView.addSubview(aview, positioned: NSWindowOrderingMode.Below, relativeTo: nil)
+        self.realContentView.addSubview(aview, positioned: NSWindowOrderingMode.Below, relativeTo: nil)
     }
 }
 
