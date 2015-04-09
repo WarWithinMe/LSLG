@@ -48,7 +48,7 @@ class LSLGWCButton: NSView {
     
     override func mouseUp(theEvent: NSEvent) {
         self.isClicked = false
-        self.doAction()
+        if self.hovering { self.doAction() }
         self.needsDisplay = true
     }
     
