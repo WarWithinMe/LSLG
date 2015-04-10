@@ -67,9 +67,8 @@ class LSLGLogView: NSScrollView {
     
     func updateContent(notification:NSNotification?) {
         
-        if self.window?.windowController() == nil { return }
-        
-        let wc = self.window!.windowController() as! LSLGWindowController
+        let wc:AnyObject? = self.window?.windowController()
+        if wc == nil { return }
         
         if let o:AnyObject = notification?.object {
             if o !== wc {
@@ -77,23 +76,22 @@ class LSLGLogView: NSScrollView {
             }
         }
         
-        if let c = self.window?.windowController() as? LSLGWindowController {
+        let logs = (wc! as! LSLGWindowController).logs
+        var formater = NSDateFormatter()
+        formater.dateFormat = "[HH:mm:ss]"
             
-            var formater = NSDateFormatter()
-            formater.dateFormat = "[HH:mm:ss]"
+        while displayedLogCount < logs.count {
+            let item = logs[displayedLogCount]
+            let ts   = self.textView.textStorage!
             
-            while displayedLogCount < c.logs.count {
-                let item = c.logs[displayedLogCount]
-                let ts   = self.textView.textStorage
-                if !item.log.isEmpty {
-                    ts?.appendAttributedString( NSAttributedString(
-                        string: "\(formater.stringFromDate(item.time)) \(item.log)"
-                      , attributes: item.isError ? self.errorTextAttr : self.normalTextAttr
-                    ))
-                }
-                ts?.appendAttributedString(NSAttributedString(string: "\n"))
-                ++displayedLogCount
+            if !item.log.isEmpty {
+                ts.appendAttributedString( NSAttributedString(
+                    string: "\(formater.stringFromDate(item.time)) \(item.log)"
+                  , attributes: item.isError ? self.errorTextAttr : self.normalTextAttr
+                ))
             }
+            ts.appendAttributedString(NSAttributedString(string: "\n"))
+            ++displayedLogCount
         }
     }
 
