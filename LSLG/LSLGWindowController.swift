@@ -73,4 +73,8 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
             }
         }
     }
+    
+    deinit {
+        println("window controller deinit")
+    }
 }

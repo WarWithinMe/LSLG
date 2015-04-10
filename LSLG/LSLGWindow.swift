@@ -88,6 +88,9 @@ class LSLGWindow: NSWindow {
         aview.frame = self.contentView.bounds
         self.realContentView.addSubview(aview, positioned: NSWindowOrderingMode.Below, relativeTo: nil)
     }
+    deinit {
+        println("window deinit")
+    }
 }
 
 class LSLGTitle: NSView {
