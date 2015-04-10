@@ -35,7 +35,7 @@ class LSLGIcon {
     }
     
     private func createPath() {
-        self.__path = PocketSVG.pathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
+        self.__path = PocketSVG.newPathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
     }
     
 }

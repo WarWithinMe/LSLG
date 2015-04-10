@@ -60,7 +60,7 @@
  *
  *  @return A CGPathRef object for the SVG in the specified file, or nil if the object could not be found or could not be parsed.
  */
-+ (CGPathRef)pathFromSVGFileNamed:(NSString *)nameOfSVG;
++ (CGPathRef)newPathFromSVGFileNamed:(NSString *)nameOfSVG;
 
 /*!
  *  Returns a CGPathRef corresponding to the path represented by a local SVG file's D attribute
@@ -69,7 +69,7 @@
  *
  *  @return A CGPathRef object for the SVG in the specified file, or nil if the object could not be found or could not be parsed.
  */
-+ (CGPathRef)pathFromSVGFileAtURL:(NSURL *)svgFileURL;
++ (CGPathRef)newPathFromSVGFileAtURL:(NSURL *)svgFileURL;
 
 /*!
  *  Returns a CGPathRef corresponding to the path represented by a string with SVG formatted contents.
@@ -78,7 +78,7 @@
  *
  *  @return A CGPathRef object for the SVG in the string, or nil if no path is found or the string could not be parsed.
  */
-+ (CGPathRef)pathFromSVGString:(NSString *)svgString;
++ (CGPathRef)newPathFromSVGString:(NSString *)svgString;
 
 /*!
  *  Returns a CGPathRef corresponding to the path represented by a string with the contents of the d attribute of a path node in an SVG file.
@@ -87,7 +87,7 @@
  *
  *  @return A CGPathRef object for the path in the string, or nil if no path is found or the string could not be parsed.
  */
-+ (CGPathRef)pathFromDAttribute:(NSString *)dAttribute;
++ (CGPathRef)newPathFromDAttribute:(NSString *)dAttribute;
 
 + (NSBezierPath*)bezierPathFromDAttribute:(NSString *)dAttribute;
 
@@ -113,7 +113,7 @@
 
 
 #if !TARGET_OS_IPHONE
-+ (CGPathRef)getCGPathFromNSBezierPath:(NSBezierPath *)quartzPath;
++ (CGPathRef)newCGPathFromNSBezierPath:(NSBezierPath *)quartzPath;
 #endif
 
 @end

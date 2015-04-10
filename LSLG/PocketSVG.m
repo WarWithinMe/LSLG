@@ -114,7 +114,7 @@ unichar const invalidCommand		= '*';
 
 @synthesize bezier;
 
-+ (CGPathRef)pathFromSVGFileNamed:(NSString *)nameOfSVG
++ (CGPathRef)newPathFromSVGFileNamed:(NSString *)nameOfSVG
 {
     PocketSVG *pocketSVG = [PocketSVG pocketSVGFromSVGPathNodeDAttr:[self parseSVGNamed:nameOfSVG]];
     
@@ -124,29 +124,29 @@ unichar const invalidCommand		= '*';
     
     return pocketSVG.bezier.CGPath;
 #else
-    return [PocketSVG getCGPathFromNSBezierPath:pocketSVG.bezier];
+    return [PocketSVG newCGPathFromNSBezierPath:pocketSVG.bezier];
 #endif
 }
 
-+ (CGPathRef)pathFromSVGFileAtURL:(NSURL *)svgFileURL
++ (CGPathRef)newPathFromSVGFileAtURL:(NSURL *)svgFileURL
 {
     NSString *svgString = [[self class] svgStringAtURL:svgFileURL];
-    return [[self class] pathFromSVGString:svgString];
+    return [[self class] newPathFromSVGString:svgString];
 }
 
-+ (CGPathRef)pathFromSVGString:(NSString *)svgString
++ (CGPathRef)newPathFromSVGString:(NSString *)svgString
 {
     NSString *dAttribute = [self dStringFromRawSVGString:svgString];
-    return [self pathFromDAttribute:dAttribute];
+    return [self newPathFromDAttribute:dAttribute];
 }
 
-+ (CGPathRef)pathFromDAttribute:(NSString *)dAttribute
++ (CGPathRef)newPathFromDAttribute:(NSString *)dAttribute
 {
     PocketSVG *pocketSVG = [PocketSVG pocketSVGFromSVGPathNodeDAttr:dAttribute];
 #if TARGET_OS_IPHONE
     return pocketSVG.bezier.CGPath;
 #else
-    return [PocketSVG getCGPathFromNSBezierPath:pocketSVG.bezier];
+    return [PocketSVG newCGPathFromNSBezierPath:pocketSVG.bezier];
 #endif
 }
 
@@ -360,7 +360,7 @@ unichar const invalidCommand		= '*';
                 return nil;
             }
             // Maintain scale.
-            pathScale = (abs(value) > pathScale) ? abs(value) : pathScale;
+            pathScale = (fabs(value) > pathScale) ? fabs(value) : pathScale;
             [token addValue:value];
         }
         
@@ -557,7 +557,7 @@ unichar const invalidCommand		= '*';
 //This comes from the "Creating a CGPathRef From an NSBezierPath Object" section of
 //https://developer.apple.com/library/mac/#documentation/cocoa/Conceptual/CocoaDrawingGuide/Paths/Paths.html
 
-+ (CGPathRef)getCGPathFromNSBezierPath:(NSBezierPath *)quartzPath
++ (CGPathRef)newCGPathFromNSBezierPath:(NSBezierPath *)quartzPath
 {
     int i;
     NSInteger numElements;
@@ -570,7 +570,6 @@ unichar const invalidCommand		= '*';
     {
         CGMutablePathRef    path = CGPathCreateMutable();
         NSPoint             points[3];
-        BOOL                didClosePath = YES;
         
         for (i = 0; i < numElements; i++)
         {
@@ -582,19 +581,16 @@ unichar const invalidCommand		= '*';
                     
                 case NSLineToBezierPathElement:
                     CGPathAddLineToPoint(path, NULL, points[0].x, points[0].y);
-                    didClosePath = NO;
                     break;
                     
                 case NSCurveToBezierPathElement:
                     CGPathAddCurveToPoint(path, NULL, points[0].x, points[0].y,
                                           points[1].x, points[1].y,
                                           points[2].x, points[2].y);
-                    didClosePath = NO;
                     break;
                     
                 case NSClosePathBezierPathElement:
                     CGPathCloseSubpath(path);
-                    didClosePath = YES;
                     break;
             }
         }
@@ -604,7 +600,9 @@ unichar const invalidCommand		= '*';
     }
     
     CGAffineTransform flip = CGAffineTransformMake(1, 0, 0, -1, 0, 0);
-    return CGPathCreateCopyByTransformingPath(immutablePath, &flip);
+    CGPathRef result = CGPathCreateCopyByTransformingPath(immutablePath, &flip);
+    CGPathRelease(immutablePath);
+    return result;
 }
 #endif
 
