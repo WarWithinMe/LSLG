@@ -51,13 +51,13 @@ class LSLGWindow: NSWindow {
         var gradientLayer = CAGradientLayer()
         gradientLayer.colors = [ NSColor(calibratedWhite:0.076, alpha:1.0).CGColor, NSColor(calibratedWhite:0.103, alpha:1.0).CGColor ]
         gradientLayer.frame  = CGRectMake(0, layer.frame.height-100, layer.frame.width, 100)
-        gradientLayer.autoresizingMask = CAAutoresizingMask.LayerWidthSizable | CAAutoresizingMask.LayerMinYMargin
+        gradientLayer.autoresizingMask = .LayerWidthSizable | .LayerMinYMargin
         gradientLayer.backgroundColor  = NSColor.greenColor().CGColor
         layer.addSublayer( gradientLayer )
         
         // Real content view, this is the content view wrapper
         self.realContentView = NSView(frame:self.contentView.frame)
-        self.realContentView.autoresizingMask = NSAutoresizingMaskOptions.ViewHeightSizable | NSAutoresizingMaskOptions.ViewWidthSizable
+        self.realContentView.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
         self.contentView.addSubview( self.realContentView )
         
         // Title, which makes the window draggable
@@ -101,7 +101,7 @@ class LSLGTitle: NSView {
     
     override init(frame:NSRect) {
         super.init(frame:frame)
-        self.autoresizingMask = NSAutoresizingMaskOptions.ViewWidthSizable | NSAutoresizingMaskOptions.ViewMinYMargin
+        self.autoresizingMask = .ViewWidthSizable | .ViewMinYMargin
     }
     
     override func drawRect(dirtyRect: NSRect) {

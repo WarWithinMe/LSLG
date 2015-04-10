@@ -18,7 +18,7 @@ class LSLGWCButton: NSView {
     
     init(x:CGFloat, y:CGFloat) {
         super.init(frame: NSMakeRect(x, y-12, 12, 12))
-        self.autoresizingMask = NSAutoresizingMaskOptions.ViewMinYMargin
+        self.autoresizingMask = .ViewMinYMargin
         self.addTrackingRect(self.bounds, owner: self, userData: nil, assumeInside: false)
     }
     
@@ -34,11 +34,11 @@ class LSLGWCButton: NSView {
         NSBezierPath(ovalInRect: NSMakeRect(0, 0, 12, 12)).fill()
         
         CGContextSetAlpha(context.CGContext, 1)
-        context.compositingOperation = NSCompositingOperation.CompositeDestinationOut
+        context.compositingOperation = .CompositeDestinationOut
         NSBezierPath(ovalInRect: NSMakeRect(1, 1, 10, 10)).fill()
         
         CGContextSetAlpha(context.CGContext, alpha)
-        context.compositingOperation = NSCompositingOperation.CompositeSourceOver
+        context.compositingOperation = .CompositeSourceOver
     }
     
     override func mouseDown(theEvent: NSEvent) {
@@ -86,10 +86,10 @@ class LSLGWCCloseBtn: LSLGWCButton {
             transform.translateXBy(-6,yBy:-6)
             clip.transformUsingAffineTransform(transform)
             
-            context.compositingOperation = NSCompositingOperation.CompositeDestinationOut
+            context.compositingOperation = .CompositeDestinationOut
             CGContextSetAlpha(context.CGContext, 1)
             clip.fill()
-            context.compositingOperation = NSCompositingOperation.CompositeSourceOver
+            context.compositingOperation = .CompositeSourceOver
             
         } else {
             self.drawCircle( context )
@@ -174,7 +174,7 @@ class LSLGWCOpacityBtn: LSLGWCButton {
             NSBezierPath(ovalInRect: NSMakeRect(1, 1, 10, 10)).fill()
             context.restoreGraphicsState()
             
-            context.compositingOperation = NSCompositingOperation.CompositeSourceOut
+            context.compositingOperation = .CompositeSourceOut
             CGContextSetAlpha(context.CGContext, self.hovering ? 0.8 : 0.3)
             NSBezierPath(ovalInRect: NSMakeRect(0, 0, 12, 12)).fill()
             

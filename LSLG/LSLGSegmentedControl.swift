@@ -74,7 +74,7 @@ class LSLGSegmentedControl: NSView {
     // The {x,y} is bottom-right coordinate
     init(x:CGFloat, y:CGFloat) {
         super.init(frame: NSMakeRect(x-80, y, 80, 20))
-        self.autoresizingMask = NSAutoresizingMaskOptions.ViewMinXMargin
+        self.autoresizingMask = .ViewMinXMargin
         self.wantsLayer = true
         
         // Background. Use a layer to draw the background, because it's just not possible
@@ -98,7 +98,7 @@ class LSLGSegmentedControl: NSView {
         maskLayer.frame = self.bounds
         maskLayer.cornerRadius = self.frame.height / 2
         maskLayer.backgroundColor = NSColor.blackColor().CGColor
-        maskLayer.autoresizingMask = CAAutoresizingMask.LayerNotSizable
+        maskLayer.autoresizingMask = .LayerNotSizable
         
         // Add a highlight layer to indicate hover
         self.hlLayer = CALayer()
@@ -113,7 +113,7 @@ class LSLGSegmentedControl: NSView {
         // to draw the content. Otherwise the content will be behind the background.
         self.textLayer = CALayer()
         self.textLayer.frame = self.bounds
-        self.textLayer.autoresizingMask = CAAutoresizingMask.LayerWidthSizable
+        self.textLayer.autoresizingMask = .LayerWidthSizable
         self.textLayer.delegate = self
         self.layer!.addSublayer(self.textLayer)
     }
