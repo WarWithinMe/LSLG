@@ -16,7 +16,7 @@ class LSLGSegmentedControl: NSView {
     class LSLGRCItem : NSObject {
         
         var id:String="";
-        var parent:LSLGSegmentedControl?
+        weak var parent:LSLGSegmentedControl?
         var icon:LSLGIcon? {
             didSet { self.tryUpdateParent() }
         }

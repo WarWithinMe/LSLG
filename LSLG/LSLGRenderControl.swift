@@ -43,8 +43,4 @@ class LSLGRenderControl:LSLGSegmentedControl {
             item.toggleSelected()
         }
     }
-    
-    deinit {
-        println("rendercontrol deinit")
-    }
 }
