@@ -44,14 +44,12 @@ class LSLGLogView: NSScrollView {
         
         self.normalTextAttr = [
             NSFontAttributeName : font
-          , NSForegroundColorAttributeName : NSColor.whiteColor()
-          , NSBackgroundColorAttributeName : NSColor(white: 0, alpha: 0.5)
+          , NSForegroundColorAttributeName : NSColor(white: 0.73, alpha: 1)
           , NSParagraphStyleAttributeName : param
         ]
         self.errorTextAttr = [
             NSFontAttributeName : font
           , NSForegroundColorAttributeName : NSColor(red:0.997, green:0.31, blue:0.231, alpha:1)
-          , NSBackgroundColorAttributeName : NSColor(white: 0, alpha: 0.5)
           , NSParagraphStyleAttributeName : param
         ]
         
@@ -81,13 +79,16 @@ class LSLGLogView: NSScrollView {
         
         if let c = self.window?.windowController() as? LSLGWindowController {
             
+            var formater = NSDateFormatter()
+            formater.dateFormat = "[HH:mm:ss]"
+            
             while displayedLogCount < c.logs.count {
                 let item = c.logs[displayedLogCount]
                 let ts   = self.textView.textStorage
                 if !item.log.isEmpty {
                     ts?.appendAttributedString( NSAttributedString(
-                        string: "[\(item.time)] \(item.log)"
-                      , attributes: self.normalTextAttr
+                        string: "\(formater.stringFromDate(item.time)) \(item.log)"
+                      , attributes: item.isError ? self.errorTextAttr : self.normalTextAttr
                     ))
                 }
                 ts?.appendAttributedString(NSAttributedString(string: "\n"))
