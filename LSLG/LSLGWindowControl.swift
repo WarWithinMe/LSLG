@@ -13,8 +13,8 @@ class LSLGWCButton: NSView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var mouseDownCanMoveWindow:Bool { return false }
     
-    var hovering:Bool  = false
-    var isClicked:Bool = false
+    private var hovering:Bool  = false
+    private var isClicked:Bool = false
     
     init(x:CGFloat, y:CGFloat) {
         super.init(frame: NSMakeRect(x, y-12, 12, 12))
@@ -102,8 +102,8 @@ class LSLGWCCloseBtn: LSLGWCButton {
 
 class LSLGWCOnTopBtn: LSLGWCButton {
     
-    let CGFloatingWindowLevel:Int = Int( CGWindowLevelForKey( Int32(kCGFloatingWindowLevelKey) ) )
-    let CGNormalWindowLevel:Int   = Int( CGWindowLevelForKey( Int32(kCGNormalWindowLevelKey) ) )
+    static let CGFloatingWindowLevel:Int = Int( CGWindowLevelForKey( Int32(kCGFloatingWindowLevelKey) ) )
+    static let CGNormalWindowLevel:Int   = Int( CGWindowLevelForKey( Int32(kCGNormalWindowLevelKey) ) )
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
@@ -115,10 +115,10 @@ class LSLGWCOnTopBtn: LSLGWCButton {
     
     override func doAction() {
         var window = self.window!
-        if window.level == self.CGFloatingWindowLevel {
-            window.level = self.CGNormalWindowLevel
+        if window.level == LSLGWCOnTopBtn.CGFloatingWindowLevel {
+            window.level = LSLGWCOnTopBtn.CGNormalWindowLevel
         } else {
-            window.level = self.CGFloatingWindowLevel
+            window.level = LSLGWCOnTopBtn.CGFloatingWindowLevel
             window.makeKeyAndOrderFront(nil)
         }
     }
@@ -126,7 +126,7 @@ class LSLGWCOnTopBtn: LSLGWCButton {
     override func drawRect(dirtyRect: NSRect) {
         self.drawCircle(NSGraphicsContext.currentContext()!)
         
-        if self.window!.level == self.CGFloatingWindowLevel {
+        if self.window!.level == LSLGWCOnTopBtn.CGFloatingWindowLevel {
             NSBezierPath(ovalInRect: NSMakeRect(4, 4, 4, 4)).fill()
         }
     }

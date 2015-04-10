@@ -17,12 +17,11 @@ let LSLGWindowLogUpdate = "LSLGWindowLogUpdate"
 
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
-    typealias LogEntry = (time:NSDate, log:String, isError:Bool)
-    
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    typealias LogEntry = (time:NSDate, log:String, isError:Bool, desc:String)
     
-    var logs:[LogEntry] = []
-    var logSepTimer:NSTimer?
+    private var logs:[LogEntry] = []
+    private var logSepTimer:NSTimer?
     
     init() {
         super.init(window:nil)

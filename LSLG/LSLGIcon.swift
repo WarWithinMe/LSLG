@@ -18,9 +18,10 @@ enum LSLGIconType:String {
 }
 
 class LSLGIcon {
-    var type:LSLGIconType
     
-    var __path:CGPathRef?
+    private var type:LSLGIconType
+    private var __path:CGPathRef?
+    
     var path:CGPathRef {
         if let p = self.__path {
             return p

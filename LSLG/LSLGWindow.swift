@@ -10,14 +10,11 @@ import Cocoa
 
 class LSLGWindow: NSWindow {
     
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-    
+    required init?(coder: NSCoder) { super.init(coder: coder) }
     override var canBecomeKeyWindow:Bool { return true; }
     
-    var realContentView:NSView!
-    var renderControl:LSLGRenderControl!
+    private var realContentView:NSView!
+    private var renderControl:LSLGRenderControl!
     
     init() {
         let frame = NSScreen.mainScreen()!.frame
@@ -99,9 +96,8 @@ class LSLGWindow: NSWindow {
 
 class LSLGTitle: NSView {
     
-    override var mouseDownCanMoveWindow:Bool { return true }
-    
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    override var mouseDownCanMoveWindow:Bool { return true }
     
     override init(frame:NSRect) {
         super.init(frame:frame)

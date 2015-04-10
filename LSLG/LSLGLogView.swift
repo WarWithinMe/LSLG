@@ -12,8 +12,6 @@ class LSLGLogView: NSScrollView {
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
-    var textView:NSTextView!
-    
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         
@@ -56,6 +54,7 @@ class LSLGLogView: NSScrollView {
         NSNotificationCenter.defaultCenter().addObserver(self, selector:"updateContent:", name:LSLGWindowLogUpdate, object:nil)
     }
     
+    private var textView:NSTextView!
     private var displayedLogCount:Int = 0
     private var normalTextAttr:[NSString:AnyObject]!
     private var errorTextAttr:[NSString:AnyObject]!

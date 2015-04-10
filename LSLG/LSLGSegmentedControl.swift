@@ -65,11 +65,13 @@ class LSLGSegmentedControl: NSView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var mouseDownCanMoveWindow:Bool { return false }
     
-    var items  = [LSLGRCItem]()
     
-    var textLayer:CALayer!
-    var hlLayer:CALayer!
-    var hoveringIdx:Int = -1
+    private var items  = [LSLGRCItem]()
+    private var textLayer:CALayer!
+    private var hlLayer:CALayer!
+    private var hoveringIdx:Int = -1
+    
+    
     
     // The {x,y} is bottom-right coordinate
     init(x:CGFloat, y:CGFloat) {
