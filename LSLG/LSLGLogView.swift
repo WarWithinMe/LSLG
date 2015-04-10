@@ -13,60 +13,59 @@ class LSLGLogView: NSScrollView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
     override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        
-        self.borderType            = .NoBorder
-        self.hasHorizontalScroller = false
-        self.hasVerticalScroller   = true
-        self.autoresizingMask      = .ViewWidthSizable | .ViewHeightSizable
-        self.drawsBackground       = false
-        
-        var tv = NSTextView(frame:NSMakeRect(0,0,self.contentSize.width,self.contentSize.height))
-        self.textView = tv
-        
-        tv.autoresizingMask      = .ViewWidthSizable
-        tv.editable              = false
-        tv.drawsBackground       = false
-        tv.horizontallyResizable = false
-        tv.verticallyResizable   = true
-        
-        tv.textContainer?.containerSize = NSMakeSize( self.contentSize.width, CGFloat.max )
-        tv.textContainer?.widthTracksTextView = true
-        
-        self.documentView = tv
-        
-        let font = NSFont(name: "Verdana", size: 12)!
+        let font  = NSFont(name: "Verdana", size: 12)!
         var param = NSMutableParagraphStyle()
         param.paragraphSpacing = 4.0
         param.lineSpacing      = 1.0
         
-        self.normalTextAttr = [
+        normalTextAttr = [
             NSFontAttributeName : font
-          , NSForegroundColorAttributeName : NSColor(white: 0.73, alpha: 1)
-          , NSParagraphStyleAttributeName : param
+            , NSForegroundColorAttributeName : NSColor(white: 0.73, alpha: 1)
+            , NSParagraphStyleAttributeName : param
         ]
-        self.errorTextAttr = [
+        errorTextAttr = [
             NSFontAttributeName : font
-          , NSForegroundColorAttributeName : NSColor(red:0.997, green:0.31, blue:0.231, alpha:1)
-          , NSParagraphStyleAttributeName : param
+            , NSForegroundColorAttributeName : NSColor(red:0.997, green:0.31, blue:0.231, alpha:1)
+            , NSParagraphStyleAttributeName : param
         ]
+        
+        super.init(frame: frameRect)
+        
+        borderType            = .NoBorder
+        hasHorizontalScroller = false
+        hasVerticalScroller   = true
+        autoresizingMask      = .ViewWidthSizable | .ViewHeightSizable
+        drawsBackground       = false
+        
+        textView = NSTextView( frame:NSMakeRect(0, 0, contentSize.width, contentSize.height) )
+        
+        textView.autoresizingMask      = .ViewWidthSizable
+        textView.editable              = false
+        textView.drawsBackground       = false
+        textView.horizontallyResizable = false
+        textView.verticallyResizable   = true
+        
+        textView.textContainer?.containerSize = NSMakeSize( contentSize.width, .max )
+        textView.textContainer?.widthTracksTextView = true
+        
+        documentView = textView
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector:"updateContent:", name:LSLGWindowLogUpdate, object:nil)
     }
     
     private var textView:NSTextView!
     private var displayedLogCount:Int = 0
-    private var normalTextAttr:[NSString:AnyObject]!
-    private var errorTextAttr:[NSString:AnyObject]!
+    private var normalTextAttr:[NSString:AnyObject]
+    private var errorTextAttr:[NSString:AnyObject]
 
     override func viewDidMoveToWindow() {
-        self.updateContent(nil)
+        updateContent(nil)
         super.viewDidMoveToWindow()
     }
     
     func updateContent(notification:NSNotification?) {
         
-        let wc:AnyObject? = self.window?.windowController()
+        let wc:AnyObject? = window?.windowController()
         if wc == nil { return }
         
         if let o:AnyObject = notification?.object {
@@ -81,12 +80,12 @@ class LSLGLogView: NSScrollView {
             
         while displayedLogCount < logs.count {
             let item = logs[displayedLogCount]
-            let ts   = self.textView.textStorage!
+            let ts   = textView.textStorage!
             
             if !item.log.isEmpty {
                 ts.appendAttributedString( NSAttributedString(
                     string: "\(formater.stringFromDate(item.time)) \(item.log)"
-                  , attributes: item.isError ? self.errorTextAttr : self.normalTextAttr
+                  , attributes: item.isError ? errorTextAttr : normalTextAttr
                 ))
             }
             ts.appendAttributedString(NSAttributedString(string: "\n"))

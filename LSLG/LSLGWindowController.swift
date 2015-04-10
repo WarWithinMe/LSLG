@@ -20,56 +20,60 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     typealias LogEntry = (time:NSDate, log:String, isError:Bool, desc:String)
     
-    private var logs:[LogEntry] = []
+    var logs:[LogEntry] = []
     private var logSepTimer:NSTimer?
     
     init() {
         super.init(window:nil)
         
-        self.windowFrameAutosaveName = "LSLGWindow"
+        windowFrameAutosaveName = "LSLGWindow"
         
-        var window = LSLGWindow()
-        window.delegate = self
-        self.window = window
-        window.makeKeyAndOrderFront(nil)
+        var w = LSLGWindow()
+        w.delegate = self
+        w.makeKeyAndOrderFront(nil)
+        window = w
         WindowControllerArray.append(self)
         
-        
+        /* Test log */
         NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "addLog:", userInfo: nil, repeats: true)
     }
-    
+   
     /* Test log */
     func addLog(timer:NSTimer) {
-        self.appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1)
+        appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1)
     }
     
     
     /* Log Related Functions */
-    func appendLog(aLog:String, isError:Bool = false) {
-        self.logs.append( (time:NSDate(), log:aLog, isError:isError) )
-        self.logUpdated()
+    func appendLog(aLog:String, isError:Bool = false, desc:String = "") {
+        logs.append( (time:NSDate(), log:aLog, isError:isError, desc:desc) )
         
-        if self.logSepTimer == nil { self.setLogTimer(OldLogMarkerAddDelay) }
+        NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) )
+        
+        if isError && !desc.isEmpty {
+            (window as! LSLGWindow).quickLog( desc, isError )
+        }
+        
+        if logSepTimer == nil { setLogTimer(OldLogMarkerAddDelay) }
     }
     
-    func logUpdated() { NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) ) }
     func setLogTimer(sec:NSTimeInterval) {
-        self.logSepTimer = NSTimer.scheduledTimerWithTimeInterval(sec, target: self, selector: "onTimer:", userInfo: nil, repeats: false)
+        logSepTimer = NSTimer.scheduledTimerWithTimeInterval(sec, target: self, selector: "onTimer:", userInfo: nil, repeats: false)
     }
     
     func onTimer(aTimer:NSTimer) {
-        if let lastLog = self.logs.last {
+        if let lastLog = logs.last {
             let interval:NSTimeInterval = OldLogMarkerAddDelay - NSDate().timeIntervalSinceDate( lastLog.0 )
             if interval >= 0 {
                 // Re-schedule the timer, because we just received new log after the timer is on.
-                self.setLogTimer( interval )
+                setLogTimer( interval )
                 return
             }
         }
         
         // Add a blank line to indicate that previous message is old.
-        self.appendLog("")
-        self.logSepTimer = nil
+        appendLog("")
+        logSepTimer = nil
     }
     
     
@@ -77,9 +81,8 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     func windowWillClose(notification: NSNotification) {
         if notification.object?.windowController() as! LSLGWindowController == self {
             WindowControllerArray.removeAtIndex( find(WindowControllerArray, self)! )
-            if let t = self.logSepTimer {
-                t.invalidate()
-            }
+            // Remove timer if it's still active.
+            if let t = logSepTimer { t.invalidate() }
         }
     }
 }

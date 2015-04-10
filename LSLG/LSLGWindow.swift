@@ -10,11 +10,12 @@ import Cocoa
 
 class LSLGWindow: NSWindow {
     
-    required init?(coder: NSCoder) { super.init(coder: coder) }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var canBecomeKeyWindow:Bool { return true; }
     
     private var realContentView:NSView!
     private var renderControl:LSLGRenderControl!
+    private var quickLogView:LSLGQuickLog!
     
     init() {
         let frame = NSScreen.mainScreen()!.frame
@@ -38,18 +39,21 @@ class LSLGWindow: NSWindow {
         var layer = contentView.layer!
         layer.cornerRadius = 5.0
         layer.backgroundColor = NSColor(calibratedWhite:0.076, alpha:1.0).CGColor
-        layer.borderColor = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
-        layer.borderWidth = 1.0
+        layer.borderColor     = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
+        layer.borderWidth     = 1.0
         if let screen = self.screen {
             layer.borderWidth = 1.0 / screen.backingScaleFactor
         }
         
         // Gradient BG
         var gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [ NSColor(calibratedWhite:0.076, alpha:1.0).CGColor, NSColor(calibratedWhite:0.103, alpha:1.0).CGColor ]
-        gradientLayer.frame  = CGRectMake(0, layer.frame.height-100, layer.frame.width, 100)
         gradientLayer.autoresizingMask = .LayerWidthSizable | .LayerMinYMargin
         gradientLayer.backgroundColor  = NSColor.greenColor().CGColor
+        gradientLayer.frame            = CGRectMake( 0, layer.frame.height-100, layer.frame.width, 100 )
+        gradientLayer.colors           = [
+            NSColor( calibratedWhite:0.076, alpha:1.0 ).CGColor
+          , NSColor( calibratedWhite:0.103, alpha:1.0 ).CGColor
+        ]
         layer.addSublayer( gradientLayer )
         
         // Real content view, this is the content view wrapper
@@ -73,7 +77,7 @@ class LSLGWindow: NSWindow {
     }
     
     func setContent(view:NSView, fillWindow:Bool = true) {
-        if let rcv:AnyObject = self.realContentView.subviews.first {
+        if let rcv:AnyObject = realContentView.subviews.first {
             if rcv === view {
                 return
             } else {
@@ -82,7 +86,7 @@ class LSLGWindow: NSWindow {
         }
         
         view.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
-        var frame = self.contentView.bounds
+        var frame = contentView.bounds
         if !fillWindow {
             frame.origin.y     = 35
             frame.origin.x     = 10
@@ -90,35 +94,8 @@ class LSLGWindow: NSWindow {
             frame.size.height -= 60
         }
         view.frame = frame
-        self.realContentView.addSubview(view)
-    }
-}
-
-class LSLGTitle: NSView {
-    
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    override var mouseDownCanMoveWindow:Bool { return true }
-    
-    override init(frame:NSRect) {
-        super.init(frame:frame)
-        self.autoresizingMask = .ViewWidthSizable | .ViewMinYMargin
+        realContentView.addSubview(view)
     }
     
-    override func drawRect(dirtyRect: NSRect) {
-        NSLog("Drawing Titlebar")
-        var context = NSGraphicsContext.currentContext()!.CGContext
-        
-        let rectanglePath = NSBezierPath(roundedRect: NSMakeRect(0, self.frame.height-12, self.frame.width, 12), xRadius: 5, yRadius: 5)
-        
-        CGContextSaveGState(context)
-        NSRectClip( NSMakeRect(0, self.frame.height-6, self.frame.width, 6) )
-        CGContextSetAlpha(context, 0.13)
-        CGContextBeginTransparencyLayer(context, nil)
-            CGContextSetShadowWithColor(context, CGSizeMake(0, -1), 0, NSColor.whiteColor().CGColor)
-            CGContextSetBlendMode(context, kCGBlendModeSourceOut)
-            NSColor.whiteColor().setFill()
-            rectanglePath.fill()
-        CGContextEndTransparencyLayer(context)
-        CGContextRestoreGState(context)
-    }
+    func quickLog(desc:String, _ isError:Bool) { quickLogView.scheduleLog( desc, isError ) }
 }

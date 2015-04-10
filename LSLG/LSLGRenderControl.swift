@@ -15,10 +15,10 @@ class LSLGRenderControl:LSLGSegmentedControl {
     override init(x:CGFloat, y:CGFloat) {
         super.init(x: x, y: y)
         
-        self.appendItems([
-            LSLGRCItem(icon:LSLGIcon(type: LSLGIconType.Setting), id:"Setting")
-          , LSLGRCItem(icon:LSLGIcon(type: LSLGIconType.Log),     id:"Log")
-          , LSLGRCItem(icon:LSLGIcon(type: LSLGIconType.Suzanne), id:"Model")
+        appendItems([
+            LSLGRCItem(icon:LSLGIcon(type: .Setting), id:"Setting")
+          , LSLGRCItem(icon:LSLGIcon(type: .Log),     id:"Log")
+          , LSLGRCItem(icon:LSLGIcon(type: .Suzanne), id:"Model")
           , LSLGRCItem(content:"Fragment", id:"Fragment")
           , LSLGRCItem(content:"Geometry", id:"Geometry")
           , LSLGRCItem(content:"Vertex",   id:"Vertex")
@@ -30,13 +30,13 @@ class LSLGRenderControl:LSLGSegmentedControl {
     override func itemClicked(item: LSLGRCItem) {
         
         if item.id == "Log" {
-            if self.logView != nil {
-                self.logView!.removeFromSuperview()
-                self.logView = nil
+            if logView != nil {
+                logView!.removeFromSuperview()
+                logView = nil
                 item.selected = false
             } else {
-                self.logView = LSLGLogView( frame:frame )
-                (self.window as! LSLGWindow).setContent( self.logView!, fillWindow:false )
+                logView = LSLGLogView( frame:frame )
+                (window as! LSLGWindow).setContent( logView!, fillWindow:false )
                 item.selected = true
             }
         } else {

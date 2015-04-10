@@ -22,21 +22,16 @@ class LSLGIcon {
     private var type:LSLGIconType
     private var __path:CGPathRef?
     
+    init(type:LSLGIconType) { self.type = type }
+    
     var path:CGPathRef {
-        if let p = self.__path {
+        if let p = __path {
             return p
         } else {
-            self.createPath()
-            return self.__path!
+            var p = PocketSVG.newPathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
+            __path = p
+            return p
         }
-    }
-    
-    init(type:LSLGIconType) {
-        self.type = type
-    }
-    
-    private func createPath() {
-        self.__path = PocketSVG.newPathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
     }
     
 }
