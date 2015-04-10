@@ -71,25 +71,29 @@ class LSLGWindow: NSWindow {
         self.contentView.addSubview( LSLGWCOpacityBtn(x:38, y:self.frame.height-6) )
         
         // Render controls
-        self.renderControl = LSLGRenderControl( x:self.frame.width - 12, y:12 )
+        self.renderControl = LSLGRenderControl( x:self.frame.width - 10, y:10 )
         self.contentView.addSubview( self.renderControl )
     }
     
-    func setContent(aview:NSView) {
+    func setContent(view:NSView, fillWindow:Bool = true) {
         if let rcv:AnyObject = self.realContentView.subviews.first {
-            if rcv === aview {
+            if rcv === view {
                 return
             } else {
                 rcv.removeFromSuperview()
             }
         }
         
-        aview.autoresizingMask = NSAutoresizingMaskOptions.ViewHeightSizable | NSAutoresizingMaskOptions.ViewWidthSizable
-        aview.frame = self.contentView.bounds
-        self.realContentView.addSubview(aview, positioned: NSWindowOrderingMode.Below, relativeTo: nil)
-    }
-    deinit {
-        println("window deinit")
+        view.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
+        var frame = self.contentView.bounds
+        if !fillWindow {
+            frame.origin.y     = 35
+            frame.origin.x     = 10
+            frame.size.width  -= 20
+            frame.size.height -= 60
+        }
+        view.frame = frame
+        self.realContentView.addSubview(view)
     }
 }
 

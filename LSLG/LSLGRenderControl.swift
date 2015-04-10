@@ -35,8 +35,8 @@ class LSLGRenderControl:LSLGSegmentedControl {
                 self.logView = nil
                 item.selected = false
             } else {
-                self.logView = LSLGLogView( frame:self.window!.frame )
-                (self.window as! LSLGWindow).setContent( self.logView! )
+                self.logView = LSLGLogView( frame:frame )
+                (self.window as! LSLGWindow).setContent( self.logView!, fillWindow:false )
                 item.selected = true
             }
         } else {

@@ -9,8 +9,11 @@
 import Cocoa
 
 private var WindowControllerArray = [LSLGWindowController]()
+private let OldLogMarkerAddDelay:NSTimeInterval = 20
+
 
 let LSLGWindowLogUpdate = "LSLGWindowLogUpdate"
+
 
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
@@ -33,7 +36,12 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         WindowControllerArray.append(self)
         
         
-        self.appendLog("aaa")
+        NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "addLog:", userInfo: nil, repeats: true)
+    }
+    
+    /* Test log */
+    func addLog(timer:NSTimer) {
+        self.appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1)
     }
     
     
@@ -42,15 +50,17 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         self.logs.append( (time:NSDate(), log:aLog, isError:isError) )
         self.logUpdated()
         
-        if self.logSepTimer == nil { self.setLogTimer(30) }
+        if self.logSepTimer == nil { self.setLogTimer(OldLogMarkerAddDelay) }
     }
     
     func logUpdated() { NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) ) }
-    func setLogTimer(sec:NSTimeInterval) { self.logSepTimer = NSTimer(timeInterval: sec, target: self, selector: "onTimer:", userInfo: nil, repeats: false) }
+    func setLogTimer(sec:NSTimeInterval) {
+        self.logSepTimer = NSTimer.scheduledTimerWithTimeInterval(sec, target: self, selector: "onTimer:", userInfo: nil, repeats: false)
+    }
     
     func onTimer(aTimer:NSTimer) {
         if let lastLog = self.logs.last {
-            let interval:NSTimeInterval = 30 - lastLog.0.timeIntervalSinceDate( NSDate() )
+            let interval:NSTimeInterval = OldLogMarkerAddDelay - NSDate().timeIntervalSinceDate( lastLog.0 )
             if interval >= 0 {
                 // Re-schedule the timer, because we just received new log after the timer is on.
                 self.setLogTimer( interval )
