@@ -18,28 +18,28 @@ class LSLGWindow: NSWindow {
     private var quickLogView:LSLGQuickLog!
     
     init() {
-        let frame = NSScreen.mainScreen()!.frame
+        let sf = NSScreen.mainScreen()!.frame
         super.init(
-            contentRect : NSMakeRect( frame.width/2-150, frame.height/2-150, 300, 300)
+            contentRect : NSMakeRect( sf.width/2-150, sf.height/2-150, 300, 300)
           , styleMask   : NSResizableWindowMask
           , backing     : .Buffered
           , defer       : false
         )
         
-        self.movableByWindowBackground = true
+        movableByWindowBackground = true
         
-        self.minSize = NSMakeSize(200, 200)
-        self.backgroundColor = NSColor.clearColor()
-        self.opaque = false
+        minSize = NSMakeSize(390, 390)
+        backgroundColor = NSColor.clearColor()
+        opaque = false
         
         var contentView = self.contentView as! NSView
         contentView.wantsLayer = true
         
         // Background & Border
         var layer = contentView.layer!
-        layer.cornerRadius = 5.0
         layer.backgroundColor = NSColor(calibratedWhite:0.076, alpha:1.0).CGColor
         layer.borderColor     = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
+        layer.cornerRadius    = 5.0
         layer.borderWidth     = 1.0
         if let screen = self.screen {
             layer.borderWidth = 1.0 / screen.backingScaleFactor
@@ -57,23 +57,23 @@ class LSLGWindow: NSWindow {
         layer.addSublayer( gradientLayer )
         
         // Real content view, this is the content view wrapper
-        self.realContentView = NSView(frame:self.contentView.frame)
-        self.realContentView.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
-        self.contentView.addSubview( self.realContentView )
+        realContentView = NSView( frame:contentView.frame )
+        realContentView.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
+        contentView.addSubview( realContentView )
         
         // Title, which makes the window draggable
         self.contentView.addSubview(
-            LSLGTitle(frame: NSMakeRect(0, self.contentView.frame.height-25, self.contentView.frame.width, 25))
+            LSLGTitle(frame: NSMakeRect(0, contentView.frame.height-25, contentView.frame.width, 25))
         )
         
         // Title controls
-        self.contentView.addSubview( LSLGWCCloseBtn  (x:6,  y:self.frame.height-6) )
-        self.contentView.addSubview( LSLGWCOnTopBtn  (x:22, y:self.frame.height-6) )
-        self.contentView.addSubview( LSLGWCOpacityBtn(x:38, y:self.frame.height-6) )
+        contentView.addSubview( LSLGWCCloseBtn  (x:6,  y:frame.height-6) )
+        contentView.addSubview( LSLGWCOnTopBtn  (x:22, y:frame.height-6) )
+        contentView.addSubview( LSLGWCOpacityBtn(x:38, y:frame.height-6) )
         
         // Render controls
-        self.renderControl = LSLGRenderControl( x:self.frame.width - 10, y:10 )
-        self.contentView.addSubview( self.renderControl )
+        renderControl = LSLGRenderControl( x:frame.width - 10, y:10 )
+        contentView.addSubview( renderControl )
     }
     
     func setContent(view:NSView, fillWindow:Bool = true) {
