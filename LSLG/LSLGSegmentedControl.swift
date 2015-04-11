@@ -77,7 +77,6 @@ class LSLGSegmentedControl: NSView {
         super.init( frame:NSMakeRect(x-80, y, 80, 20) )
         
         autoresizingMask = .ViewMinXMargin
-        wantsLayer = true
         
         // Background. Use a layer to draw the background, because it's just not possible
         // to draw a pixel-perfect line (which is 1-pixel wide) with core graphics.
@@ -93,7 +92,8 @@ class LSLGSegmentedControl: NSView {
           , NSColor(calibratedWhite:0.030, alpha:0.85 ).CGColor
           , NSColor(calibratedWhite:0.134, alpha:0.85 ).CGColor
         ]
-        layer!.addSublayer( bgLayer )
+        layer      = bgLayer
+        wantsLayer = true
         
         var maskLayer = CALayer()
         maskLayer.frame = bounds
@@ -303,7 +303,7 @@ class LSLGSegmentedControl: NSView {
             hlLayer.frame = NSMakeRect( x, 0, item.width+margin, frame.height )
             hlLayer.hidden = false
             // Mask's frame must set after its content
-            hlLayer.mask.frame = NSMakeRect(-x, 0, frame.width, frame.height)
+            hlLayer.mask.frame = NSMakeRect( -x, 0, frame.width, frame.height )
             
             CATransaction.commit()
             hoveringIdx = i
