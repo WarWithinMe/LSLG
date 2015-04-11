@@ -204,8 +204,9 @@ class LSLGSegmentedControl: NSView {
     }
     
     override func viewDidMoveToWindow() {
-        if let screen = window?.screen {
-            textLayer.contentsScale = screen.backingScaleFactor
+        // The self.window might be nil
+        if let w = window {
+            textLayer.contentsScale = w.backingScaleFactor
         }
     }
     

@@ -41,9 +41,7 @@ class LSLGWindow: NSWindow {
         layer.borderColor     = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
         layer.cornerRadius    = 5.0
         layer.borderWidth     = 1.0
-        if let screen = self.screen {
-            layer.borderWidth = 1.0 / screen.backingScaleFactor
-        }
+        layer.borderWidth = 1.0 / backingScaleFactor
         
         // Gradient BG
         var gradientLayer = CAGradientLayer()
