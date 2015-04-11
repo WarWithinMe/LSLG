@@ -101,9 +101,14 @@ class LSLGQuickLog: NSView {
         textLayer1.frame = bounds
         
         textLayer3 = CALayerAA()
+        textLayer3.delegate = self
         textLayer3.frame = NSMakeRect( 40,40,30,20 )
         textLayer3.backgroundColor = NSColor.yellowColor().CGColor
         layer?.addSublayer( textLayer3 )
+    }
+    
+    override func actionForLayer(layer: CALayer!, forKey event: String!) -> CAAction! {
+        return nil
     }
     
     override func layer(layer: CALayer, shouldInheritContentsScale s: CGFloat, fromWindow w: NSWindow) -> Bool {
