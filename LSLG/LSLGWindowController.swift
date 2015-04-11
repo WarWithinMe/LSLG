@@ -33,26 +33,16 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         w.makeKeyAndOrderFront(nil)
         window = w
         WindowControllerArray.append(self)
-        
-        /* Test log */
-        NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: "addLog:", userInfo: nil, repeats: true)
     }
    
-    /* Test log */
-    func addLog(timer:NSTimer) {
-        appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1)
-    }
-    
-    
     /* Log Related Functions */
     func appendLog(aLog:String, isError:Bool = false, desc:String = "") {
         logs.append( (time:NSDate(), log:aLog, isError:isError, desc:desc) )
         
         NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) )
         
-        if isError && !desc.isEmpty {
-            (window as! LSLGWindow).quickLog( desc, isError )
-        }
+        (window as! LSLGWindow).quickLog( desc, isError )
+        if isError && !desc.isEmpty { }
         
         if logSepTimer == nil { setLogTimer(OldLogMarkerAddDelay) }
     }

@@ -29,18 +29,23 @@ class LSLGRenderControl:LSLGSegmentedControl {
     
     override func itemClicked(item: LSLGRCItem) {
         
-        if item.id == "Log" {
-            if logView != nil {
-                logView!.removeFromSuperview()
-                logView = nil
-                item.selected = false
-            } else {
-                logView = LSLGLogView( frame:frame )
-                (window as! LSLGWindow).setContent( logView!, fillWindow:false )
-                item.selected = true
-            }
-        } else {
-            item.toggleSelected()
+        switch item.id {
+            case "Log":
+                if logView != nil {
+                    logView!.removeFromSuperview()
+                    logView = nil
+                    item.selected = false
+                } else {
+                    logView = LSLGLogView( frame:frame )
+                    (window as! LSLGWindow).setContent( logView!, fillWindow:false )
+                    item.selected = true
+                }
+            
+            case "Setting":
+                (window?.windowController() as! LSLGWindowController).appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1, desc:"TestLog\( arc4random_uniform(10))")
+            
+            default :
+                item.toggleSelected()
         }
     }
 }
