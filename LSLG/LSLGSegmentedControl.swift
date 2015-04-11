@@ -87,12 +87,11 @@ class LSLGSegmentedControl: NSView {
         bgLayer.borderColor  = NSColor(calibratedWhite: 0.4, alpha: 0.25).CGColor
         bgLayer.cornerRadius = frame.height / 2
         bgLayer.autoresizingMask = CAAutoresizingMask.LayerWidthSizable
-        bgLayer.locations = [0,0.4,0.6,1]
+        bgLayer.locations = [0,0.5,1]
         bgLayer.colors = [
-            NSColor(calibratedWhite:0.174, alpha:0.56 ).CGColor
-          , NSColor(calibratedWhite:0.039, alpha:0.52 ).CGColor
-          , NSColor(calibratedWhite:0.039, alpha:0.52 ).CGColor
-          , NSColor(calibratedWhite:0.174, alpha:0.56 ).CGColor
+            NSColor(calibratedWhite:0.134, alpha:0.85 ).CGColor
+          , NSColor(calibratedWhite:0.030, alpha:0.85 ).CGColor
+          , NSColor(calibratedWhite:0.134, alpha:0.85 ).CGColor
         ]
         layer!.addSublayer( bgLayer )
         
