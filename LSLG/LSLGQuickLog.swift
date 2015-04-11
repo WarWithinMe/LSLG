@@ -17,25 +17,35 @@ class LSLGQuickLog: NSView {
             didSet {
                 // Re-calc label size.
                 let size = string.sizeWithAttributes( [NSFontAttributeName:font] )
-                frame.size = NSMakeSize( round(size.width) + 8, round(size.height) + 3 )
+                frame.size = NSMakeSize( round(size.width) + 8, round(size.height) + 2 )
                 
                 println("CATextLayerAA didSet: \(string) \(frame.size)")
             }
         }
         
+        var error:Bool {
+            get { return false }
+            set {
+                if newValue {
+                    foregroundColor = NSColor(red:1, green:0.304, blue:0.194, alpha:1).CGColor
+                } else {
+                    foregroundColor = NSColor(white:0.67,alpha:1).CGColor
+                }
+            }
+        }
+        
         func prepare() {
-            foregroundColor = NSColor.whiteColor().CGColor
-            font            = NSFont(name: "Verdana", size: 10)
-            fontSize        = 10.0
-            doubleSided     = false
-            alignmentMode   = kCAAlignmentCenter
+            font          = NSFont(name: "Verdana", size: 10)
+            fontSize      = 10.0
+            doubleSided   = false
+            alignmentMode = kCAAlignmentCenter
         }
         
         private override func drawInContext(ctx: CGContext!) {
-            CGContextSetFillColorWithColor( ctx, NSColor.redColor().CGColor )
+            CGContextSetFillColorWithColor( ctx, NSColor(white: 0.287, alpha: 0.7).CGColor )
             CGContextFillRect( ctx, bounds )
             CGContextSetShouldSmoothFonts( ctx, true )
-            CGContextTranslateCTM( ctx, 0, -2 )
+            CGContextTranslateCTM( ctx, 0, 2 )
             super.drawInContext( ctx )
         }
     }
@@ -45,12 +55,13 @@ class LSLGQuickLog: NSView {
     private var textLayer1:CATextLayerAA
     private var textLayer2:CATextLayerAA
     private var logQueue:[(String,Bool)] = []
-    private var animating:Bool = false
     
     private weak var frontLayer:CATextLayer?
     private weak var backLayer:CATextLayer?
     
-    private var textLayer3:CALayer!
+    private var disappearTimer:NSTimer?
+    
+    override var flipped:Bool { return true }
     
     override init(frame:NSRect) {
         textLayer1 = CATextLayerAA()
@@ -61,14 +72,18 @@ class LSLGQuickLog: NSView {
         
         super.init(frame:frame)
         
-        autoresizingMask = .ViewWidthSizable
         layer = CALayer()
         wantsLayer = true
+        autoresizingMask = .ViewWidthSizable
         
         textLayer1.delegate = self
         textLayer2.delegate = self
-        layer?.addSublayer( textLayer1 )
-        layer?.addSublayer( textLayer2 )
+        
+        var l = layer!
+        l.addSublayer( textLayer1 )
+        l.addSublayer( textLayer2 )
+        
+        l.sublayerTransform = CATransform3DMakeTranslation(0, bounds.height, 0)
     }
     
     override func actionForLayer(layer: CALayer!, forKey event: String!) -> CAAction! {
@@ -92,11 +107,31 @@ class LSLGQuickLog: NSView {
         startAnimation()
     }
     
-    func startAnimation() {
-        if animating { return }
-        //animating = true
+    func onDisappearTimer(timer:NSTimer) {
+        disappearTimer = nil
+        if logQueue.isEmpty {
+            layer?.sublayerTransform = CATransform3DMakeTranslation(0, bounds.height, 0)
+            return
+        }
         
         let item = logQueue.removeLast()
         textLayer1.string = item.0
+        textLayer1.error  = item.1
+        
+        scheduleDisappear()
+    }
+    
+    func scheduleDisappear() {
+        disappearTimer = NSTimer.scheduledTimerWithTimeInterval(2, target: self, selector: "onDisappearTimer:", userInfo: nil, repeats: false)
+    }
+    
+    func startAnimation() {
+        if disappearTimer != nil { return }
+        scheduleDisappear()
+        
+        let item = logQueue.removeLast()
+        textLayer1.string = item.0
+        textLayer1.error  = item.1
+        layer?.sublayerTransform = CATransform3DMakeTranslation(0, 0, 0)
     }
 }
