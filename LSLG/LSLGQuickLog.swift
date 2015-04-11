@@ -17,8 +17,7 @@ class LSLGQuickLog: NSView {
             didSet {
                 // Re-calc label size.
                 let size = string.sizeWithAttributes( [NSFontAttributeName:font] )
-                //frame.size = NSMakeSize( round(size.width) + 8, round(size.height) + 3 )
-                //frame = NSMakeRect( 0,0, round(size.width) + 8, round(size.height) + 3 )
+                frame.size = NSMakeSize( round(size.width) + 8, round(size.height) + 3 )
                 
                 println("CATextLayerAA didSet: \(string) \(frame.size)")
             }
@@ -30,33 +29,6 @@ class LSLGQuickLog: NSView {
             fontSize        = 10.0
             doubleSided     = false
             alignmentMode   = kCAAlignmentCenter
-        }
-        
-        private override func drawInContext(ctx: CGContext!) {
-            CGContextSetFillColorWithColor( ctx, NSColor.redColor().CGColor )
-            CGContextFillRect( ctx, bounds )
-            CGContextSetShouldSmoothFonts( ctx, true )
-            CGContextTranslateCTM( ctx, 0, -2 )
-            super.drawInContext( ctx )
-        }
-    }
-    
-    private class CALayerAA:CALayer {
-        
-        var font:NSFont!
-        var string:AnyObject! {
-            didSet {
-                // Re-calc label size.
-                let size = string.sizeWithAttributes( [NSFontAttributeName:font] )
-                //frame.size = NSMakeSize( round(size.width) + 8, round(size.height) + 3 )
-                //frame = NSMakeRect( 0,0, round(size.width) + 8, round(size.height) + 3 )
-                
-                println("CATextLayerAA didSet: \(string) \(frame.size)")
-            }
-        }
-        
-        func prepare() {
-            font = NSFont(name: "Verdana", size: 10)
         }
         
         private override func drawInContext(ctx: CGContext!) {
@@ -97,14 +69,6 @@ class LSLGQuickLog: NSView {
         textLayer2.delegate = self
         layer?.addSublayer( textLayer1 )
         layer?.addSublayer( textLayer2 )
-        
-        textLayer1.frame = bounds
-        
-        textLayer3 = CALayerAA()
-        textLayer3.delegate = self
-        textLayer3.frame = NSMakeRect( 40,40,30,20 )
-        textLayer3.backgroundColor = NSColor.yellowColor().CGColor
-        layer?.addSublayer( textLayer3 )
     }
     
     override func actionForLayer(layer: CALayer!, forKey event: String!) -> CAAction! {
@@ -130,11 +94,9 @@ class LSLGQuickLog: NSView {
     
     func startAnimation() {
         if animating { return }
-        animating = true
+        //animating = true
         
         let item = logQueue.removeLast()
         textLayer1.string = item.0
-        textLayer1.frame = NSMakeRect( 10, 10, 10, 10 )
-        textLayer3.frame = NSMakeRect( 60, 60, 20, 20 )
     }
 }
