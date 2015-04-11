@@ -10,6 +10,9 @@ import Cocoa
 
 class LSLGQuickLog: NSView {
     
+    private class NoopAction:CAAction {
+        @objc private func runActionForKey(event: String!, object anObject: AnyObject!, arguments dict: [NSObject : AnyObject]!) {}
+    }
     
     private class CATextLayerAA:CATextLayer {
         
@@ -18,8 +21,6 @@ class LSLGQuickLog: NSView {
                 // Re-calc label size.
                 let size = string.sizeWithAttributes( [NSFontAttributeName:font] )
                 frame.size = NSMakeSize( round(size.width) + 8, round(size.height) + 2 )
-                
-                println("CATextLayerAA didSet: \(string) \(frame.size)")
             }
         }
         
@@ -60,6 +61,7 @@ class LSLGQuickLog: NSView {
     private weak var backLayer:CATextLayer?
     
     private var disappearTimer:NSTimer?
+    private var noopAction:NoopAction = NoopAction()
     
     override var flipped:Bool { return true }
     
@@ -87,6 +89,9 @@ class LSLGQuickLog: NSView {
     }
     
     override func actionForLayer(layer: CALayer!, forKey event: String!) -> CAAction! {
+        if event == "contents" || event == "foregroundColor" {
+            return noopAction
+        }
         return nil
     }
     
