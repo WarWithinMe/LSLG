@@ -36,6 +36,7 @@ class LSLGLogView: NSScrollView {
         hasVerticalScroller   = true
         autoresizingMask      = .ViewWidthSizable | .ViewHeightSizable
         drawsBackground       = false
+        verticalScrollElasticity = .None
         
         textView = NSTextView( frame:NSMakeRect(0, 0, contentSize.width, contentSize.height) )
         
@@ -51,6 +52,8 @@ class LSLGLogView: NSScrollView {
         documentView = textView
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector:"updateContent:", name:LSLGWindowLogUpdate, object:nil)
+        
+        // TODO : Add auto scrolling
     }
     
     private var textView:NSTextView!
