@@ -41,8 +41,9 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         
         NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) )
         
-        (window as! LSLGWindow).quickLog( desc, isError )
-        if isError && !desc.isEmpty { }
+        if !desc.isEmpty {
+            (window as! LSLGWindow).quickLog( desc, isError )
+        }
         
         if logSepTimer == nil { setLogTimer(OldLogMarkerAddDelay) }
     }

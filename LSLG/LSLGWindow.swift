@@ -69,6 +69,12 @@ class LSLGWindow: NSWindow {
         contentView.addSubview( LSLGWCOnTopBtn  (x:22, y:frame.height-6) )
         contentView.addSubview( LSLGWCOpacityBtn(x:38, y:frame.height-6) )
         
+        
+        // Quick Log
+        quickLogView = LSLGQuickLog( frame:NSMakeRect(10,0,contentView.bounds.width-10,30) )
+        contentView.addSubview( quickLogView )
+        
+        
         // Render controls
         renderControl = LSLGRenderControl( x:frame.width - 10, y:10 )
         contentView.addSubview( renderControl )
