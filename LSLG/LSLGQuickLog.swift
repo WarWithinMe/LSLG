@@ -40,6 +40,7 @@ class LSLGQuickLog: NSView {
             fontSize      = 10.0
             doubleSided   = false
             alignmentMode = kCAAlignmentCenter
+            string        = " " // This sets the initial frame to the layer.
         }
         
         private override func drawInContext(ctx: CGContext!) {
@@ -57,10 +58,9 @@ class LSLGQuickLog: NSView {
     private var textLayer2:CATextLayerAA
     private var logQueue:[(String,Bool)] = []
     
-    private weak var frontLayer:CATextLayer?
-    private weak var backLayer:CATextLayer?
+    private var animating:Bool = false
     
-    private var disappearTimer:NSTimer?
+    private var nextLogTimer:NSTimer?
     private var noopAction:NoopAction = NoopAction()
     
     override var flipped:Bool { return true }
@@ -71,7 +71,7 @@ class LSLGQuickLog: NSView {
         
         textLayer1.prepare()
         textLayer2.prepare()
-        
+       
         super.init(frame:frame)
         
         layer = CALayer()
@@ -85,7 +85,14 @@ class LSLGQuickLog: NSView {
         l.addSublayer( textLayer1 )
         l.addSublayer( textLayer2 )
         
-        l.sublayerTransform = CATransform3DMakeTranslation(0, bounds.height, 0)
+        // l.sublayerTransform = CATransform3DMakeTranslation(0, bounds.height, 0)
+        translateSublayer( bounds.height )
+    }
+    
+    private func translateSublayer( y:CGFloat ) {
+        var i = CATransform3DIdentity
+        i.m34 = -1 / 400
+        layer!.sublayerTransform = CATransform3DTranslate(i, 0, y, 0)
     }
     
     override func actionForLayer(layer: CALayer!, forKey event: String!) -> CAAction! {
@@ -104,39 +111,98 @@ class LSLGQuickLog: NSView {
         if let w = window {
             textLayer1.contentsScale = w.backingScaleFactor
             textLayer2.contentsScale = w.backingScaleFactor
+        } else if let t = nextLogTimer {
+            // Fire the timer when the view is moved out of the window
+            t.fire()
         }
     }
     
     func scheduleLog(log:String, _ isError:Bool) {
         logQueue.insert( (log,isError), atIndex: 0 )
-        startAnimation()
+        showLog()
     }
     
-    func onDisappearTimer(timer:NSTimer) {
-        disappearTimer = nil
-        if logQueue.isEmpty {
-            layer?.sublayerTransform = CATransform3DMakeTranslation(0, bounds.height, 0)
-            return
+    private func flipAnimation( flipToVisible:Bool )-> CAAnimation {
+        
+        let duration = 0.3
+        var ani1 = CABasicAnimation(keyPath: "transform.rotation.x")
+        ani1.fromValue = NSNumber(double: flipToVisible ? M_PI : 0)
+        ani1.toValue   = NSNumber(double: flipToVisible ? 0 : -M_PI)
+        
+        var ani2 = CABasicAnimation(keyPath: "transform.scale")
+        ani2.fromValue = NSNumber(double:1)
+        ani2.toValue   = NSNumber(double:0.95)
+        ani2.duration  = duration / 2
+        ani2.autoreverses = true
+        
+        var flip = CAAnimationGroup()
+        flip.duration = duration
+        flip.animations = [ani1,ani2]
+        flip.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
+        flip.fillMode = kCAFillModeBoth
+        flip.removedOnCompletion = false
+        return flip
+    }
+    
+    private func showLog() {
+        
+        // Show next log or disappear after 2 sec.
+        // The timer is used to indicate if we are showing a log
+        // If the timer is non-nil, it means there's a log showing.
+        if nextLogTimer != nil { return }
+        
+        nextLogTimer = NSTimer.scheduledTimerWithTimeInterval(2.5, target: self, selector: "nextLog:", userInfo: nil, repeats: false)
+        
+        // Grab an item
+        let item = logQueue.removeLast()
+        
+        // If frontLayer is being use, we flip to backLayer.
+        if !animating {
+            animating = true
+            
+            textLayer1.string = item.0
+            textLayer1.error  = item.1
+            
+            CATransaction.begin()
+                CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+                textLayer1.transform = CATransform3DMakeRotation( 0, 1, 1, 0 )
+                textLayer2.transform = CATransform3DMakeRotation( CGFloat(M_PI), 1, 0, 0 )
+            CATransaction.commit()
+            
+        } else {
+            
+            textLayer1.addAnimation( flipAnimation(false), forKey: "FLIP" )
+            textLayer2.addAnimation( flipAnimation(true),  forKey: "FLIP" )
+            
+            var tmp = textLayer2
+            textLayer2 = textLayer1
+            textLayer1 = tmp
+            
+            textLayer1.string  = item.0
+            textLayer1.error   = item.1
         }
         
-        let item = logQueue.removeLast()
-        textLayer1.string = item.0
-        textLayer1.error  = item.1
-        
-        scheduleDisappear()
+        // Show the layers
+        //layer?.sublayerTransform = CATransform3DMakeTranslation(0, 0, 0)
+        translateSublayer( 0 )
     }
     
-    func scheduleDisappear() {
-        disappearTimer = NSTimer.scheduledTimerWithTimeInterval(2, target: self, selector: "onDisappearTimer:", userInfo: nil, repeats: false)
+    // If a functions is mean to be call by selector.
+    // It must be public
+    func nextLog(timer:NSTimer) {
+        nextLogTimer = nil
+        if logQueue.isEmpty {
+            //layer!.sublayerTransform = CATransform3DMakeTranslation(0, bounds.height, 0)
+            CATransaction.begin()
+            translateSublayer( bounds.height )
+            CATransaction.setCompletionBlock(){ self.animating = false }
+            CATransaction.commit()
+        } else {
+            self.showLog()
+        }
     }
     
-    func startAnimation() {
-        if disappearTimer != nil { return }
-        scheduleDisappear()
-        
-        let item = logQueue.removeLast()
-        textLayer1.string = item.0
-        textLayer1.error  = item.1
-        layer?.sublayerTransform = CATransform3DMakeTranslation(0, 0, 0)
+    deinit {
+        println("quicklog deinit")
     }
 }
