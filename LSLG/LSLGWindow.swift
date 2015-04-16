@@ -20,7 +20,7 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     init() {
         let sf = NSScreen.mainScreen()!.frame
         super.init(
-            contentRect : NSMakeRect( sf.width/2-150, sf.height/2-150, 300, 300)
+            contentRect : NSMakeRect( sf.width/2-200, sf.height/2-200, 400, 400 )
           , styleMask   : NSResizableWindowMask
           , backing     : .Buffered
           , defer       : false
@@ -165,4 +165,6 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     }
     
     func onDropFolder(path:String) { (windowController() as! LSLGWindowController).monitorFolder(path) }
+    
+    func showPreference() {}
 }

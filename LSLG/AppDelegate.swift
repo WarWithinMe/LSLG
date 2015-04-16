@@ -18,9 +18,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         LSLGWindowController()
     }
     
+    @IBAction func showPreference(sender: AnyObject) { (NSApplication.sharedApplication().keyWindow as? LSLGWindow)?.showPreference() }
+    @IBAction func newWindow(sender: AnyObject)   { LSLGWindowController() }
+    @IBAction func closeWindow(sender: AnyObject) { NSApplication.sharedApplication().keyWindow?.close() }
+    
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
     }
-    
 }
 

@@ -26,7 +26,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     init() {
         super.init(window:nil)
         
-        windowFrameAutosaveName = "LSLGWindow"
+        windowFrameAutosaveName = "LSLGWindow\(WindowControllerArray.count)"
         
         var w = LSLGWindow()
         w.delegate = self
