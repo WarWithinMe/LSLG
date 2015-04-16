@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class LSLGWindow: NSWindow {
+class LSLGWindow: NSWindow, NSDraggingDestination {
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var canBecomeKeyWindow:Bool { return true; }
@@ -40,8 +40,7 @@ class LSLGWindow: NSWindow {
         layer.backgroundColor = NSColor(calibratedWhite:0.076, alpha:1.0).CGColor
         layer.borderColor     = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
         layer.cornerRadius    = 5.0
-        layer.borderWidth     = 1.0
-        layer.borderWidth = 1.0 / backingScaleFactor
+        layer.borderWidth     = 1.0 / backingScaleFactor
         
         // Gradient BG
         var gradientLayer = CAGradientLayer()
@@ -78,6 +77,10 @@ class LSLGWindow: NSWindow {
         // Render controls
         renderControl = LSLGRenderControl( x:frame.width - 10, y:10 )
         contentView.addSubview( renderControl )
+        
+        
+        // Register DnD
+        registerForDraggedTypes([NSFilenamesPboardType])
     }
     
     func setContent(view:NSView, fillWindow:Bool = true) {
@@ -102,4 +105,64 @@ class LSLGWindow: NSWindow {
     }
     
     func quickLog(desc:String, _ isError:Bool) { quickLogView.scheduleLog( desc, isError ) }
+    
+    private var dndHighlight:CALayer?
+    private var draggingIn:Bool = false {
+        didSet {
+            var layer = contentView.layer!!
+            if draggingIn {
+                if dndHighlight == nil {
+                    var dh = CALayer()
+                    dh.frame = contentView.bounds
+                    dh.backgroundColor = NSColor(red:0.144, green:0.507, blue:1, alpha:0.1).CGColor
+                    dndHighlight = dh
+                    layer.addSublayer( dh )
+                    layer.borderColor = NSColor(red:0.144, green:0.507, blue:1, alpha:1).CGColor
+                    layer.borderWidth = 2
+                }
+            } else {
+                layer.borderColor = NSColor(calibratedWhite:0.05, alpha:1.0).CGColor
+                layer.borderWidth = 1.0 / backingScaleFactor
+                dndHighlight?.removeFromSuperlayer()
+                dndHighlight = nil
+            }
+        }
+    }
+    
+    func draggingEnded(sender: NSDraggingInfo?) { self.draggingIn = false }
+    func draggingEntered(sender: NSDraggingInfo) -> NSDragOperation {
+        var pb = sender.draggingPasteboard()
+        if let pl:Array = pb.propertyListForType( NSFilenamesPboardType ) as? [AnyObject] {
+            println("draggingEntered, \(pl)")
+            var fm = NSFileManager.defaultManager()
+            for path in pl {
+                var exist = ObjCBool(false)
+                fm.fileExistsAtPath(path as! String, isDirectory: &exist)
+                if exist.boolValue {
+                    draggingIn = true
+                    return .Link
+                }
+            }
+        }
+        return .None
+    }
+    
+    func performDragOperation(sender: NSDraggingInfo) -> Bool {
+        var pb = sender.draggingPasteboard()
+        if let pl:Array = pb.propertyListForType( NSFilenamesPboardType ) as? [AnyObject] {
+            println("draggingEntered, \(pl)")
+            var fm = NSFileManager.defaultManager()
+            for path in pl {
+                var exist = ObjCBool(false)
+                fm.fileExistsAtPath(path as! String, isDirectory: &exist)
+                if exist.boolValue {
+                    onDropFolder( path as! String )
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    func onDropFolder(path:String) { (windowController() as! LSLGWindowController).monitorFolder(path) }
 }

@@ -68,6 +68,12 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
     
+    /* Watch changes in folder */
+    func monitorFolder(path:String) {
+        
+    }
+    
+    
     /* Tear Down */
     func windowWillClose(notification: NSNotification) {
         if notification.object?.windowController() as! LSLGWindowController == self {
