@@ -15,7 +15,7 @@ class LSLGLogView: NSScrollView {
     override init(frame frameRect: NSRect) {
         let font  = NSFont(name: "Verdana", size: 12)!
         var param = NSMutableParagraphStyle()
-        param.paragraphSpacing = 4.0
+        param.paragraphSpacing = 2.0
         param.lineSpacing      = 1.0
         
         normalTextAttr = [
@@ -49,11 +49,13 @@ class LSLGLogView: NSScrollView {
         textView.textContainer?.containerSize = NSMakeSize( contentSize.width, .max )
         textView.textContainer?.widthTracksTextView = true
         
+        textView.selectedTextAttributes = [
+            NSBackgroundColorAttributeName : NSColor(calibratedRed: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        ]
+        
         documentView = textView
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector:"updateContent:", name:LSLGWindowLogUpdate, object:nil)
-        
-        // TODO : Add auto scrolling
     }
     
     private var textView:NSTextView!
@@ -77,6 +79,9 @@ class LSLGLogView: NSScrollView {
             }
         }
         
+        // See if we need to autoscroll the textView
+        let toBottomPx = CGFloat(1-verticalScroller!.floatValue) * (textView.frame.height - documentVisibleRect.height)
+        
         let logs = (wc! as! LSLGWindowController).logs
         var formater = NSDateFormatter()
         formater.dateFormat = "[HH:mm:ss]"
@@ -85,17 +90,24 @@ class LSLGLogView: NSScrollView {
             let item = logs[displayedLogCount]
             let ts   = textView.textStorage!
             
+            if displayedLogCount > 0 {
+                ts.appendAttributedString(NSAttributedString(string: "\n"))
+            }
+            
             if !item.log.isEmpty {
                 ts.appendAttributedString( NSAttributedString(
                     string: "\(formater.stringFromDate(item.time)) \(item.log)"
                   , attributes: item.isError ? errorTextAttr : normalTextAttr
                 ))
             }
-            ts.appendAttributedString(NSAttributedString(string: "\n"))
             ++displayedLogCount
         }
+        
+        if toBottomPx < 18 {
+            textView.scrollToEndOfDocument(nil)
+        }
     }
-
+    
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
