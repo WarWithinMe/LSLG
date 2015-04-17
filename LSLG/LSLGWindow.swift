@@ -10,6 +10,10 @@ import Cocoa
 
 class LSLGWindow: NSWindow, NSDraggingDestination {
     
+    private class UndraggableView : NSView {
+        override var mouseDownCanMoveWindow:Bool { return false }
+    }
+    
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var canBecomeKeyWindow:Bool { return true; }
     
@@ -53,15 +57,26 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         ]
         layer.addSublayer( gradientLayer )
         
+        
+        // A view to prevent dragging the window, making the titlebar is only
+        // element that can drag the window
+        var maskView = UndraggableView( frame:contentView.bounds )
+        maskView.frame.size.height = maskView.frame.height - 25.0
+        maskView.autoresizingMask = .ViewMinYMargin | .ViewWidthSizable
+        contentView.addSubview( maskView )
+        
+        
         // Real content view, this is the content view wrapper
-        realContentView = NSView( frame:contentView.frame )
+        realContentView = NSView( frame:contentView.bounds )
         realContentView.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
         contentView.addSubview( realContentView )
+        
         
         // Title, which makes the window draggable
         self.contentView.addSubview(
             LSLGTitle(frame: NSMakeRect(0, contentView.frame.height-25, contentView.frame.width, 25))
         )
+        
         
         // Title controls
         contentView.addSubview( LSLGWCCloseBtn  (x:6,  y:frame.height-6) )
