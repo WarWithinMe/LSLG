@@ -16,12 +16,12 @@ class LSLGRenderControl:LSLGSegmentedControl {
         super.init(x: x, y: y)
         
         appendItems([
-            LSLGRCItem(icon:LSLGIcon(type: .Setting), id:"Setting")
-          , LSLGRCItem(icon:LSLGIcon(type: .Log),     id:"Log")
-          , LSLGRCItem(icon:LSLGIcon(type: .Suzanne), id:"Model")
-          , LSLGRCItem(content:"Fragment", id:"Fragment")
-          , LSLGRCItem(content:"Geometry", id:"Geometry")
-          , LSLGRCItem(content:"Vertex",   id:"Vertex")
+            LSLGRCItem(icon:LSLGIcon.Setting,  id:"Setting")
+          , LSLGRCItem(icon:LSLGIcon.Log,      id:"Log")
+          , LSLGRCItem(icon:LSLGIcon.Suzanne,  id:"Model")
+          , LSLGRCItem(icon:LSLGIcon.Fragment, content:"Fragment")
+          , LSLGRCItem(icon:LSLGIcon.Geometry, content:"Geometry")
+          , LSLGRCItem(icon:LSLGIcon.Vertex,   content:"Vertex")
         ])
     }
     

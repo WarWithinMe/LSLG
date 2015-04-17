@@ -20,18 +20,18 @@ class LSLGSegmentedControl: NSView {
         var trackingRect:NSTrackingRectTag = -1
         
         var id:String="";
-        var width:CGFloat  = 24.0
+        var width:CGFloat = 0.0
         
         
-        var icon:LSLGIcon?         { didSet { tryUpdateParent() } }
-        var content:String = ""    { didSet { tryUpdateParent() } }
+        var icon:LSLGIcon?         { didSet { calcWidth() } }
+        var content:String = ""    { didSet { calcWidth() } }
         var visible:Bool   = true  { didSet { tryUpdateParent() } }
         var selected:Bool  = false { didSet { tryUpdateParent() } }
         
         init(content:String, id:String="") {
             super.init()
             
-            self.id = id
+            self.id = id.isEmpty ? content : id
             self.content = content
             self.calcWidth()
         }
@@ -41,15 +41,35 @@ class LSLGSegmentedControl: NSView {
             
             self.id = id
             self.icon = icon
+            self.calcWidth()
+        }
+        
+        init(icon:LSLGIcon, content:String) {
+            super.init()
+            
+            self.id = content
+            self.icon = icon
+            self.content = content
+            self.calcWidth()
         }
         
         
         func toggleSelected()  { selected = !selected }
-        func tryUpdateParent() { if let p = parent { p.updateFrame() } }
+        func tryUpdateParent() { parent?.updateFrame() }
         
         func calcWidth() {
-            // 4pt padding for both left and right
-            width = round(self.content.sizeWithAttributes( [NSFontAttributeName:NSFont(name: "Verdana", size:10.0 )!] ).width) + 8
+            if icon != nil {
+                width = icon!.width
+                if !content.isEmpty {
+                    width += 2.0
+                }
+            } else {
+                width = 0
+            }
+            
+            if !content.isEmpty {
+                width += round(content.sizeWithAttributes( [NSFontAttributeName:NSFont(name:"Verdana",size:10.0)!] ).width)
+            }
             parent?.updateFrame()
         }
         
@@ -173,8 +193,8 @@ class LSLGSegmentedControl: NSView {
             var item = items[i]
             if !item.visible { continue }
             
-            rect.size.width = item.width
-            if i == range.0 || i == range.1 { rect.size.width += 4 }
+            rect.size.width = item.width + 8
+            if i == range.0 || i == range.1 { rect.size.width += 2 }
             
             item.trackingRect = addTrackingRect( rect, owner: self, userData: nil, assumeInside: false )
             rect.origin.x += rect.size.width
@@ -223,7 +243,7 @@ class LSLGSegmentedControl: NSView {
         var normalText:[NSObject:AnyObject]   = [ kCTFontAttributeName:font , kCTForegroundColorAttributeName:normalColor ]
         var selectedText:[NSObject:AnyObject] = [ kCTFontAttributeName:font , kCTForegroundColorAttributeName:selectedColor ]
         
-        var x:CGFloat     = 8
+        var x:CGFloat     = 2.0
         let y:CGFloat     = (bounds.height-NSLayoutManager().defaultLineHeightForFont(font))/2 + 2
         let iconY:CGFloat = (bounds.height - 16)/2 + 16
         
@@ -243,10 +263,12 @@ class LSLGSegmentedControl: NSView {
             
             if !firstItem {
                 // Draw seperator
-                sepRect.origin.x = x-4
-                CGContextSetGrayFillColor(ctx, 0.329, 0.9)
+                sepRect.origin.x = x
+                CGContextSetGrayFillColor( ctx, 0.329, 0.9 )
                 CGContextFillRect( ctx, sepRect )
             }
+            
+            x += 4.0 // Padding Left
             
             if let icon = item.icon {
                 CGContextTranslateCTM( ctx, x, iconY )
@@ -255,15 +277,17 @@ class LSLGSegmentedControl: NSView {
                 CGContextEOFillPath( ctx )
                 CGContextBeginPath( ctx )
                 CGContextTranslateCTM( ctx, -x, -iconY )
-            } else {
-                CGContextSetTextPosition(ctx, x, y)
+            }
+            
+            if !item.content.isEmpty {
+                CGContextSetTextPosition(ctx, item.icon != nil ? x + 2.0 + item.icon!.width : x, y)
                 CTLineDraw(CTLineCreateWithAttributedString( NSAttributedString(
                     string     : item.content
                   , attributes : item.selected ? selectedText : normalText
                 )) , ctx)
             }
             
-            x += item.width
+            x += item.width + 4.0 // Padding right
             firstItem = false
         }
     }
@@ -278,24 +302,24 @@ class LSLGSegmentedControl: NSView {
         
         let visibleRange = visibleItemRange()
         
-        var x:CGFloat      = 4
-        var margin:CGFloat = 0
+        var x:CGFloat      = 2
+        var margin:CGFloat = 8
         
         for var i = visibleRange.0; i >= visibleRange.1; --i {
             var item = items[i]
             if item.trackingRect != theEvent.trackingNumber {
-                x += item.width
+                x += item.width + 8
                 continue
             }
             
             // The first visible item has 4px left margin
             if i == visibleRange.0 {
-                x -= 4
-                margin += 4
+                x -= 2
+                margin += 2
             }
             
             // The last visible item has 4px right margin
-            if i == visibleRange.1 { margin += 4 }
+            if i == visibleRange.1 { margin += 6 }
         
             CATransaction.begin()
             CATransaction.setValue( kCFBooleanTrue, forKeyPath: kCATransactionDisableActions )
