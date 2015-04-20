@@ -73,6 +73,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         
     }
     
+    /* Shader */
+    func fragmentShaders()-> [String] { return ["Frag1", "Frag23423", "Frag333", "DefaultFra", "Frag55555fkfsakfj"] }
+    func selectedFragmentShader()-> String { return "Default" }
+    
     
     /* Tear Down */
     func windowWillClose(notification: NSNotification) {

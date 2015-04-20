@@ -15,41 +15,48 @@ class LSLGSegmentedControl: NSView {
     
     class LSLGRCItem:NSObject {
         
+        private var __desc:String
+        private var __id:String
+        private var __width:CGFloat = 0.0
+        
         weak var parent:LSLGSegmentedControl?
         
         var trackingRect:NSTrackingRectTag = -1
+        var tooltipRect:NSToolTipTag       = -1
         
-        var id:String="";
-        var width:CGFloat = 0.0
+        var icon:LSLGIcon? { didSet { calcWidth() } }
+        var content:String { didSet { calcWidth() } }
+        var desc:String    { return __desc  }
+        var width:CGFloat  { return __width }
+        var id:String      { return __id    }
+        var visible:Bool  = true  { didSet { tryUpdateParent() } }
+        var selected:Bool = false { didSet { tryUpdateParent() } }
         
-        
-        var icon:LSLGIcon?         { didSet { calcWidth() } }
-        var content:String = ""    { didSet { calcWidth() } }
-        var visible:Bool   = true  { didSet { tryUpdateParent() } }
-        var selected:Bool  = false { didSet { tryUpdateParent() } }
+        convenience init(icon:LSLGIcon, content:String, desc:String="") {
+            self.init(icon:icon, content:content, id:content, desc:desc)
+        }
+        convenience init(icon:LSLGIcon, id:String, desc:String="") {
+            self.init(icon:icon, content:"", id:id, desc:desc)
+        }
         
         init(content:String, id:String="") {
+            
+            self.__id    = id.isEmpty ? content : id
+            self.__desc  = ""
+            self.content = content
+            
             super.init()
             
-            self.id = id.isEmpty ? content : id
-            self.content = content
             self.calcWidth()
         }
         
-        init(icon:LSLGIcon, id:String="") {
-            super.init()
-            
-            self.id = id
-            self.icon = icon
-            self.calcWidth()
-        }
-        
-        init(icon:LSLGIcon, content:String) {
-            super.init()
-            
-            self.id = content
-            self.icon = icon
+        init(icon:LSLGIcon, content:String, id:String, desc:String) {
+            self.__id    = id
+            self.__desc  = desc
+            self.icon    = icon
             self.content = content
+            
+            super.init()
             self.calcWidth()
         }
         
@@ -59,20 +66,26 @@ class LSLGSegmentedControl: NSView {
         
         func calcWidth() {
             if icon != nil {
-                width = icon!.width
+                __width = icon!.width
                 if !content.isEmpty {
-                    width += 2.0
+                    __width += 2.0
                 }
             } else {
-                width = 0
+                __width = 0
             }
             
             if !content.isEmpty {
-                width += round(content.sizeWithAttributes( [NSFontAttributeName:NSFont(name:"Verdana",size:10.0)!] ).width)
+                __width += round(content.sizeWithAttributes( [NSFontAttributeName:NSFont(name:"Verdana",size:10.0)!] ).width)
             }
             parent?.updateFrame()
         }
         
+        override var description:String {
+            get {
+                println("\(__desc)")
+                return __desc
+            }
+        }
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -178,11 +191,36 @@ class LSLGSegmentedControl: NSView {
         }
     }
     
+    func itemRect(itemId:String) -> NSRect? {
+        var b = bounds
+        
+        let range = visibleItemRange()
+        
+        for i in lazy( range.1 ... range.0 ).reverse() {
+            var item = items[i]
+            if !item.visible { continue }
+            
+            b.size.width = item.width + 8
+            if i == range.0 || i == range.1 { b.size.width += 2 }
+            
+            if item.id == itemId {
+                return b
+            }
+            
+            b.origin.x += item.width + 8
+        }
+        return nil
+    }
+    
     func updateFrame() {
         for item in items {
             if item.trackingRect != -1 {
                 removeTrackingRect( item.trackingRect )
                 item.trackingRect = -1
+            }
+            if item.tooltipRect != -1 {
+                removeToolTip( item.tooltipRect )
+                item.tooltipRect = -1
             }
         }
         
@@ -197,6 +235,7 @@ class LSLGSegmentedControl: NSView {
             if i == range.0 || i == range.1 { rect.size.width += 2 }
             
             item.trackingRect = addTrackingRect( rect, owner: self, userData: nil, assumeInside: false )
+            item.tooltipRect  = addToolTipRect( rect, owner: item, userData: nil )
             rect.origin.x += rect.size.width
         }
         
