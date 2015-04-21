@@ -15,10 +15,6 @@ class LSLGSegmentedControl: NSView {
     
     class LSLGRCItem:NSObject {
         
-        private var __desc:String
-        private var __id:String
-        private var __width:CGFloat = 0.0
-        
         weak var parent:LSLGSegmentedControl?
         
         var trackingRect:NSTrackingRectTag = -1
@@ -26,9 +22,9 @@ class LSLGSegmentedControl: NSView {
         
         var icon:LSLGIcon? { didSet { calcWidth() } }
         var content:String { didSet { calcWidth() } }
-        var desc:String    { return __desc  }
-        var width:CGFloat  { return __width }
-        var id:String      { return __id    }
+        private(set) var width:CGFloat = 0.0
+        private(set) var desc:String
+        private(set) var id:String
         var visible:Bool  = true  { didSet { tryUpdateParent() } }
         var selected:Bool = false { didSet { tryUpdateParent() } }
         
@@ -41,8 +37,8 @@ class LSLGSegmentedControl: NSView {
         
         init(content:String, id:String="") {
             
-            self.__id    = id.isEmpty ? content : id
-            self.__desc  = ""
+            self.id      = id.isEmpty ? content : id
+            self.desc    = ""
             self.content = content
             
             super.init()
@@ -51,8 +47,8 @@ class LSLGSegmentedControl: NSView {
         }
         
         init(icon:LSLGIcon, content:String, id:String, desc:String) {
-            self.__id    = id
-            self.__desc  = desc
+            self.id      = id
+            self.desc    = desc
             self.icon    = icon
             self.content = content
             
@@ -66,21 +62,21 @@ class LSLGSegmentedControl: NSView {
         
         func calcWidth() {
             if icon != nil {
-                __width = icon!.width
+                width = icon!.width
                 if !content.isEmpty {
-                    __width += 2.0
+                    width += 2.0
                 }
             } else {
-                __width = 0
+                width = 0
             }
             
             if !content.isEmpty {
-                __width += round(content.sizeWithAttributes( [NSFontAttributeName:NSFont(name:"Verdana",size:10.0)!] ).width)
+                width += round(content.sizeWithAttributes( [NSFontAttributeName:NSFont(name:"Verdana",size:10.0)!] ).width)
             }
             parent?.updateFrame()
         }
         
-        override var description:String { return __desc }
+        override var description:String { return desc }
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
