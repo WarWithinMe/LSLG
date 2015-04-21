@@ -26,8 +26,11 @@ class LSLGIcon {
     
     init(type:LSLGIconType) { self.type = type }
     init(type:LSLGIconType, width:CGFloat) { self.type = type; self.width = width; }
+    init(type:LSLGIconType, offsetY:CGFloat) { self.type = type; self.imageOffsetY = offsetY; }
     
     private(set) var width:CGFloat = 16.0
+    
+    private var imageOffsetY:CGFloat = 1 // This value is only used to draw the NSImage
     
     lazy var path:CGPathRef = PocketSVG.newPathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
     
@@ -42,8 +45,16 @@ class LSLGIcon {
         strong reference within the closure.
         The closure is released once executed, so does the strong ref. Thus no ref-cycle is created.
     */
-    lazy var image:NSImage = NSImage(size: NSMakeSize( self.width, 16 ), flipped: false) {
-        (rect:NSRect)-> Bool in
+    lazy var image:NSImage = NSImage(size: NSMakeSize( self.width, 16.0 ), flipped: false) {
+        [unowned self] (rect:NSRect)-> Bool in
+        
+        var ctx = NSGraphicsContext.currentContext()!.CGContext
+        CGContextTranslateCTM( ctx, 0, 16.0 - self.imageOffsetY )
+        CGContextAddPath( ctx, self.path )
+        CGContextSetFillColorWithColor( ctx, NSColor.blackColor().CGColor )
+        CGContextEOFillPath( ctx )
+        CGContextBeginPath( ctx )
+        CGContextTranslateCTM( ctx, 0, self.imageOffsetY - 16.0 )
         return true
     }
     

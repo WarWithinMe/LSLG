@@ -12,8 +12,8 @@ private var WindowControllerArray = [LSLGWindowController]()
 private let OldLogMarkerAddDelay:NSTimeInterval = 20
 
 // Notification names
-let LSLGWindowLogUpdate    = "LSLGWindowLogUpdate"
-let LSLGWindowShaderUpdate = "LSLGWindowShaderUpdate"
+let LSLGWindowLogUpdate      = "LSLGWindowLogUpdate"
+let LSLGWindowPipelineChange = "LSLGWindowPipelineChange"
 
 
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
@@ -80,23 +80,31 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     func geometryShs()-> [String] { return ["Geometry1", "Geometry2", "Default", "Geometry3"] }
     func fragmentShs()-> [String] { return ["Frag1", "Frag2", "Frag3", "Default", "Frag4"] }
     func vertexShs()-> [String] { return ["Vertex1", "Vertex2", "Vertex3", "Default", "Vertex4"] }
+    func models()-> [String] { return ["Cube", "Sphere", "Donut", "Suzanne"] }
+    
+    var usingModel:String = "Suzanne" {
+        didSet {
+            println("using new model \(usingModel)")
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"model"]) )
+        }
+    }
     
     var usingFragmentSh:String = "Default" {
         didSet {
             println("using new fragment shader \(usingFragmentSh)")
-            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowShaderUpdate, object: self, userInfo: ["shader":"fragment"]) )
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"fragment"]) )
         }
     }
     var usingGeometrySh:String = "Default" {
         didSet {
             println("using new Geometry shader \(usingGeometrySh)")
-            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowShaderUpdate, object: self, userInfo: ["shader":"geometry"]) )
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"geometry"]) )
         }
     }
     var usingVertexSh:String = "Default" {
         didSet {
             println("using new Vertex shader \(usingVertexSh)")
-            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowShaderUpdate, object: self, userInfo: ["shader":"vertex"]) )
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"vertex"]) )
         }
     }
     
