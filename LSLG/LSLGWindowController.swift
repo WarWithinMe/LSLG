@@ -23,8 +23,19 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     var logs:[LogEntry] = []
     private var logSepTimer:NSTimer?
+    private var folderPath:String = ""
     
-    init() {
+    convenience init() { self.init(savedInfo:nil) }
+    
+    init(savedInfo:[String:String]?) {
+        
+        if let info = savedInfo {
+            usingModel      = info["model"]!
+            usingVertexSh   = info["vertex"]!
+            usingFragmentSh = info["fragment"]!
+            usingGeometrySh = info["geometry"]!
+        }
+        
         super.init(window:nil)
         
         windowFrameAutosaveName = "LSLGWindow\(WindowControllerArray.count)"
@@ -36,6 +47,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         w.createSubviews()
         w.makeKeyAndOrderFront(nil)
         WindowControllerArray.append(self)
+        
+        if let info = savedInfo {
+            monitorFolder( info["path"]! )
+        }
     }
    
     /* Log Related Functions */
@@ -73,7 +88,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     /* Watch changes in folder */
     func monitorFolder(path:String) {
-        
+       folderPath = path
     }
     
     /* Shader */
@@ -115,6 +130,38 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
             WindowControllerArray.removeAtIndex( find(WindowControllerArray, self)! )
             // Remove timer if it's still active.
             if let t = logSepTimer { t.invalidate() }
+        }
+    }
+    
+    /* Window Info */
+    class func persistWindowInfo() {
+        var infos:[[String:String]] = []
+        
+        for c in WindowControllerArray {
+            infos.append( [
+                "path"     : c.folderPath
+              , "model"    : c.usingModel
+              , "vertex"   : c.usingVertexSh
+              , "fragment" : c.usingFragmentSh
+              , "geometry" : c.usingGeometrySh
+            ] )
+        }
+        
+        var def = NSUserDefaults.standardUserDefaults()
+        def.setObject( infos, forKey: "WindowsInfo" )
+        def.synchronize()
+    }
+    
+    class func createWindowOnAppLaunch() {
+        var def = NSUserDefaults.standardUserDefaults()
+        if let infos = def.objectForKey("WindowsInfo") as? [[String:String]] {
+            // Restore windows.
+            for info in infos {
+                LSLGWindowController(savedInfo:info)
+            }
+            
+        } else {
+            LSLGWindowController()
         }
     }
 }
