@@ -23,21 +23,28 @@ enum LSLGIconType:String {
 class LSLGIcon {
     
     private var type:LSLGIconType
-    private var __path:CGPathRef?
-    private var __width:CGFloat = 16.0
     
     init(type:LSLGIconType) { self.type = type }
-    init(type:LSLGIconType, width:CGFloat) { self.type = type; self.__width = width; println("\(__width)") }
+    init(type:LSLGIconType, width:CGFloat) { self.type = type; self.width = width; }
     
-    var width:CGFloat { return __width }
-    var path:CGPathRef {
-        if let p = __path {
-            return p
-        } else {
-            var p = PocketSVG.newPathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
-            __path = p
-            return p
-        }
+    private(set) var width:CGFloat = 16.0
+    
+    lazy var path:CGPathRef = PocketSVG.newPathFromDAttribute( self.type.rawValue ).takeUnretainedValue()
+    
+    /*
+        After reading docs scattered around the web and some testing, I think the
+            `NSImage(size,flipped,block)1
+        is translated to
+            `{ return NSImage(size,flipped,block) }()`
+    
+        It seems to be a closure that will released from memory once it is called.
+        So in the original statement, we can use `self` to reference. The `self` should be a
+        strong reference within the closure.
+        The closure is released once executed, so does the strong ref. Thus no ref-cycle is created.
+    */
+    lazy var image:NSImage = NSImage(size: NSMakeSize( self.width, 16 ), flipped: false) {
+        (rect:NSRect)-> Bool in
+        return true
     }
     
     static let Setting:LSLGIcon  = LSLGIcon(type: .Setting)
