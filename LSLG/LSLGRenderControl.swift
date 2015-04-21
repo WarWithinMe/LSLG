@@ -23,6 +23,8 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
           , LSLGRCItem(icon:LSLGIcon.Geometry, content:"Geometry", desc:"Geometry Shader")
           , LSLGRCItem(icon:LSLGIcon.Vertex,   content:"Vertex", desc:"Vertex Shader")
         ])
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "onShaderUpdate:", name: LSLGWindowShaderUpdate, object: nil)
     }
     
     private var logView:LSLGLogView? = nil
@@ -44,8 +46,9 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
             case "Setting":
                 (window?.windowController() as! LSLGWindowController).appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1, desc:"TestLog\( arc4random_uniform(1000000))")
             
-            case "Fragment":
-                showFragmentMenu()
+            case "Geometry": showGeometryMenu()
+            case "Fragment": showFragmentMenu()
+            case "Vertex"  : showVertexMenu()
             
             default :
                 item.toggleSelected()
@@ -54,35 +57,78 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
     
     private var currentShaderMenu:String = ""
     
+    private func showGeometryMenu() {
+        var c = (window!.windowController() as! LSLGWindowController)
+        showShaderMenu("Geometry", shaders: c.geometryShs(), selectedId: c.usingGeometrySh )
+    }
     private func showFragmentMenu() {
-        let rect = itemRect( "Fragment" )
-        if rect == nil { return }
-        
-        var point = rect!.origin
-        point.y += rect!.size.height
-        
-        var controller = window!.windowController() as! LSLGWindowController
-        
-        showMenu( "Fragment", items:controller.fragmentShaders(), location:point, selectedIndex:3 )
+        var c = (window!.windowController() as! LSLGWindowController)
+        showShaderMenu("Fragment", shaders: c.fragmentShs(), selectedId: c.usingFragmentSh )
+    }
+    private func showVertexMenu() {
+        var c = (window!.windowController() as! LSLGWindowController)
+        showShaderMenu("Vertex", shaders: c.vertexShs(), selectedId: c.usingVertexSh )
     }
     
-    func showMenu( menuId:String, items:[String], location:NSPoint, selectedIndex:Int ) {
-        currentShaderMenu = menuId
+    private func showShaderMenu( shader:String, shaders:[String], selectedId:String ) {
+        let rect = itemRect( shader )
+        if rect == nil { return }
+        
+        var location = rect!.origin
+        location.y += rect!.size.height
+        
+        currentShaderMenu = shader
         
         var menu = NSMenu()
         menu.delegate = self
         menu.autoenablesItems = false
         
-        for i in items {
-            menu.addItemWithTitle(i, action: nil, keyEquivalent: "")
+        var selectedIdx = 0
+        
+        for var i = 0; i < shaders.count; ++i {
+            var sh = shaders[i]
+            menu.addItemWithTitle(sh, action: nil, keyEquivalent: "")
+            if sh == selectedId { selectedIdx = i }
         }
         
-        menu.popUpMenuPositioningItem( menu.itemArray[selectedIndex] as? NSMenuItem, atLocation: location, inView: self )
-        
+        mouseExited(NSEvent())
+        menu.popUpMenuPositioningItem( menu.itemArray[selectedIdx] as? NSMenuItem, atLocation: location, inView: self )
         currentShaderMenu = ""
     }
     
+    func onShaderUpdate(n:NSNotification) {
+        var c = (window!.windowController() as! LSLGWindowController)
+        
+        if (n.object as! LSLGWindowController) != c { return }
+        
+        getItemById("Geometry")!.content = c.usingGeometrySh
+        getItemById("Fragment")!.content = c.usingFragmentSh
+        getItemById("Vertex")!.content   = c.usingVertexSh
+    }
+    
     func menuDidClose(menu: NSMenu) {
-        println("\(menu.highlightedItem!.title)")
+        var c = (window!.windowController() as! LSLGWindowController)
+        var t = menu.highlightedItem!.title
+        switch currentShaderMenu {
+            case "Geometry" : c.usingGeometrySh = t
+            case "Fragment" : c.usingFragmentSh = t
+            case "Vertex"   : c.usingVertexSh   = t
+            default: return
+        }
+    }
+    
+    override func viewDidMoveToWindow() {
+        if let w = window {
+            var c = (w.windowController() as! LSLGWindowController)
+            getItemById("Geometry")!.content = c.usingGeometrySh
+            getItemById("Fragment")!.content = c.usingFragmentSh
+            getItemById("Vertex")!.content   = c.usingVertexSh
+        }
+        
+        super.viewDidMoveToWindow()
+    }
+    
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
 }

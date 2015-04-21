@@ -35,6 +35,9 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         minSize = NSMakeSize(390, 390)
         backgroundColor = NSColor.clearColor()
         opaque = false
+    }
+    
+    func createSubviews() {
         
         var contentView = self.contentView as! NSView
         contentView.wantsLayer = true

@@ -80,12 +80,7 @@ class LSLGSegmentedControl: NSView {
             parent?.updateFrame()
         }
         
-        override var description:String {
-            get {
-                println("\(__desc)")
-                return __desc
-            }
-        }
+        override var description:String { return __desc }
     }
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -161,6 +156,13 @@ class LSLGSegmentedControl: NSView {
         
         items += newItems
         updateFrame()
+    }
+    
+    func getItemById(id:String)->LSLGRCItem? {
+        for item in items {
+            if item.id == id { return item }
+        }
+        return nil
     }
     
     func addItem(aItem:LSLGRCItem, atItex idx:Int = -1 ) {

@@ -11,8 +11,9 @@ import Cocoa
 private var WindowControllerArray = [LSLGWindowController]()
 private let OldLogMarkerAddDelay:NSTimeInterval = 20
 
-
-let LSLGWindowLogUpdate = "LSLGWindowLogUpdate"
+// Notification names
+let LSLGWindowLogUpdate    = "LSLGWindowLogUpdate"
+let LSLGWindowShaderUpdate = "LSLGWindowShaderUpdate"
 
 
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
@@ -30,8 +31,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         
         var w = LSLGWindow()
         w.delegate = self
-        w.makeKeyAndOrderFront(nil)
         window = w
+        
+        w.createSubviews()
+        w.makeKeyAndOrderFront(nil)
         WindowControllerArray.append(self)
     }
    
@@ -74,8 +77,28 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
     /* Shader */
-    func fragmentShaders()-> [String] { return ["Frag1", "Frag23423", "Frag333", "DefaultFra", "Frag55555fkfsakfj"] }
-    func selectedFragmentShader()-> String { return "Default" }
+    func geometryShs()-> [String] { return ["Geometry1", "Geometry2", "Default", "Geometry3"] }
+    func fragmentShs()-> [String] { return ["Frag1", "Frag2", "Frag3", "Default", "Frag4"] }
+    func vertexShs()-> [String] { return ["Vertex1", "Vertex2", "Vertex3", "Default", "Vertex4"] }
+    
+    var usingFragmentSh:String = "Default" {
+        didSet {
+            println("using new fragment shader \(usingFragmentSh)")
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowShaderUpdate, object: self, userInfo: ["shader":"fragment"]) )
+        }
+    }
+    var usingGeometrySh:String = "Default" {
+        didSet {
+            println("using new Geometry shader \(usingGeometrySh)")
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowShaderUpdate, object: self, userInfo: ["shader":"geometry"]) )
+        }
+    }
+    var usingVertexSh:String = "Default" {
+        didSet {
+            println("using new Vertex shader \(usingVertexSh)")
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowShaderUpdate, object: self, userInfo: ["shader":"vertex"]) )
+        }
+    }
     
     
     /* Tear Down */
