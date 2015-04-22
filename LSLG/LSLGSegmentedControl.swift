@@ -345,7 +345,7 @@ class LSLGSegmentedControl: NSView {
         for var i = visibleRange.0; i >= visibleRange.1; --i {
             var item = items[i]
             if item.trackingRect != theEvent.trackingNumber {
-                x += item.width + 8
+                if item.visible { x += item.width + 8 }
                 continue
             }
             
