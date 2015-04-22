@@ -139,6 +139,14 @@ class LSLGSegmentedControl: NSView {
         textLayer.autoresizingMask = .LayerWidthSizable
         textLayer.delegate = self
         layer!.addSublayer( self.textLayer )
+        
+        var cv = NSView(frame: NSZeroRect)
+        cv.hidden = true
+        addSubview(cv)
+        addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "|-0-[cv]", options:.AlignAllLeft, metrics: nil, views: ["cv":cv]
+        ))
+
     }
     
     func appendItems(newItems:[LSLGRCItem]) {
@@ -211,6 +219,12 @@ class LSLGSegmentedControl: NSView {
     }
     
     func updateFrame() {
+        needsDisplay = true
+        needsLayout = true
+        textLayer.setNeedsDisplay()
+    }
+    
+    override func layout() {
         for item in items {
             if item.trackingRect != -1 {
                 removeTrackingRect( item.trackingRect )
@@ -243,9 +257,8 @@ class LSLGSegmentedControl: NSView {
           , rect.origin.x
           , frame.height
         )
-    
-        needsDisplay = true
-        textLayer.setNeedsDisplay()
+        
+        super.layout()
     }
     
     private func visibleItemRange() -> (Int, Int) {
