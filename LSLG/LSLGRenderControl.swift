@@ -135,9 +135,18 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         if targetController != nil && targetController != c { return }
         
         var cc = c!
-        getItemById("Geometry")!.content = cc.usingGeometrySh
-        getItemById("Fragment")!.content = cc.usingFragmentSh
-        getItemById("Vertex")!.content   = cc.usingVertexSh
+        
+        var item = getItemById("Geometry")!
+        item.visible = cc.geometryShs().count > 1
+        item.content = cc.usingGeometrySh
+        
+        item = getItemById("Fragment")!
+        item.visible = cc.fragmentShs().count > 1
+        item.content = cc.usingFragmentSh
+        
+        item = getItemById("Vertex")!
+        item.visible = cc.vertexShs().count > 1
+        item.content = cc.usingVertexSh
         
         var models = cc.models()
         for var i = 0; i < models.count; ++i {
