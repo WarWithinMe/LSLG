@@ -154,7 +154,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     class func createWindowOnAppLaunch() {
         var def = NSUserDefaults.standardUserDefaults()
-        if let infos = def.objectForKey("WindowsInfo") as? [[String:String]] {
+        if let infos = def.objectForKey("WindowsInfo") as? [[String:String]] where infos.count > 0 {
             // Restore windows.
             for info in infos {
                 LSLGWindowController(savedInfo:info)
