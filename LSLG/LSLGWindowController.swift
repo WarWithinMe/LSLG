@@ -15,6 +15,7 @@ private let OldLogMarkerAddDelay:NSTimeInterval = 20
 // Notification names
 let LSLGWindowLogUpdate      = "LSLGWindowLogUpdate"
 let LSLGWindowPipelineChange = "LSLGWindowPipelineChange"
+let LSLGWindowFolderChange   = "LSLGWindowFolderChange"
 
 
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
@@ -87,7 +88,11 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     
     /* Watch changes in folder */
-    private var folderPath:String = ""
+    private(set) var folderPath:String = "" {
+        didSet {
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil) )
+        }
+    }
     private var folderDSrc:dispatch_source_t?
     func monitorFolder(path:String) {
         
@@ -138,9 +143,9 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
 
     private func postWatchFolderLog( path:String, success:Bool ) {
         if success {
-            appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\((path as NSString).lastPathComponent)'" )
+            appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\(path.lastPathComponent)'" )
         } else {
-            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\((path as NSString).lastPathComponent)'" )
+            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
         }
     }
     
@@ -197,6 +202,12 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     /* Tear Down */
     func windowWillClose(notification: NSNotification) {
         if notification.object?.windowController() as! LSLGWindowController == self {
+            
+            if WindowControllerArray.count == 1 {
+                // Store last window's info
+                LSLGWindowController.persistWindowInfo()
+            }
+            
             WindowControllerArray.removeAtIndex( find(WindowControllerArray, self)! )
             // Remove timer if it's still active.
             if let t = logSepTimer { t.invalidate() }
@@ -205,6 +216,9 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     /* Window Info */
     class func persistWindowInfo() {
+        // At least persist one window info.
+        if WindowControllerArray.count == 0 { return }
+        
         var infos:[[String:String]] = []
         
         for c in WindowControllerArray {

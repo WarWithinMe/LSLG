@@ -180,10 +180,28 @@ class LSLGTitle: NSView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override var mouseDownCanMoveWindow:Bool { return true }
-
+    
     override init(frame:NSRect) {
         super.init(frame:frame)
         autoresizingMask = .ViewWidthSizable | .ViewMinYMargin
+        
+        var sub = NSTextView(frame: NSMakeRect(0, -2, frame.width, frame.height))
+        sub.autoresizingMask = .ViewWidthSizable | .ViewHeightSizable
+        sub.drawsBackground = false
+        sub.textColor  = NSColor(white:0.67,alpha:1)
+        sub.editable   = false
+        sub.selectable = false
+        sub.alignment  = NSTextAlignment.CenterTextAlignment
+        addSubview( sub )
+        
+        
+        NSNotificationCenter.defaultCenter().addObserver( self, selector: "onWorkingFolderChanged:", name: LSLGWindowFolderChange, object: nil )
+    }
+    
+    override func viewDidMoveToWindow() {
+        if let w = window {
+            (subviews[0] as! NSTextView).string = (w.windowController() as! LSLGWindowController).folderPath.lastPathComponent
+        }
     }
 
     override func drawRect(dirtyRect: NSRect) {
@@ -204,5 +222,17 @@ class LSLGTitle: NSView {
         rectPath.fill()
         CGContextEndTransparencyLayer(context)
         CGContextRestoreGState(context)
+        
+        super.drawRect(dirtyRect)
+    }
+    
+    func onWorkingFolderChanged(n:NSNotification) {
+        if let c = (window?.windowController() as? LSLGWindowController) where c == (n.object as! LSLGWindowController) {
+           viewDidMoveToWindow()
+        }
+    }
+    
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
 }
