@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 WarWithinMe. All rights reserved.
 //
 
+import Darwin
 import Cocoa
 
 private var WindowControllerArray = [LSLGWindowController]()
@@ -23,7 +24,6 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     var logs:[LogEntry] = []
     private var logSepTimer:NSTimer?
-    private var folderPath:String = ""
     
     convenience init() { self.init(savedInfo:nil) }
     
@@ -87,15 +87,72 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     
     /* Watch changes in folder */
+    private var folderPath:String = ""
+    private var folderDSrc:dispatch_source_t?
     func monitorFolder(path:String) {
-       folderPath = path
+        
+        let p = path as NSString
+        
+        var dirFD = Darwin.open( p.fileSystemRepresentation, O_EVTONLY )
+        if dirFD < 0 {
+            // TODO: Failed to watch folder, post log
+            postWatchFolderLog( path, success: false )
+            return
+        }
+        
+        // Create a dispatch source to monitor the directory for writes
+        var _src = dispatch_source_create(
+            DISPATCH_SOURCE_TYPE_VNODE  // Watch for certain events on the VNODE spec'd by the second (handle) argument
+          , UInt(dirFD)                 // The handle to watch (the directory FD)
+          , DISPATCH_VNODE_WRITE        // The events to watch for on the VNODE spec'd by handle (writes)
+          , dispatch_get_main_queue()   // The queue to which the handler block will ultimately be dispatched
+        )
+        if _src == nil {
+            Darwin.close( dirFD )
+            postWatchFolderLog( path, success: false )
+            return
+        }
+        
+        // Set the block to be submitted in response to an event
+        dispatch_source_set_event_handler(_src) {
+            [unowned self] in
+            self.reloadFolder()
+        }
+        
+        // Set the block to be submitted in response to source cancellation
+        dispatch_source_set_cancel_handler(_src) { Darwin.close( dirFD ) }
+        
+        // Unsuspend the source s.t. it will begin submitting blocks
+        dispatch_resume( _src )
+        
+        if folderDSrc != nil {
+            println("un-watch folder: \(folderPath)")
+            dispatch_source_cancel( folderDSrc! )
+        }
+        
+        folderPath = path
+        folderDSrc = _src
+        
+        postWatchFolderLog( path, success: true )
+    }
+
+    private func postWatchFolderLog( path:String, success:Bool ) {
+        if success {
+            appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\((path as NSString).lastPathComponent)'" )
+        } else {
+            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\((path as NSString).lastPathComponent)'" )
+        }
+    }
+    
+    func reloadFolder() {
+        println("folderChanged")
     }
     
     /* Shader */
     func geometryShs()-> [String] { return ["Geometry1", "Geometry2", "Default", "Geometry3"] }
     func fragmentShs()-> [String] { return ["Default"] }
-    func vertexShs()-> [String]   { return ["Vertex1", "Vertex2", "Vertex3", "Default", "Vertex4"] }
-    func models()-> [String]      { return ["Cube", "Sphere", "Donut", "Suzanne"] }
+    func vertexShs  ()-> [String] { return ["Vertex1", "Vertex2", "Vertex3", "Default", "Vertex4"] }
+    func models     ()-> [String] { return ["Cube", "Sphere", "Donut", "Suzanne"] }
     
     var usingModel:String = "Suzanne" {
         didSet {
