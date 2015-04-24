@@ -32,7 +32,7 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         
         movableByWindowBackground = true
         
-        minSize = NSMakeSize(390, 390)
+        minSize = NSMakeSize(390, 340)
         backgroundColor = NSColor.clearColor()
         opaque = false
     }
