@@ -199,8 +199,8 @@ class LSLGTitle: NSView {
     }
     
     override func viewDidMoveToWindow() {
-        if let w = window {
-            (subviews[0] as! NSTextView).string = (w.windowController() as! LSLGWindowController).folderPath.lastPathComponent
+        if let c = window?.windowController() as? LSLGWindowController {
+            (subviews[0] as! NSTextView).string = c.folderPath.lastPathComponent
         }
     }
 
