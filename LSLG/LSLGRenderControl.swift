@@ -34,7 +34,8 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
     
     private var logView:LSLGLogView? = nil
     
-    static private var modelIcons = [
+    static private var DefaultModelIcon = LSLGIcon.Model
+    static private var ModelIcons = [
         "Cube"    : LSLGIcon.Cube
       , "Sphere"  : LSLGIcon.Sphere
       , "Donut"   : LSLGIcon.Donut
@@ -64,7 +65,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
             case "Model"   :
                 showAssetMenu("Model", type: .Model) {
                     (menuItem, asset) in
-                    if let img = LSLGRenderControl.modelIcons[asset.name]?.image {
+                    if let img = LSLGRenderControl.ModelIcons[asset.name]?.image {
                         menuItem.image = img
                         img.setTemplate(true)
                     } 
@@ -86,7 +87,6 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         var menu = NSMenu()
         menu.delegate = self
         menu.autoenablesItems = false
-        menu.title = menuName
         
         var c = (window!.windowController() as! LSLGWindowController)
         var selected = c.glCurrAsset( type )
@@ -125,7 +125,11 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         item.visible = cc.glVertShaders.count > 1
         item.content = cc.glCurrVertShader.name
         
-        getItemById("Model")!.icon = LSLGRenderControl.modelIcons[cc.glCurrModel.name]
+        if let icon = LSLGRenderControl.ModelIcons[cc.glCurrModel.name] {
+            getItemById("Model")!.icon = icon
+        } else {
+            getItemById("Model")!.icon = LSLGRenderControl.DefaultModelIcon
+        }
     }
     
     func onPipelineChange(n:NSNotification) {
