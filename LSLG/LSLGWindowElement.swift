@@ -200,7 +200,11 @@ class LSLGTitle: NSView {
     
     override func viewDidMoveToWindow() {
         if let c = window?.windowController() as? LSLGWindowController {
-            (subviews[0] as! NSTextView).string = c.folderPath.lastPathComponent
+            if c.folderPath.isEmpty {
+                (subviews[0] as! NSTextView).string = "No working folder"
+            } else {
+                (subviews[0] as! NSTextView).string = c.folderPath.lastPathComponent
+            }
         }
     }
 
