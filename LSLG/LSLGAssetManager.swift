@@ -48,6 +48,17 @@ class LSLGAssetManager: NSObject {
         
         folderPath = p
         folderDSrc = _src
+        
+        
+        // Load assets
+        addDefaultAsset()
+        reloadAsset( Array(dirBrief.keys), [], [] )
+    }
+    
+    override init() {
+        super.init()
+        folderPath = ""
+        addDefaultAsset()
     }
     
     private func folderBrief( path:String )->[String:NSDate] {
@@ -58,7 +69,7 @@ class LSLGAssetManager: NSObject {
             for file in contents
             {
                 if let attr = manager.attributesOfItemAtPath( path.stringByAppendingPathComponent(file), error:nil ) {
-                    brief[ file ] = (attr[ NSFileModificationDate ] as! NSDate)
+                    brief[ file.lastPathComponent ] = (attr[ NSFileModificationDate ] as! NSDate)
                 }
             }
         }
@@ -101,8 +112,7 @@ class LSLGAssetManager: NSObject {
     }
     
     private var checking = false
-    private var nextCheck:dispatch_source_t?
-    private var checkQueue:dispatch_queue_t
+    private var checkQueue:dispatch_queue_t?
     private var oneMoreCheck = false
     private func onFileChanged() {
         println("[Debug] Received event from GCD \(DISPATCH_TIME_NOW)")
@@ -113,14 +123,14 @@ class LSLGAssetManager: NSObject {
             oneMoreCheck = true
         } else {
             checking  = true
-            nextCheck = dispatch_source_create( DISPATCH_SOURCE_TYPE_TIMER, 0, 0, checkQueue )
+            var nextCheck = dispatch_source_create( DISPATCH_SOURCE_TYPE_TIMER, 0, 0, checkQueue! )
             dispatch_source_set_timer(
-                nextCheck!
+                nextCheck
               , dispatch_time( DISPATCH_TIME_NOW, Int64(50 * NSEC_PER_MSEC) )
               , 150 * NSEC_PER_MSEC
               , 0
             )
-            dispatch_source_set_event_handler( nextCheck! ) {
+            dispatch_source_set_event_handler( nextCheck ) {
                 [weak self] in
                 if let strongSelf = self {
                     strongSelf.diffFolderBrief()
@@ -128,25 +138,63 @@ class LSLGAssetManager: NSObject {
                     if strongSelf.oneMoreCheck {
                         strongSelf.oneMoreCheck = false
                     } else {
-                        dispatch_source_cancel( strongSelf.nextCheck! )
-                        strongSelf.nextCheck = nil
+                        dispatch_source_cancel( nextCheck )
                         strongSelf.checking = false
                     }
+                } else {
+                    dispatch_source_cancel( nextCheck )
                 }
             }
-            dispatch_resume( nextCheck! )
+            dispatch_resume( nextCheck )
         }
     }
     
-    
+    private var assetMap = [String:LSLGAsset]()
     private func reloadAsset( added:[String], _ modified:[String], _ removed:[String] ) {
-        println("Add: \(added)")
-        println("Modify: \(modified)")
-        println("Remove: \(removed)")
+        
+        for path in added {
+            if let a = LSLGAsset.assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
+                assetMap[ path ] = a
+            }
+        }
+        
+        for path in modified {
+            assetMap[ path ]?.update()
+        }
+        
+        for path in removed {
+            assetMap[ path ] = nil
+        }
+    }
+    
+    func assetsByType(type:LSLGAssetType)->[LSLGAsset] {
+        var r = [LSLGAsset]()
+        for (p, asset) in assetMap {
+            if asset.type == type {
+                r.append(asset)
+            }
+        }
+        return r
+    }
+    
+    func assetByName(name:String, type:LSLGAssetType)-> LSLGAsset? {
+        for (p, asset) in assetMap {
+            if asset.type == type && asset.name == name {
+                return asset
+            }
+        }
+        return nil
+    }
+    
+    private func addDefaultAsset() {
+        for var i = 0; i < LSLGAsset.DefaultAssets.count; ++i {
+            assetMap[ "/BuitInAsset\(i)/" ] =  LSLGAsset.DefaultAssets[i]
+        }
     }
     
     deinit {
-        dispatch_source_cancel( folderDSrc! )
-        if nextCheck != nil { dispatch_source_cancel( nextCheck! ) }
+        if let src = folderDSrc {
+            dispatch_source_cancel( folderDSrc! )
+        }
     }
 }

@@ -28,8 +28,12 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
     }
     
     private var logView:LSLGLogView? = nil
-    
-    private var modelIcons = [LSLGIcon.Cube, LSLGIcon.Sphere, LSLGIcon.Donut, LSLGIcon.Suzanne]
+    private var modelIcons = [
+        "Cube"    : LSLGIcon.Cube
+      , "Sphere"  : LSLGIcon.Sphere
+      , "Donut"   : LSLGIcon.Donut
+      , "Suzanne" : LSLGIcon.Suzanne
+    ]
     
     override func itemClicked(item: LSLGRCItem) {
         
@@ -88,14 +92,17 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         var selectedIdx = 0
         var c = (window!.windowController() as! LSLGWindowController)
         var selectedModel = c.usingModel
-        var modelNames = c.models()
+        var modelNames = sorted( c.models(), < )
         
         for var i = 0; i < modelNames.count; ++i {
             var m = modelNames[i]
-            var item = menu.addItemWithTitle(m, action: nil, keyEquivalent: "")!
-            item.image = modelIcons[i].image
+            var item = menu.addItemWithTitle(m.name, action: nil, keyEquivalent: "")!
+            if let img = modelIcons[m.name]?.image {
+                item.image = img
+                img.setTemplate(true)
+            }
             item.image?.setTemplate(true)
-            if m == selectedModel { selectedIdx = i }
+            if m.name == selectedModel { selectedIdx = i }
         }
         
         mouseExited(NSEvent())
@@ -103,7 +110,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         currentShaderMenu = ""
     }
     
-    private func showShaderMenu( shader:String, shaders:[String], selectedId:String ) {
+    private func showShaderMenu( shader:String, shaders:[LSLGAsset], selectedId:String ) {
         let rect = itemRect( shader )
         if rect == nil { return }
         
@@ -120,8 +127,8 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         
         for var i = 0; i < shaders.count; ++i {
             var sh = shaders[i]
-            menu.addItemWithTitle(sh, action: nil, keyEquivalent: "")!
-            if sh == selectedId { selectedIdx = i }
+            menu.addItemWithTitle(sh.name, action: nil, keyEquivalent: "")!
+            if sh.name == selectedId { selectedIdx = i }
         }
         
         mouseExited(NSEvent())
@@ -148,13 +155,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         item.visible = cc.vertexShs().count > 1
         item.content = cc.usingVertexSh
         
-        var models = cc.models()
-        for var i = 0; i < models.count; ++i {
-            if models[i] == cc.usingModel {
-                getItemById("Model")!.icon = modelIcons[i]
-                break
-            }
-        }
+        getItemById("Model")!.icon = modelIcons[cc.usingModel]
     }
     
     func onPipelineChange(n:NSNotification) {

@@ -30,28 +30,20 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     init(savedInfo:[String:String]?) {
         
-        if let info = savedInfo {
-            usingModel      = info["model"]!
-            usingVertexSh   = info["vertex"]!
-            usingFragmentSh = info["fragment"]!
-            usingGeometrySh = info["geometry"]!
-        }
-        
         super.init(window:nil)
         
+        // Window data
+        restoreWindowInfo(savedInfo)
+        
+        // Window view related
         windowFrameAutosaveName = "LSLGWindow\(WindowControllerArray.count)"
         
         var w = LSLGWindow()
         w.delegate = self
         window = w
-        
         w.createSubviews()
         w.makeKeyAndOrderFront(nil)
         WindowControllerArray.append(self)
-        
-        if let info = savedInfo {
-            monitorFolder( info["path"]! )
-        }
     }
    
     /* Log Related Functions */
@@ -61,7 +53,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         NSNotificationCenter.defaultCenter().postNotification( NSNotification(name:LSLGWindowLogUpdate, object:self) )
         
         if !desc.isEmpty {
-            (window as! LSLGWindow).quickLog( desc, isError )
+            (window as? LSLGWindow)?.quickLog( desc, isError )
         }
         
         if logSepTimer == nil { setLogTimer(OldLogMarkerAddDelay) }
@@ -88,21 +80,13 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     
     /* Watch changes in folder */
-    var folderPath:String {
-        if let p = assetManager?.folderPath {
-            return p as String
-        } else {
-            return ""
-        }
-    }
-    private var assetManager:LSLGAssetManager? {
-        didSet {
-            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil) )
-        }
-    }
+    var folderPath:String { return assetManager.folderPath as! String }
+    private var assetManager = LSLGAssetManager()
     func monitorFolder(path:String) {
+        if path.isEmpty { return }
         if let asset = LSLGAssetManager( path:path ) {
             assetManager = asset
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil) )
             appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\(path.lastPathComponent)'" )
         } else {
             appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
@@ -111,14 +95,14 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
 
     /* Shader */
-    func geometryShs()-> [String] { return ["Geometry1", "Geometry2", "Default", "Geometry3"] }
-    func fragmentShs()-> [String] { return ["Default"] }
-    func vertexShs  ()-> [String] { return ["Vertex1", "Vertex2", "Vertex3", "Default", "Vertex4"] }
-    func models     ()-> [String] { return ["Cube", "Sphere", "Donut", "Suzanne"] }
+    func geometryShs()-> [LSLGAsset] { return assetManager.assetsByType( .GeometryShader ) }
+    func fragmentShs()-> [LSLGAsset] { return assetManager.assetsByType( .FragmentShader ) }
+    func vertexShs  ()-> [LSLGAsset] { return assetManager.assetsByType( .VertexShader) }
+    func models     ()-> [LSLGAsset] { return assetManager.assetsByType( .Model ) }
     
     var usingModel:String = "Suzanne" {
         didSet {
-            if let idx = find( models(), usingModel ) {
+            if let idx = assetManager.assetByName( usingModel, type:.Model ) {
                 NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"model"]) )
             } else {
                 usingModel = oldValue
@@ -127,27 +111,27 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         }
     }
     
-    var usingFragmentSh:String = "Default" {
+    var usingFragmentSh:String = "BuiltIn" {
         didSet {
-            if let idx = find( fragmentShs(), usingFragmentSh ) {
+            if let idx = assetManager.assetByName( usingFragmentSh, type:.FragmentShader ) {
                 NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"fragment"]) )
             } else {
                 usingFragmentSh = oldValue
             }
         }
     }
-    var usingGeometrySh:String = "Default" {
+    var usingGeometrySh:String = "BuiltIn" {
         didSet {
-            if let idx = find( geometryShs(), usingGeometrySh ) {
+            if let idx = assetManager.assetByName( usingGeometrySh, type:.GeometryShader ) {
                 NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"geometry"]) )
             } else {
                 usingGeometrySh = oldValue
             }
         }
     }
-    var usingVertexSh:String = "Default" {
+    var usingVertexSh:String = "BuiltIn" {
         didSet {
-            if let idx = find( vertexShs(), usingVertexSh ) {
+            if let idx = assetManager.assetByName( usingVertexSh, type:.VertexShader ) {
                 NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"vertex"]) )
             } else {
                 usingVertexSh = oldValue
@@ -172,6 +156,18 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
     /* Window Info */
+    private func restoreWindowInfo(savedInfo:[String:String]?) {
+        // Need to restore the pipeline info outside of init()
+        // Otherwise, the "didSet" is not called.
+        if let info = savedInfo {
+            monitorFolder( info["path"]! )
+            
+            usingModel      = info["model"]!
+            usingVertexSh   = info["vertex"]!
+            usingFragmentSh = info["fragment"]!
+            usingGeometrySh = info["geometry"]!
+        }
+    }
     class func persistWindowInfo() {
         // At least persist one window info.
         if WindowControllerArray.count == 0 { return }
