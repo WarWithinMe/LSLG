@@ -9,7 +9,7 @@
 import Cocoa
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate {
+class LSLGAppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool { return true }
     
@@ -31,5 +31,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillTerminate(aNotification: NSNotification) {
     }
+    
+    
+    var REG_FRAG = NSRegularExpression(pattern: "\\.frag$", options: .CaseInsensitive, error: nil)!
+    var REG_GEOM = NSRegularExpression(pattern: "\\.geom$", options: .CaseInsensitive, error: nil)!
+    var REG_VERT = NSRegularExpression(pattern: "\\.vert$", options: .CaseInsensitive, error: nil)!
+    var REG_MODL = NSRegularExpression(pattern: "\\.modl$", options: .CaseInsensitive, error: nil)!
+    var REG_IMGE = NSRegularExpression(pattern: "\\.png$",  options: .CaseInsensitive, error: nil)!
 }
 
