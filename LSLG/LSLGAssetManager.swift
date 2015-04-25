@@ -10,15 +10,19 @@ import Cocoa
 
 class LSLGAssetManager: NSObject {
     
-    private(set) var folderPath:NSString!
-    private var folderDSrc:dispatch_source_t!
+    private(set) var folderPath:NSString = ""
     
-    init?(path:String) {
+    override init() {
+        super.init()
+        // Add default assets
+        for asset in LSLGAsset.DefaultAssets { assetMap[asset.assetKey] = asset }
+    }
+    
+    convenience init?(path:String) {
+        
+        self.init()
         
         checkQueue = dispatch_queue_create("wwm.LSLGAssetManager",  DISPATCH_QUEUE_SERIAL)
-        
-        super.init()
-        
         dirBrief = folderBrief( path )
         
         var p = path as NSString
@@ -29,9 +33,9 @@ class LSLGAssetManager: NSObject {
         // Create a dispatch source to monitor the directory for writes
         var _src = dispatch_source_create(
             DISPATCH_SOURCE_TYPE_VNODE  // Watch for certain events on the VNODE spec'd by the second (handle) argument
-            , UInt(dirFD)               // The handle to watch (the directory FD)
-            , DISPATCH_VNODE_WRITE      // The events to watch for on the VNODE spec'd by handle (writes)
-            , dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0) // The queue to which the handler block will ultimately be dispatched
+          , UInt(dirFD)                 // The handle to watch (the directory FD)
+          , DISPATCH_VNODE_WRITE        // The events to watch for on the VNODE spec'd by handle (writes)
+          , dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0) // Disaptch queue
         )
         if _src == nil {
             Darwin.close( dirFD )
@@ -49,18 +53,12 @@ class LSLGAssetManager: NSObject {
         folderPath = p
         folderDSrc = _src
         
-        
         // Load assets
-        addDefaultAsset()
         reloadAsset( Array(dirBrief.keys), [], [] )
     }
     
-    override init() {
-        super.init()
-        folderPath = ""
-        addDefaultAsset()
-    }
     
+    /* Monitor file system */
     private func folderBrief( path:String )->[String:NSDate] {
         var manager = NSFileManager()
         var brief   = [String:NSDate]()
@@ -111,9 +109,11 @@ class LSLGAssetManager: NSObject {
         }
     }
     
-    private var checking = false
+    private var folderDSrc:dispatch_source_t!
     private var checkQueue:dispatch_queue_t?
+    private var checking     = false
     private var oneMoreCheck = false
+    
     private func onFileChanged() {
         println("[Debug] Received event from GCD \(DISPATCH_TIME_NOW)")
         // If the event happens before scheduled checking, we would like to do
@@ -149,7 +149,11 @@ class LSLGAssetManager: NSObject {
         }
     }
     
+    
+    /* Asset management */
     private var assetMap = [String:LSLGAsset]()
+    private var usingAssetMap = [LSLGAssetType:LSLGAsset]()
+    
     private func reloadAsset( added:[String], _ modified:[String], _ removed:[String] ) {
         
         for path in added {
@@ -186,15 +190,18 @@ class LSLGAssetManager: NSObject {
         return nil
     }
     
-    private func addDefaultAsset() {
-        for var i = 0; i < LSLGAsset.DefaultAssets.count; ++i {
-            assetMap[ "/BuitInAsset\(i)/" ] =  LSLGAsset.DefaultAssets[i]
+    func getUsingAsset( type:LSLGAssetType )-> LSLGAsset? { return usingAssetMap[type] }
+    func useAsset( asset:LSLGAsset )->Bool {
+        if assetMap[asset.assetKey] != nil {
+            usingAssetMap[asset.type] = asset
+            return true
         }
+        return false
     }
     
+    
+    /* Cleanup */
     deinit {
-        if let src = folderDSrc {
-            dispatch_source_cancel( folderDSrc! )
-        }
+        if let src = folderDSrc { dispatch_source_cancel( src ) }
     }
 }

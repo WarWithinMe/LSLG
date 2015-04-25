@@ -18,11 +18,9 @@ enum LSLGAssetType:Int {
 
 class LSLGAsset: NSObject {
     
-    private var path:String
     private(set) var type:LSLGAssetType
     private(set) var name:String
-    
-    static var StripExtReg = NSRegularExpression(pattern: "\\.[^.]+$", options:.CaseInsensitive, error: nil)!
+    var assetKey:String { return isBuiltIn ? "/BuiltInAsset\(builtInId)/" : path.lastPathComponent }
     
     init( path:String, type:LSLGAssetType ) {
         self.path = path
@@ -37,6 +35,8 @@ class LSLGAsset: NSObject {
         )
         super.init()
     }
+    
+    private var path:String
     
     // When the content in the file system changes, this method is called.
     func update(){}
@@ -60,28 +60,31 @@ class LSLGAsset: NSObject {
         return nil
     }
     
-    private(set) var isBuiltIn = false
-    private func markAsBuiltIn()->LSLGAsset { self.isBuiltIn = true; self.name = "BuiltIn"; return self }
+    private var builtInId:Int = -1
+    var isBuiltIn:Bool { return builtInId >= 0 }
+    private func markAsBuiltIn()->LSLGAsset {
+        self.name      = "BuiltIn"
+        self.builtInId = (++LSLGAsset.DefaultAssetId)
+        return self
+    }
     
+    static let StripExtReg = NSRegularExpression(pattern: "\\.[^.]+$", options:.CaseInsensitive, error: nil)!
+    static private var DefaultAssetId:Int = 0
     static let DefaultAssets = [
         LSLGAssetFragSh.defaultAsset()
       , LSLGAssetVertexSh.defaultAsset()
       , LSLGAssetGeoSh.defaultAsset()
-      , LSLGAssetModel.cube()
-      , LSLGAssetModel.sphere()
-      , LSLGAssetModel.donut()
       , LSLGAssetModel.suzanne()
+      , LSLGAssetModel.donut()
+      , LSLGAssetModel.sphere()
+      , LSLGAssetModel.cube()
     ]
 }
 
-func < (left:LSLGAsset, right:LSLGAsset)->Bool {
-    if left.isBuiltIn != right.isBuiltIn { return left.isBuiltIn }
-    return left.name < right.name
-}
-func > (left:LSLGAsset, right:LSLGAsset)->Bool {
-    if left.isBuiltIn != right.isBuiltIn { return right.isBuiltIn }
-    return left.name > right.name
-}
+func < (l:LSLGAsset, r:LSLGAsset)->Bool {
+    return l.builtInId != r.builtInId ? (l.builtInId > r.builtInId) : (l.name < r.name) }
+func > (l:LSLGAsset, r:LSLGAsset)->Bool {
+    return l.builtInId != r.builtInId ? (r.builtInId > l.builtInId) : (r.name < l.name) }
 
 class LSLGAssetFragSh : LSLGAsset {
     init( _ path:String ) { super.init(path:path, type:.FragmentShader) }

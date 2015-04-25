@@ -33,7 +33,19 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         super.init(window:nil)
         
         // Window data
-        restoreWindowInfo(savedInfo)
+        if let info = savedInfo {
+            monitorFolder( info["path"]! )
+            
+            useAsset(info["model"]!, type: .Model)
+            useAsset(info["vertex"]!, type: .VertexShader)
+            useAsset(info["fragment"]!, type: .FragmentShader)
+            useAsset(info["geometry"]!, type: .GeometryShader)
+        } else {
+            useAsset("Suzanne", type: .Model)
+            useAsset("BuiltIn", type: .VertexShader)
+            useAsset("BuiltIn", type: .FragmentShader)
+            useAsset("BuiltIn", type: .GeometryShader)
+        }
         
         // Window view related
         windowFrameAutosaveName = "LSLGWindow\(WindowControllerArray.count)"
@@ -94,48 +106,34 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
 
-    /* Shader */
-    func geometryShs()-> [LSLGAsset] { return assetManager.assetsByType( .GeometryShader ) }
-    func fragmentShs()-> [LSLGAsset] { return assetManager.assetsByType( .FragmentShader ) }
-    func vertexShs  ()-> [LSLGAsset] { return assetManager.assetsByType( .VertexShader) }
-    func models     ()-> [LSLGAsset] { return assetManager.assetsByType( .Model ) }
+    /* Shader & Model */
+    var glGeomShaders :[LSLGAsset] { return assetManager.assetsByType( .GeometryShader ) }
+    var glFragShaders :[LSLGAsset] { return assetManager.assetsByType( .FragmentShader ) }
+    var glVertShaders :[LSLGAsset] { return assetManager.assetsByType( .VertexShader) }
+    var glModels      :[LSLGAsset] { return assetManager.assetsByType( .Model ) }
     
-    var usingModel:String = "Suzanne" {
-        didSet {
-            if let idx = assetManager.assetByName( usingModel, type:.Model ) {
-                NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"model"]) )
-            } else {
-                usingModel = oldValue
-            }
-            
-        }
-    }
+    var glCurrModel      :LSLGAsset { return assetManager.getUsingAsset( .Model )! }
+    var glCurrVertShader :LSLGAsset { return assetManager.getUsingAsset( .VertexShader )! }
+    var glCurrFragShader :LSLGAsset { return assetManager.getUsingAsset( .FragmentShader )! }
+    var glCurrGeomShader :LSLGAsset { return assetManager.getUsingAsset( .FragmentShader )! }
     
-    var usingFragmentSh:String = "BuiltIn" {
-        didSet {
-            if let idx = assetManager.assetByName( usingFragmentSh, type:.FragmentShader ) {
-                NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"fragment"]) )
-            } else {
-                usingFragmentSh = oldValue
-            }
+    func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetManager.assetsByType(  type )  }
+    func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return assetManager.getUsingAsset( type )! }
+    
+    func useAsset( name:String, type:LSLGAssetType ) {
+        if let a = assetManager.assetByName( name, type:type) {
+            useAsset( a )
+        } else {
+            println("Using invalid asset \(name)")
         }
     }
-    var usingGeometrySh:String = "BuiltIn" {
-        didSet {
-            if let idx = assetManager.assetByName( usingGeometrySh, type:.GeometryShader ) {
-                NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"geometry"]) )
-            } else {
-                usingGeometrySh = oldValue
-            }
-        }
-    }
-    var usingVertexSh:String = "BuiltIn" {
-        didSet {
-            if let idx = assetManager.assetByName( usingVertexSh, type:.VertexShader ) {
-                NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo: ["component":"vertex"]) )
-            } else {
-                usingVertexSh = oldValue
-            }
+    func useAsset( asset:LSLGAsset ) {
+        if assetManager.useAsset( asset ) {
+            NSNotificationCenter.defaultCenter().postNotification(
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["assetType":asset.type.rawValue])
+            )
+        } else {
+            println("Using invalid asset \(asset)")
         }
     }
     
@@ -156,18 +154,6 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
     /* Window Info */
-    private func restoreWindowInfo(savedInfo:[String:String]?) {
-        // Need to restore the pipeline info outside of init()
-        // Otherwise, the "didSet" is not called.
-        if let info = savedInfo {
-            monitorFolder( info["path"]! )
-            
-            usingModel      = info["model"]!
-            usingVertexSh   = info["vertex"]!
-            usingFragmentSh = info["fragment"]!
-            usingGeometrySh = info["geometry"]!
-        }
-    }
     class func persistWindowInfo() {
         // At least persist one window info.
         if WindowControllerArray.count == 0 { return }
@@ -177,10 +163,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         for c in WindowControllerArray {
             infos.append( [
                 "path"     : c.folderPath
-              , "model"    : c.usingModel
-              , "vertex"   : c.usingVertexSh
-              , "fragment" : c.usingFragmentSh
-              , "geometry" : c.usingGeometrySh
+              , "model"    : c.glCurrModel.name
+              , "vertex"   : c.glCurrVertShader.name
+              , "fragment" : c.glCurrFragShader.name
+              , "geometry" : c.glCurrFragShader.name
             ] )
         }
         

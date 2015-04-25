@@ -17,18 +17,24 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         
         appendItems([
             LSLGRCItem(icon:LSLGIcon.Setting,  id:"Setting", desc:"Settings")
-          , LSLGRCItem(icon:LSLGIcon.Log,      id:"Log", desc:"Log")
-          , LSLGRCItem(icon:LSLGIcon.Suzanne,  id:"Model", desc:"Model")
+          , LSLGRCItem(icon:LSLGIcon.Log,      id:"Log",     desc:"Log")
+          , LSLGRCItem(icon:LSLGIcon.Suzanne,  id:"Model",   desc:"Model")
           , LSLGRCItem(icon:LSLGIcon.Fragment, content:"Fragment", desc:"Fragment Shader")
           , LSLGRCItem(icon:LSLGIcon.Geometry, content:"Geometry", desc:"Geometry Shader")
-          , LSLGRCItem(icon:LSLGIcon.Vertex,   content:"Vertex", desc:"Vertex Shader")
+          , LSLGRCItem(icon:LSLGIcon.Vertex,   content:"Vertex",   desc:"Vertex Shader")
         ])
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "onPipelineChange:", name: LSLGWindowPipelineChange, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(
+            self
+          , selector : "onPipelineChange:"
+          , name     : LSLGWindowPipelineChange
+          , object   : nil
+        )
     }
     
     private var logView:LSLGLogView? = nil
-    private var modelIcons = [
+    
+    static private var modelIcons = [
         "Cube"    : LSLGIcon.Cube
       , "Sphere"  : LSLGIcon.Sphere
       , "Donut"   : LSLGIcon.Donut
@@ -52,88 +58,52 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
             case "Setting":
                 (window?.windowController() as! LSLGWindowController).appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1, desc:"TestLog\( arc4random_uniform(1000000))")
             
-            case "Geometry": showGeometryMenu()
-            case "Fragment": showFragmentMenu()
-            case "Vertex"  : showVertexMenu()
-            case "Model"   : showModelMenu()
+            case "Geometry": showAssetMenu("Geometry", type: .GeometryShader)
+            case "Fragment": showAssetMenu("Fragment", type: .FragmentShader)
+            case "Vertex"  : showAssetMenu("Vertex",   type: .VertexShader)
+            case "Model"   :
+                showAssetMenu("Model", type: .Model) {
+                    (menuItem, asset) in
+                    if let img = LSLGRenderControl.modelIcons[asset.name]?.image {
+                        menuItem.image = img
+                        img.setTemplate(true)
+                    } 
+                }
             
             default :
                 item.toggleSelected()
         }
     }
     
-    private var currentShaderMenu:String = ""
-    
-    private func showGeometryMenu() {
-        var c = (window!.windowController() as! LSLGWindowController)
-        showShaderMenu("Geometry", shaders: c.geometryShs(), selectedId: c.usingGeometrySh )
-    }
-    private func showFragmentMenu() {
-        var c = (window!.windowController() as! LSLGWindowController)
-        showShaderMenu("Fragment", shaders: c.fragmentShs(), selectedId: c.usingFragmentSh )
-    }
-    private func showVertexMenu() {
-        var c = (window!.windowController() as! LSLGWindowController)
-        showShaderMenu("Vertex", shaders: c.vertexShs(), selectedId: c.usingVertexSh )
-    }
-    
-    private func showModelMenu() {
-        let rect = itemRect( "Model" )
+    private var currentMenu:String = ""
+    private func showAssetMenu( menuName:String, type:LSLGAssetType, setupItem:((NSMenuItem,LSLGAsset)->())? = nil ) {
+        let rect = itemRect( menuName )
         if rect == nil { return }
         
         var location = rect!.origin
         location.y += rect!.size.height
         
-        currentShaderMenu = "Model"
         var menu = NSMenu()
         menu.delegate = self
         menu.autoenablesItems = false
+        menu.title = menuName
         
-        var selectedIdx = 0
         var c = (window!.windowController() as! LSLGWindowController)
-        var selectedModel = c.usingModel
-        var modelNames = sorted( c.models(), < )
+        var selected = c.glCurrAsset( type )
+        var selectedItem:NSMenuItem? = nil
         
-        for var i = 0; i < modelNames.count; ++i {
-            var m = modelNames[i]
-            var item = menu.addItemWithTitle(m.name, action: nil, keyEquivalent: "")!
-            if let img = modelIcons[m.name]?.image {
-                item.image = img
-                img.setTemplate(true)
-            }
-            item.image?.setTemplate(true)
-            if m.name == selectedModel { selectedIdx = i }
+        // The statement after "in" ( a.k.a c.glAssets(type) )
+        // will store in a unnamed local variable(without retain/release), according to the assembly
+        for sh in sorted( c.glAssets(type), < ) {
+            var m = menu.addItemWithTitle(sh.name, action: nil, keyEquivalent: "")!
+            setupItem?( m, sh )
+            if selectedItem == nil || sh == selected { selectedItem = m }
         }
         
         mouseExited(NSEvent())
-        menu.popUpMenuPositioningItem( menu.itemArray[selectedIdx] as? NSMenuItem, atLocation: location, inView: self )
-        currentShaderMenu = ""
-    }
-    
-    private func showShaderMenu( shader:String, shaders:[LSLGAsset], selectedId:String ) {
-        let rect = itemRect( shader )
-        if rect == nil { return }
-        
-        var location = rect!.origin
-        location.y += rect!.size.height
-        
-        currentShaderMenu = shader
-        
-        var menu = NSMenu()
-        menu.delegate = self
-        menu.autoenablesItems = false
-        
-        var selectedIdx = 0
-        
-        for var i = 0; i < shaders.count; ++i {
-            var sh = shaders[i]
-            menu.addItemWithTitle(sh.name, action: nil, keyEquivalent: "")!
-            if sh.name == selectedId { selectedIdx = i }
-        }
-        
-        mouseExited(NSEvent())
-        menu.popUpMenuPositioningItem( menu.itemArray[selectedIdx] as? NSMenuItem, atLocation: location, inView: self )
-        currentShaderMenu = ""
+        currentMenu = menuName
+        menu.popUpMenuPositioningItem( selectedItem!, atLocation:location, inView:self )
+        currentMenu = ""
     }
     
     private func updateControl(targetController:LSLGWindowController?) {
@@ -144,18 +114,18 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         var cc = c!
         
         var item = getItemById("Geometry")!
-        item.visible = cc.geometryShs().count > 1
-        item.content = cc.usingGeometrySh
+        item.visible = cc.glGeomShaders.count > 1
+        item.content = cc.glCurrGeomShader.name
         
         item = getItemById("Fragment")!
-        item.visible = cc.fragmentShs().count > 1
-        item.content = cc.usingFragmentSh
+        item.visible = cc.glFragShaders.count > 1
+        item.content = cc.glCurrFragShader.name
         
         item = getItemById("Vertex")!
-        item.visible = cc.vertexShs().count > 1
-        item.content = cc.usingVertexSh
+        item.visible = cc.glVertShaders.count > 1
+        item.content = cc.glCurrVertShader.name
         
-        getItemById("Model")!.icon = modelIcons[cc.usingModel]
+        getItemById("Model")!.icon = LSLGRenderControl.modelIcons[cc.glCurrModel.name]
     }
     
     func onPipelineChange(n:NSNotification) {
@@ -165,15 +135,15 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
     func menuDidClose(menu: NSMenu) {
         if menu.highlightedItem == nil { return }
         
-        var c = (window!.windowController() as! LSLGWindowController)
-        var t = menu.highlightedItem!.title
-        switch currentShaderMenu {
-            case "Geometry" : c.usingGeometrySh = t
-            case "Fragment" : c.usingFragmentSh = t
-            case "Vertex"   : c.usingVertexSh   = t
-            case "Model"    : c.usingModel      = t
+        var type:LSLGAssetType
+        switch currentMenu {
+            case "Geometry" : type = .GeometryShader
+            case "Fragment" : type = .FragmentShader
+            case "Vertex"   : type = .VertexShader
+            case "Model"    : type = .Model
             default: return
         }
+        (window!.windowController() as! LSLGWindowController).useAsset(menu.highlightedItem!.title, type:type)
     }
     
     override func viewDidMoveToWindow() {
