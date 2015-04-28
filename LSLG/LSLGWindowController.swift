@@ -34,17 +34,13 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         
         // Window data
         if let info = savedInfo {
+            // This will create a new AssetManager
             monitorFolder( info["path"]! )
             
-            useAsset(info["model"]!, type: .Model)
-            useAsset(info["vertex"]!, type: .VertexShader)
+            useAsset(info["model"]!,    type: .Model)
+            useAsset(info["vertex"]!,   type: .VertexShader)
             useAsset(info["fragment"]!, type: .FragmentShader)
             useAsset(info["geometry"]!, type: .GeometryShader)
-        } else {
-            useAsset("Suzanne", type: .Model)
-            useAsset("BuiltIn", type: .VertexShader)
-            useAsset("BuiltIn", type: .FragmentShader)
-            useAsset("BuiltIn", type: .GeometryShader)
         }
         
         // Window view related
@@ -115,7 +111,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     var glCurrModel      :LSLGAsset { return assetManager.getUsingAsset( .Model )! }
     var glCurrVertShader :LSLGAsset { return assetManager.getUsingAsset( .VertexShader )! }
     var glCurrFragShader :LSLGAsset { return assetManager.getUsingAsset( .FragmentShader )! }
-    var glCurrGeomShader :LSLGAsset { return assetManager.getUsingAsset( .FragmentShader )! }
+    var glCurrGeomShader :LSLGAsset { return assetManager.getUsingAsset( .GeometryShader )! }
     
     func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetManager.assetsByType(  type )  }
     func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return assetManager.getUsingAsset( type )! }
@@ -166,7 +162,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
               , "model"    : c.glCurrModel.name
               , "vertex"   : c.glCurrVertShader.name
               , "fragment" : c.glCurrFragShader.name
-              , "geometry" : c.glCurrFragShader.name
+              , "geometry" : c.glCurrGeomShader.name
             ] )
         }
         

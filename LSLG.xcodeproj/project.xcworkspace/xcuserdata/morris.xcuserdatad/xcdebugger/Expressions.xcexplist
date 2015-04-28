@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "LSLG.LSLGWindowController.glCurrAsset (LSLG.LSLGWindowController)(LSLG.LSLGAssetType) -&gt; LSLG.LSLGAsset:LSLGWindowController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "LSLG.LSLGAssetManager.useAsset (LSLG.LSLGAssetManager)(LSLG.LSLGAsset) -&gt; Swift.Bool:LSLGAssetManager.swift">
+      </ContextState>
+      <ContextState
+         contextName = "LSLG.LSLGWindowController.init (LSLG.LSLGWindowController.Type)(savedInfo : Swift.Optional&lt;Swift.Dictionary&lt;Swift.String, Swift.String&gt;&gt;) -&gt; LSLG.LSLGWindowController:LSLGWindowController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "LSLG.LSLGWindowController.useAsset (LSLG.LSLGWindowController)(Swift.String, type : LSLG.LSLGAssetType) -&gt; ():LSLGWindowController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "LSLG.LSLGWindowController.glCurrGeomShader.getter : LSLG.LSLGAsset:LSLGWindowController.swift">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

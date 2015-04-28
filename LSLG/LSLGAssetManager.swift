@@ -16,6 +16,11 @@ class LSLGAssetManager: NSObject {
         super.init()
         // Add default assets
         for asset in LSLGAsset.DefaultAssets { assetMap[asset.assetKey] = asset }
+        
+        useAsset( assetByName("Suzanne", type: .Model)! )
+        useAsset( assetByName("BuiltIn", type: .VertexShader)! )
+        useAsset( assetByName("BuiltIn", type: .FragmentShader)! )
+        useAsset( assetByName("BuiltIn", type: .GeometryShader)! )
     }
     
     convenience init?(path:String) {
