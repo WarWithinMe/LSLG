@@ -20,6 +20,7 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     private var realContentView:NSView!
     private var renderControl:LSLGRenderControl!
     private var quickLogView:LSLGQuickLog!
+    private var oglView:LSLGOpenGLView!
     
     init() {
         let sf = NSScreen.mainScreen()!.frame
@@ -74,6 +75,9 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         realContentView.autoresizingMask = .ViewHeightSizable | .ViewWidthSizable
         contentView.addSubview( realContentView )
         
+        // OpenGL View
+        oglView = LSLGOpenGLView( frame: contentView.bounds )
+        setContent( oglView )
         
         // Title, which makes the window draggable
         self.contentView.addSubview(

@@ -14,9 +14,11 @@
 		A543C5C41ACE5BAB00C9F0E8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */; };
 		A543C5CC1ACE97F800C9F0E8 /* PocketSVG.m in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */; };
 		A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */; };
+		A558A6331AF8D0FE00F5C3FF /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A558A6321AF8D0FE00F5C3FF /* OpenGL.framework */; };
 		A5654BEE1AD6699D002FE313 /* LSLGRenderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5654BED1AD6699D002FE313 /* LSLGRenderControl.swift */; };
 		A586C2801AEA434100CE2DC1 /* LSLGAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A586C27F1AEA434100CE2DC1 /* LSLGAsset.swift */; };
 		A5877E4F1AE8CC260089F33A /* LSLGAssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5877E4E1AE8CC260089F33A /* LSLGAssetManager.swift */; };
+		A587B20B1AEF908800291384 /* LSLGOpenGLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A587B20A1AEF908800291384 /* LSLGOpenGLView.swift */; };
 		A5A6E6821ACD1180004DA4B9 /* LSLGSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A6E6811ACD1180004DA4B9 /* LSLGSegmentedControl.swift */; };
 		A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */; };
 		A5DDD3E01ACA89F400303D71 /* LSLGAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DDD3DF1ACA89F400303D71 /* LSLGAppDelegate.swift */; };
@@ -45,9 +47,11 @@
 		A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketSVG.h; sourceTree = "<group>"; };
 		A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PocketSVG.m; sourceTree = "<group>"; };
 		A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGIcon.swift; sourceTree = "<group>"; };
+		A558A6321AF8D0FE00F5C3FF /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		A5654BED1AD6699D002FE313 /* LSLGRenderControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGRenderControl.swift; sourceTree = "<group>"; };
 		A586C27F1AEA434100CE2DC1 /* LSLGAsset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGAsset.swift; sourceTree = "<group>"; };
 		A5877E4E1AE8CC260089F33A /* LSLGAssetManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGAssetManager.swift; sourceTree = "<group>"; };
+		A587B20A1AEF908800291384 /* LSLGOpenGLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGOpenGLView.swift; sourceTree = "<group>"; };
 		A5A6E6811ACD1180004DA4B9 /* LSLGSegmentedControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGSegmentedControl.swift; sourceTree = "<group>"; };
 		A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindow.swift; sourceTree = "<group>"; };
 		A5DDD3DA1ACA89F400303D71 /* LSLG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LSLG.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A558A6331AF8D0FE00F5C3FF /* OpenGL.framework in Frameworks */,
 				A543C5C41ACE5BAB00C9F0E8 /* CoreText.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -82,6 +87,7 @@
 		A5DDD3D11ACA89F400303D71 = {
 			isa = PBXGroup;
 			children = (
+				A558A6321AF8D0FE00F5C3FF /* OpenGL.framework */,
 				A543C5C31ACE5BAB00C9F0E8 /* CoreText.framework */,
 				A5DDD3DC1ACA89F400303D71 /* LSLG */,
 				A5DDD3ED1ACA89F400303D71 /* LSLGTests */,
@@ -107,6 +113,7 @@
 				A5877E4E1AE8CC260089F33A /* LSLGAssetManager.swift */,
 				A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */,
 				A531407A1AD3D76D00419887 /* LSLGLogView.swift */,
+				A587B20A1AEF908800291384 /* LSLGOpenGLView.swift */,
 				A51B65531AD7B2CF008EAA9D /* LSLGQuickLog.swift */,
 				A5654BED1AD6699D002FE313 /* LSLGRenderControl.swift */,
 				A5A6E6811ACD1180004DA4B9 /* LSLGSegmentedControl.swift */,
@@ -256,6 +263,7 @@
 				A51B65541AD7B2CF008EAA9D /* LSLGQuickLog.swift in Sources */,
 				A5877E4F1AE8CC260089F33A /* LSLGAssetManager.swift in Sources */,
 				A5A6E6821ACD1180004DA4B9 /* LSLGSegmentedControl.swift in Sources */,
+				A587B20B1AEF908800291384 /* LSLGOpenGLView.swift in Sources */,
 				A5654BEE1AD6699D002FE313 /* LSLGRenderControl.swift in Sources */,
 				A5DDD3E01ACA89F400303D71 /* LSLGAppDelegate.swift in Sources */,
 				A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */,

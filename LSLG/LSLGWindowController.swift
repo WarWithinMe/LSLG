@@ -126,7 +126,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     func useAsset( asset:LSLGAsset ) {
         if assetManager.useAsset( asset ) {
             NSNotificationCenter.defaultCenter().postNotification(
-                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["assetType":asset.type.rawValue])
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["newAsset":asset])
             )
         } else {
             println("Using invalid asset \(asset)")
