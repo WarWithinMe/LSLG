@@ -10,14 +10,14 @@ import Cocoa
 import GLKit
 
 enum LSLGAssetType:Int {
-    case FragmentShader
+    case FragmentShader = 0
     case VertexShader
     case GeometryShader
     case Image
     case Model
     case Generic
     
-    var glType:GLenum {
+    func glType() -> GLenum {
         switch self {
             case .FragmentShader: return GLenum(GL_FRAGMENT_SHADER)
             case .VertexShader:   return GLenum(GL_VERTEX_SHADER)
@@ -132,7 +132,7 @@ class LSLGAssetImage : LSLGAsset {
 
 
 class LSLGAssetModel : LSLGAsset {
-    override var type:LSLGAssetType { return .Image }
+    override var type:LSLGAssetType { return .Model }
     
     private convenience init( name:String ) { self.init(path:""); markAsBuiltIn(); self.name = name }
     class func cube()->    LSLGAsset { return LSLGAssetModel(name:"Cube")    }
@@ -168,7 +168,7 @@ class LSLGAssetShader : LSLGAsset {
         }
         
         // Create shader handle
-        var shaderHandle:GLuint = glCreateShader( type.glType )
+        var shaderHandle:GLuint = glCreateShader( type.glType() )
         
         // Supply source
         var shaderStringUTF8   = shaderContent!.UTF8String
@@ -190,8 +190,12 @@ class LSLGAssetShader : LSLGAsset {
             if (logLength > 0) {
                 var log = [GLchar](count:Int(logLength), repeatedValue: 0)
                 glGetShaderInfoLog(shaderHandle, logLength, &logLength, &log)
-                var logStr = NSString(bytes: &log, length:Int(logLength), encoding: NSASCIIStringEncoding)!
-                NSNotificationCenter.defaultCenter().postNotificationName(LSLGAssetInitFailure, object:self, userInfo:logStr)
+                
+                NSNotificationCenter.defaultCenter().postNotificationName(
+                    LSLGAssetInitFailure
+                  , object:self
+                  , userInfo:["info":NSString(bytes: &log, length:Int(logLength), encoding: NSASCIIStringEncoding)!]
+                )
             }
             
             return false
