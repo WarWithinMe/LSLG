@@ -50,7 +50,7 @@ class LSLGAsset: NSObject {
         super.init()
     }
     
-    private var path:String
+    private(set) var path:String
     
     class func assetWithPath( path:String )-> LSLGAsset? {
         var delegate = NSApplication.sharedApplication().delegate as! LSLGAppDelegate

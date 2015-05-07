@@ -52,6 +52,8 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         w.createSubviews()
         w.makeKeyAndOrderFront(nil)
         WindowControllerArray.append(self)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector:"onAssetUpdate:", name: LSLGAssetUpdate, object: nil)
     }
    
     /* Log Related Functions */
@@ -88,16 +90,18 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     
     /* Watch changes in folder */
-    var folderPath:String { return assetManager.folderPath as! String }
-    private var assetManager = LSLGAssetManager()
+    var folderPath:String { return assetManager.folderPath }
+    private var assetManager = LSLGAssetManager(path:"")
     func monitorFolder(path:String) {
         if path.isEmpty { return }
-        if let asset = LSLGAssetManager( path:path ) {
-            assetManager = asset
+        
+        var newAssetM = LSLGAssetManager( path:path )
+        if newAssetM.folderPath.isEmpty {
+            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
+        } else {
+            assetManager = newAssetM
             NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil) )
             appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\(path.lastPathComponent)'" )
-        } else {
-            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
         }
     }
     
@@ -131,6 +135,22 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         } else {
             println("Using invalid asset \(asset)")
         }
+    }
+    
+    func onAssetUpdate(n:NSNotification) {
+        var sendNotify = false
+        if let asset = n.object as? LSLGAsset {
+            if asset == glCurrAsset( asset.type ) {
+                sendNotify = true
+            } else if let range = asset.path.rangeOfString( folderPath ) {
+                sendNotify = true
+            }
+        }
+        
+        if (!sendNotify) { return }
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["asset":n.object!])
+        )
     }
     
     
