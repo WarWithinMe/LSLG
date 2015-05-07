@@ -88,7 +88,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
         
-        var c = (window!.windowController() as! LSLGWindowController)
+        var c = (window!.windowController() as! LSLGWindowController).assetManager
         var selected = c.glCurrAsset( type )
         var selectedItem:NSMenuItem? = nil
         
@@ -106,12 +106,14 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         currentMenu = ""
     }
     
-    private func updateControl(targetController:LSLGWindowController?) {
+    private func updateControl( assetManager:LSLGAssetManager? ) {
         var c = window?.windowController() as? LSLGWindowController
         if c == nil { return }
-        if targetController != nil && targetController != c { return }
         
-        var cc = c!
+        var cc = c!.assetManager
+        
+        if assetManager != nil && assetManager != cc { return }
+        
         
         var item = getItemById("Geometry")!
         item.visible = cc.glGeomShaders.count > 1
@@ -133,7 +135,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
     }
     
     func onPipelineChange(n:NSNotification) {
-        updateControl( n.object as? LSLGWindowController )
+        updateControl( n.object as? LSLGAssetManager )
     }
     
     func menuDidClose(menu: NSMenu) {
@@ -147,7 +149,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
             case "Model"    : type = .Model
             default: return
         }
-        (window!.windowController() as! LSLGWindowController).useAsset(menu.highlightedItem!.title, type:type)
+        (window!.windowController() as! LSLGWindowController).assetManager.useAsset(menu.highlightedItem!.title, type:type)
     }
     
     override func viewDidMoveToWindow() {

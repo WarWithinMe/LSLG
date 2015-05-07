@@ -14,7 +14,6 @@ private let OldLogMarkerAddDelay:NSTimeInterval = 20
 
 // Notification names
 let LSLGWindowLogUpdate      = "LSLGWindowLogUpdate"
-let LSLGWindowPipelineChange = "LSLGWindowPipelineChange"
 let LSLGWindowFolderChange   = "LSLGWindowFolderChange"
 
 
@@ -36,11 +35,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         if let info = savedInfo {
             // This will create a new AssetManager
             monitorFolder( info["path"]! )
-            
-            useAsset(info["model"]!,    type: .Model)
-            useAsset(info["vertex"]!,   type: .VertexShader)
-            useAsset(info["fragment"]!, type: .FragmentShader)
-            useAsset(info["geometry"]!, type: .GeometryShader)
+            assetManager.initialAssetsInfo = info
         }
         
         // Window view related
@@ -52,8 +47,6 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         w.createSubviews()
         w.makeKeyAndOrderFront(nil)
         WindowControllerArray.append(self)
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector:"onAssetUpdate:", name: LSLGAssetUpdate, object: nil)
     }
    
     /* Log Related Functions */
@@ -89,68 +82,18 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
     
-    /* Watch changes in folder */
+    /* Asset Management */
     var folderPath:String { return assetManager.folderPath }
-    private var assetManager = LSLGAssetManager(path:"")
+    private(set) var assetManager = LSLGAssetManager()
     func monitorFolder(path:String) {
         if path.isEmpty { return }
         
-        var newAssetM = LSLGAssetManager( path:path )
-        if newAssetM.folderPath.isEmpty {
-            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
-        } else {
-            assetManager = newAssetM
+        if assetManager.watchFolder( path ) {
             NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil) )
             appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\(path.lastPathComponent)'" )
-        }
-    }
-    
-
-    /* Shader & Model */
-    var glGeomShaders :[LSLGAsset] { return assetManager.assetsByType( .GeometryShader ) }
-    var glFragShaders :[LSLGAsset] { return assetManager.assetsByType( .FragmentShader ) }
-    var glVertShaders :[LSLGAsset] { return assetManager.assetsByType( .VertexShader) }
-    var glModels      :[LSLGAsset] { return assetManager.assetsByType( .Model ) }
-    
-    var glCurrModel      :LSLGAsset { return assetManager.getUsingAsset( .Model )! }
-    var glCurrVertShader :LSLGAsset { return assetManager.getUsingAsset( .VertexShader )! }
-    var glCurrFragShader :LSLGAsset { return assetManager.getUsingAsset( .FragmentShader )! }
-    var glCurrGeomShader :LSLGAsset { return assetManager.getUsingAsset( .GeometryShader )! }
-    
-    func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetManager.assetsByType(  type )  }
-    func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return assetManager.getUsingAsset( type )! }
-    
-    func useAsset( name:String, type:LSLGAssetType ) {
-        if let a = assetManager.assetByName( name, type:type) {
-            useAsset( a )
         } else {
-            println("Using invalid asset \(name)")
+            appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
         }
-    }
-    func useAsset( asset:LSLGAsset ) {
-        if assetManager.useAsset( asset ) {
-            NSNotificationCenter.defaultCenter().postNotification(
-                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["newAsset":asset])
-            )
-        } else {
-            println("Using invalid asset \(asset)")
-        }
-    }
-    
-    func onAssetUpdate(n:NSNotification) {
-        var sendNotify = false
-        if let asset = n.object as? LSLGAsset {
-            if asset == glCurrAsset( asset.type ) {
-                sendNotify = true
-            } else if let range = asset.path.rangeOfString( folderPath ) {
-                sendNotify = true
-            }
-        }
-        
-        if (!sendNotify) { return }
-        NSNotificationCenter.defaultCenter().postNotification(
-            NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["asset":n.object!])
-        )
     }
     
     
@@ -179,10 +122,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         for c in WindowControllerArray {
             infos.append( [
                 "path"     : c.folderPath
-              , "model"    : c.glCurrModel.name
-              , "vertex"   : c.glCurrVertShader.name
-              , "fragment" : c.glCurrFragShader.name
-              , "geometry" : c.glCurrGeomShader.name
+              , "model"    : c.assetManager.glCurrModel.name
+              , "vertex"   : c.assetManager.glCurrVertShader.name
+              , "fragment" : c.assetManager.glCurrFragShader.name
+              , "geometry" : c.assetManager.glCurrGeomShader.name
             ] )
         }
         

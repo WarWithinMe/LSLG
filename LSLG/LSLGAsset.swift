@@ -27,7 +27,6 @@ enum LSLGAssetType:Int {
     }
 }
 
-let LSLGAssetUpdate = "LSLGAssetUpdate"
 let LSLGAssetInitFailure = "LSLGAssetInitFailure"
 
 class LSLGAsset: NSObject {
@@ -97,7 +96,6 @@ class LSLGAsset: NSObject {
     func update(){
         glAssetInited = false
         initError = ""
-        NSNotificationCenter.defaultCenter().postNotificationName(LSLGAssetUpdate, object: self)
     }
     
     func retrieveGLAsset() -> GLuint? {
