@@ -261,6 +261,11 @@ class LSLGSegmentedControl: NSView {
         super.layout()
     }
     
+    override func layer(layer: CALayer, shouldInheritContentsScale s: CGFloat, fromWindow w: NSWindow) -> Bool {
+        println("changed contentsscale")
+        return true
+    }
+    
     private func visibleItemRange() -> (Int, Int) {
         // First Visible Item ( in reversed order )
         var firstVIndex = items.count - 1
