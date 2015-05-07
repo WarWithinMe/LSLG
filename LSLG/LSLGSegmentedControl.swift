@@ -218,11 +218,7 @@ class LSLGSegmentedControl: NSView {
         return nil
     }
     
-    func updateFrame() {
-        needsDisplay = true
-        needsLayout = true
-        textLayer.setNeedsDisplay()
-    }
+    func updateFrame() { needsLayout = true }
     
     override func layout() {
         for item in items {
@@ -259,6 +255,8 @@ class LSLGSegmentedControl: NSView {
         )
         
         super.layout()
+        
+        textLayer.setNeedsDisplay()
     }
     
     override func layer(layer: CALayer, shouldInheritContentsScale s: CGFloat, fromWindow w: NSWindow) -> Bool {
