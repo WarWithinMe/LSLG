@@ -14,6 +14,9 @@ protocol LSLGFolderMonitorDelegate: class {
     func onFolderChanged( added:[String], _ modified:[String], _ removed:[String] )
 }
 
+/*
+    Currently the LSLGFolderMonitor cannot handle the event of Folder Removal
+*/
 class LSLGFolderMonitor {
     
     static var eventQueue = dispatch_queue_create("wwm.LSLGFolderMonitor",  DISPATCH_QUEUE_SERIAL) 
@@ -94,6 +97,9 @@ class LSLGFolderMonitor {
         if let contents = manager.contentsOfDirectoryAtPath( folderPath, error:nil ) as? [String] {
             for file in contents
             {
+                // Explicitly ignore .DS_Store
+                if file == ".DS_Store" { continue }
+                
                 var filePath = folderPath.stringByAppendingPathComponent(file)
                 var attributes = manager.attributesOfItemAtPath( filePath, error:nil )
                 if attributes == nil { continue }
