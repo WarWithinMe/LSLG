@@ -23,10 +23,10 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         // Add default assets
         for asset in LSLGAsset.DefaultAssets { assetMap[asset.assetKey] = asset }
         
-        useAsset( "Suzanne", type: .Model )
-        useAsset( "BuiltIn", type: .VertexShader )
-        useAsset( "BuiltIn", type: .FragmentShader )
-        useAsset( "BuiltIn", type: .GeometryShader )
+        useDefaultAsset( .Model )
+        useDefaultAsset( .VertexShader )
+        useDefaultAsset( .FragmentShader )
+        useDefaultAsset( .GeometryShader )
     }
     
     func watchFolder( path:String )-> Bool {
@@ -70,7 +70,13 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         }
         
         for path in removed {
-            assetMap[ path ] = nil
+            if let a = assetMap[path] {
+                if isAssetUsing( a ) {
+                    pipelineUpdated = true
+                    useDefaultAsset(a.type)
+                }
+                assetMap[ path ] = nil
+            }
         }
         
         // This method is called by monitor after it has init read the folder
@@ -131,6 +137,17 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
             println("Using asset \(asset.name)")
         } else {
             println("Using invalid asset \(asset.name)")
+        }
+    }
+    
+    func useDefaultAsset( assetType:LSLGAssetType ) {
+        var name = ""
+        switch assetType {
+            case .Model: name = "Suzanne"
+            default:     name = "BuiltIn"
+        }
+        if !name.isEmpty {
+            usingAssetMap[assetType] = assetByName( name, type:assetType )!
         }
     }
     
