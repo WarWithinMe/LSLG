@@ -8,7 +8,8 @@
 
 import Cocoa
 
-let LSLGWindowPipelineChange = "LSLGWindowPipelineChange"
+let LSLGWindowPipelineChange  = "LSLGWindowPipelineChange"
+let LSLGWindowAssetsAvailable = "LSLGWindowAssetsAvailable"
 
 class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
@@ -51,6 +52,9 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     }
     
     func onFolderChanged(added: [String], _ modified: [String], _ removed: [String]) {
+        
+        var pipelineUpdated = false
+        
         for path in added {
             if let a = LSLGAsset.assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
                 assetMap[ path ] = a
@@ -58,7 +62,11 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         }
         
         for path in modified {
-            assetMap[ path ]?.update()
+            var a = assetMap[ path ]
+            a?.update()
+            if a != nil && isAssetUsing( a! ) {
+                pipelineUpdated = true
+            }
         }
         
         for path in removed {
@@ -73,6 +81,16 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
             useAsset(info["vertex"]!,   type: .VertexShader)
             useAsset(info["fragment"]!, type: .FragmentShader)
             useAsset(info["geometry"]!, type: .GeometryShader)
+        } else if pipelineUpdated {
+            NSNotificationCenter.defaultCenter().postNotification(
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:nil)
+            )
+        }
+        
+        if !(added.isEmpty && removed.isEmpty) {
+            NSNotificationCenter.defaultCenter().postNotification(
+                NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:nil)
+            )
         }
     }
     
@@ -95,7 +113,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         return nil
     }
     
-    func getUsingAsset( type:LSLGAssetType )-> LSLGAsset? { return usingAssetMap[type] }
+    func isAssetUsing( asset:LSLGAsset )-> Bool { return glCurrAsset( asset.type ) == asset }
     
     func useAsset( name:String, type:LSLGAssetType ) {
         if let a = assetByName( name, type:type) { useAsset( a ) }
@@ -103,10 +121,12 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     func useAsset( asset:LSLGAsset ) {
         if assetMap[asset.assetKey] != nil {
+            if usingAssetMap[ asset.type ] == asset { return }
+            
             usingAssetMap[asset.type] = asset
             
             NSNotificationCenter.defaultCenter().postNotification(
-                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["newAsset":asset])
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:nil)
             )
             println("Using asset \(asset.name)")
         } else {
@@ -119,27 +139,11 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     var glVertShaders :[LSLGAsset] { return assetsByType( .VertexShader) }
     var glModels      :[LSLGAsset] { return assetsByType( .Model ) }
     
-    var glCurrModel      :LSLGAsset { return getUsingAsset( .Model )! }
-    var glCurrVertShader :LSLGAsset { return getUsingAsset( .VertexShader )! }
-    var glCurrFragShader :LSLGAsset { return getUsingAsset( .FragmentShader )! }
-    var glCurrGeomShader :LSLGAsset { return getUsingAsset( .GeometryShader )! }
+    var glCurrModel      :LSLGAsset { return glCurrAsset( .Model ) }
+    var glCurrVertShader :LSLGAsset { return glCurrAsset( .VertexShader ) }
+    var glCurrFragShader :LSLGAsset { return glCurrAsset( .FragmentShader ) }
+    var glCurrGeomShader :LSLGAsset { return glCurrAsset( .GeometryShader ) }
     
     func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetsByType(  type )  }
-    func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return getUsingAsset( type )! }
-    
-//    func onAssetUpdate(n:NSNotification) {
-//        var sendNotify = false
-//        if let asset = n.object as? LSLGAsset {
-//            if asset == glCurrAsset( asset.type ) {
-//                sendNotify = true
-//            } else if let range = asset.path.rangeOfString( folderPath ) {
-//                sendNotify = true
-//            }
-//        }
-//        
-//        if (!sendNotify) { return }
-//        NSNotificationCenter.defaultCenter().postNotification(
-//            NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["asset":n.object!])
-//        )
-//    }
+    func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return usingAssetMap[type]! }
 }

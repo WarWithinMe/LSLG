@@ -30,6 +30,13 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
           , name     : LSLGWindowPipelineChange
           , object   : nil
         )
+        
+        NSNotificationCenter.defaultCenter().addObserver(
+            self
+          , selector : "onPipelineChange:"
+          , name     : LSLGWindowAssetsAvailable
+          , object   : nil
+        )
     }
     
     private var logView:LSLGLogView? = nil
