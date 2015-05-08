@@ -12,6 +12,8 @@ import GLKit
 
 class LSLGOpenGLView: NSOpenGLView {
     
+    override var mouseDownCanMoveWindow:Bool { return true }
+    
     private var initError:String = ""
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
