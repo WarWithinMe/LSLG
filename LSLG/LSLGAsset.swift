@@ -94,21 +94,26 @@ class LSLGAsset: NSObject {
     // When the content in the file system changes, this method is called.
     // Typically called by AssetManager
     func update(){
-        glAssetInited = false
         initError = ""
-    }
-    
-    func retrieveGLAsset() -> GLuint? {
-        if glAssetInited == false {
-            glAssetInited = initGLAsset()
+        if glAssetInited {
+            delGLAsset()
+            glAsset = nil
         }
-        return glAssetInited ? getGLAsset() : nil
     }
     
-    private var glAssetInited = false
+    func getGLAsset() -> GLuint? {
+        if !glAssetInited { initGLAsset() }
+        return glAsset
+    }
+    
+    var glAssetInited:Bool { return glAsset != nil  }
+    private var glAsset:GLuint?
     private(set) var initError:String = ""
     private func initGLAsset() -> Bool { return false }
-    private func getGLAsset() -> GLuint? { return nil }
+    private func delGLAsset() {}
+    deinit {
+        if glAssetInited { delGLAsset() }
+    }
 }
 
 
@@ -150,9 +155,8 @@ class LSLGAssetShader : LSLGAsset {
         self.markAsBuiltIn()
     }
     
-    private var shaderHandle  : GLuint = 0
+    override func delGLAsset() { glDeleteShader(glAsset!) }
     
-    override func getGLAsset() -> GLuint? { return shaderHandle }
     override func initGLAsset()-> Bool {
         // Get shader source
         var shaderContent:NSString? = self.shaderContent
@@ -192,14 +196,14 @@ class LSLGAssetShader : LSLGAsset {
                 NSNotificationCenter.defaultCenter().postNotificationName(
                     LSLGAssetInitFailure
                   , object:self
-                  , userInfo:["info":NSString(bytes: &log, length:Int(logLength), encoding: NSASCIIStringEncoding)!]
+                  , userInfo:["info":NSString(bytes: &log, length:Int(logLength), encoding: NSUTF8StringEncoding)!]
                 )
             }
             
             return false
         }
         
-        self.shaderHandle = shaderHandle
+        glAsset = shaderHandle
         return true
     }
 }
