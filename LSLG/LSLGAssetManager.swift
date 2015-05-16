@@ -23,6 +23,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         // Add default assets
         for asset in LSLGAsset.DefaultAssets { assetMap[asset.assetKey] = asset }
         
+        useDefaultAsset( .Image )
         useDefaultAsset( .Model )
         useDefaultAsset( .VertexShader )
         useDefaultAsset( .FragmentShader )
@@ -83,10 +84,11 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         if let info = initialAssetsInfo {
             initialAssetsInfo = nil
             
-            useAsset(info["model"]!,    type: .Model)
-            useAsset(info["vertex"]!,   type: .VertexShader)
-            useAsset(info["fragment"]!, type: .FragmentShader)
-            useAsset(info["geometry"]!, type: .GeometryShader)
+            useAsset(info["texture"],  type: .Image)
+            useAsset(info["model"],    type: .Model)
+            useAsset(info["vertex"],   type: .VertexShader)
+            useAsset(info["fragment"], type: .FragmentShader)
+            useAsset(info["geometry"], type: .GeometryShader)
         } else if pipelineUpdated {
             NSNotificationCenter.defaultCenter().postNotification(
                 NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:nil)
@@ -121,8 +123,10 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     func isAssetUsing( asset:LSLGAsset )-> Bool { return glCurrAsset( asset.type ) == asset }
     
-    func useAsset( name:String, type:LSLGAssetType ) {
-        if let a = assetByName( name, type:type) { useAsset( a ) }
+    func useAsset( name:String?, type:LSLGAssetType ) {
+        if name != nil {
+            if let a = assetByName( name!, type:type) { useAsset( a ) }
+        }
     }
     
     func useAsset( asset:LSLGAsset ) {
@@ -144,6 +148,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         var name = ""
         switch assetType {
             case .Model: name = "Suzanne"
+            case .Image: name = "None"
             default:     name = "BuiltIn"
         }
         if !name.isEmpty {
@@ -155,11 +160,14 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     var glFragShaders :[LSLGAsset] { return assetsByType( .FragmentShader ) }
     var glVertShaders :[LSLGAsset] { return assetsByType( .VertexShader) }
     var glModels      :[LSLGAsset] { return assetsByType( .Model ) }
+    var glTextures    :[LSLGAsset] { return assetsByType( .Image ) }
     
     var glCurrModel      :LSLGAsset { return glCurrAsset( .Model ) }
     var glCurrVertShader :LSLGAsset { return glCurrAsset( .VertexShader ) }
     var glCurrFragShader :LSLGAsset { return glCurrAsset( .FragmentShader ) }
     var glCurrGeomShader :LSLGAsset { return glCurrAsset( .GeometryShader ) }
+    
+    var glCurrTexture    :LSLGAsset { return glCurrAsset( .Image ) }
     
     func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetsByType(  type )  }
     func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return usingAssetMap[type]! }

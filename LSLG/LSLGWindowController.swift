@@ -126,6 +126,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
               , "vertex"   : c.assetManager.glCurrVertShader.name
               , "fragment" : c.assetManager.glCurrFragShader.name
               , "geometry" : c.assetManager.glCurrGeomShader.name
+              , "texture"  : c.assetManager.glCurrTexture.name
             ] )
         }
         

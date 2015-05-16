@@ -19,6 +19,7 @@ enum LSLGIconType:String {
     case Geometry = "M12,2L2,2L2,14L12,14L12,2ZM9,9L9,11L5,11L5,5L11,5L11,3L3,3L3,13L11,13L11,7L7,7L7,9L9,9Z"
     case Vertex   = "M12,2L2,2L2,14L12,14L12,2ZM8,12L8,13L6,13L6,12L4,12L4,11L3,11L3,3L5,3L5,10L6,10L6,11L8,11L8,10L9,10L9,3L11,3L11,11L10,11L10,12L8,12Z"
     case Model    = "M13,2L3,2L3,14L13,14L13,2ZM10,4L10,3L12,3L12,13L10,13L10,6L9,6L9,7L7,7L7,6L6,6L6,13L4,13L4,3L6,3L6,4L7,4L7,5L9,5L9,4L10,4Z"
+    case Texture  = "M12,2L2,2L2,14L12,14L12,2ZM8,13L6,13L6,5L3,5L3,3L11,3L11,5L8,5L8,13Z"
 }
 
 class LSLGIcon {
@@ -68,5 +69,6 @@ class LSLGIcon {
     static let Fragment:LSLGIcon = LSLGIcon(type: .Fragment, width:14)
     static let Geometry:LSLGIcon = LSLGIcon(type: .Geometry, width:14)
     static let Vertex:LSLGIcon   = LSLGIcon(type: .Vertex,   width:14)
+    static let Texture:LSLGIcon  = LSLGIcon(type: .Texture,  width:14)
     static let Model:LSLGIcon    = LSLGIcon(type: .Model)
 }
