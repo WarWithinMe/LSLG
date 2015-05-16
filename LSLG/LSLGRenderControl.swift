@@ -55,7 +55,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         switch item.id {
             case "Log":
                 if logView != nil {
-                    logView!.removeFromSuperview()
+                    (window as! LSLGWindow).removeContent( logView! )
                     logView = nil
                     item.selected = false
                 } else {

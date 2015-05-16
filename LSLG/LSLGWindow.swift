@@ -105,6 +105,15 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         registerForDraggedTypes([NSFilenamesPboardType])
     }
     
+    func removeContent(view:NSView) {
+        if let rcv:AnyObject = realContentView.subviews.first {
+            if rcv === view {
+                view.removeFromSuperview()
+                setContent( oglView )
+            }
+        }
+    }
+    
     func setContent(view:NSView, fillWindow:Bool = true) {
         if let rcv:AnyObject = realContentView.subviews.first {
             if rcv === view {
