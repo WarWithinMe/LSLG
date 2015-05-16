@@ -126,6 +126,8 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         realContentView.addSubview(view)
     }
     
+    func renderGL() { oglView.needsDisplay = true }
+    
     func quickLog(desc:String, _ isError:Bool) { quickLogView.scheduleLog( desc, isError ) }
     
     private var dndHighlight:CALayer?

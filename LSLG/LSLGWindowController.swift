@@ -47,6 +47,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         w.createSubviews()
         w.makeKeyAndOrderFront(nil)
         WindowControllerArray.append(self)
+        
+        NSNotificationCenter.defaultCenter().addObserver(
+            self, selector: "pipelineUpdated:", name: LSLGWindowPipelineChange, object: nil
+        )
     }
    
     /* Log Related Functions */
@@ -94,6 +98,11 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         } else {
             appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
         }
+    }
+    
+    func pipelineUpdated( aNotify:NSNotification ) {
+        if assetManager != (aNotify.object as? LSLGAssetManager) { return }
+        (window as! LSLGWindow).renderGL()
     }
     
     
