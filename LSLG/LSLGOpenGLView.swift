@@ -73,32 +73,76 @@ class LSLGOpenGLView: NSOpenGLView {
     
     override func drawRect(dirtyRect: NSRect) {
         openGLContext.makeCurrentContext()
-        var assetManager = (window?.windowController() as! LSLGWindowController).assetManager
         
-        if ( __updateModel || true ) {
-            glBindVertexArray( assetManager.glCurrModel.getGLAsset() )
+        var controller   = window?.windowController() as! LSLGWindowController
+        var assetManager = controller.assetManager
+        var asset:GLuint = 0
+        
+        if ( __updateModel ) {
+            asset = assetManager.glCurrModel.getGLAsset()
+            if asset == 0 {
+                controller.appendLog(
+                    "Failed to load model '\(assetManager.glCurrModel.name)': \(assetManager.glCurrModel.initError)"
+                  , isError: true, desc: "Failed to load model"
+                )
+            } else {
+                glBindVertexArray( asset )
+            }
             __updateModel = false
         }
         
         if ( __updateProgram ) {
-            var program = glCreateProgram()
+            if glProgram != 0 { glDeleteProgram( glProgram ) }
             
-            glAttachShader( program, assetManager.glCurrVertShader.getGLAsset() )
-            glAttachShader( program, assetManager.glCurrFragShader.getGLAsset() )
-            var geo = assetManager.glCurrGeomShader
-            if (!geo.isBuiltIn) { glAttachShader( program, geo.getGLAsset() ) }
+            glProgram = glCreateProgram()
             
-            glProgram = program
+            var shader = assetManager.glCurrVertShader 
+            asset = shader.getGLAsset()
+            if asset == 0 {
+                controller.appendLog(
+                    "Failed to compile vertex shader '\(shader.name)': \(shader.initError)"
+                    , isError: true, desc: "Failed to compile vertex shader"
+                )
+            } else {
+                glAttachShader( glProgram, asset )
+            }
             
-            glLinkProgram(program)
-            glUseProgram(program)
+            shader = assetManager.glCurrFragShader 
+            asset  = shader.getGLAsset()
+            if asset == 0 {
+                controller.appendLog(
+                    "Failed to compile fragment shader '\(shader.name)': \(shader.initError)"
+                  , isError: true, desc: "Failed to compile fragment shader"
+                )
+            } else {
+                glAttachShader( glProgram, asset )
+            }
+            
+            shader = assetManager.glCurrGeomShader
+            if (!shader.isBuiltIn) {
+                asset = shader.getGLAsset()
+                if asset == 0 {
+                    controller.appendLog(
+                        "Failed to compile geometry shader '\(shader.name)': \(shader.initError)"
+                        , isError: true, desc: "Failed to compile geometry shader"
+                    )
+                } else {
+                    glAttachShader( glProgram, asset )
+                }
+            }
+            
+            glLinkProgram(glProgram)
+            glUseProgram(glProgram)
             
             var success:GLint = 0
-            glGetProgramiv(program, GLenum(GL_LINK_STATUS), &success)
+            glGetProgramiv(glProgram, GLenum(GL_LINK_STATUS), &success)
             if (success == GL_FALSE) {
                 var infoLog = [GLchar](count:512,repeatedValue:0)
-                glGetProgramInfoLog(program, 512, nil, &infoLog)
-                println("\(NSString(CString: &infoLog, encoding: NSASCIIStringEncoding))")
+                glGetProgramInfoLog(glProgram, 512, nil, &infoLog)
+                controller.appendLog(
+                    NSString(CString: &infoLog, encoding: NSASCIIStringEncoding)! as String
+                  , isError: true, desc: "Failed to link program"
+                )
             }
             
             __updateProgram = false
@@ -115,7 +159,6 @@ class LSLGOpenGLView: NSOpenGLView {
         var projection = [GLfloat](count:16, repeatedValue:0)
         var mvp        = [GLfloat](count:16, repeatedValue:0)
         
-        glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
         
 //        // Calculate the projection matrix
 //        mtxLoadPerspective(projection, 90, (float)m_viewWidth / (float)m_viewHeight,5.0,10000);
@@ -134,11 +177,16 @@ class LSLGOpenGLView: NSOpenGLView {
         // Cull back faces now that we no longer render with an inverted matrix
         // glCullFace( GLenum(GL_BACK) )
         
-        println("render\(glGetError())")
         //glDrawArrays( GLenum(GL_TRIANGLES), 0, 6 )
+        
+        glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
         glDrawElements( GLenum(GL_TRIANGLES), 6, GLenum(GL_UNSIGNED_INT), UnsafePointer<Void>(bitPattern:0))
-        println("render\(glGetError())")
         openGLContext.flushBuffer()
+        
+        if Int32(glGetError()) != GL_NO_ERROR {
+            // TODO: appending log in render() might flood the logs.
+            controller.appendLog("Failed to render", isError: true, desc: "Failed to render")
+        }
     }
     
     private var __updateModel:Bool   = true
@@ -150,4 +198,10 @@ class LSLGOpenGLView: NSOpenGLView {
     func updateModel()   { needsDisplay = true; __updateModel   = true }
     func updateProgram() { needsDisplay = true; __updateProgram = true }
     func updateTexture() { needsDisplay = true; __updateTexture = true }
+    
+    deinit {
+        if glProgram != 0 {
+            glDeleteProgram( glProgram )
+        }
+    }
 }
