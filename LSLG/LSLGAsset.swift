@@ -113,9 +113,9 @@ class LSLGAsset: NSObject {
         }
     }
     
-    func getGLAsset() -> GLuint? {
+    func getGLAsset() -> GLuint {
         if !glAssetInited { initGLAsset() }
-        return glAsset
+        return glAsset == nil ? 0 : glAsset!
     }
     
     var glAssetInited:Bool { return glAsset != nil  }
@@ -239,6 +239,31 @@ class LSLGAssetModel : LSLGAsset {
     class func sphere()->  LSLGAsset { return LSLGAssetModel(name:"Sphere")  }
     class func donut()->   LSLGAsset { return LSLGAssetModel(name:"Donut")   }
     class func suzanne()-> LSLGAsset { return LSLGAssetModel(name:"Suzanne") }
+    
+    private override func delGLAsset() { glDeleteVertexArrays(1, &glAsset!) }
+    private override func initGLAsset() -> Bool {
+        var vbo:GLuint = 0
+        glGenBuffers(1, &vbo)
+        
+        var vao:GLuint = 0
+        glGenVertexArrays(1, &vao)
+        
+        var vertices:[GLfloat] = [
+            -0.5, -0.5, 0.0
+          ,  0.5, -0.5, 0.0
+          ,  0.0,  0.5, 0.0
+        ]
+        
+        glBindVertexArray(vao)
+        glBindBuffer( GLenum(GL_ARRAY_BUFFER), vbo )
+        glBufferData( GLenum(GL_ARRAY_BUFFER), vertices.count * sizeof(GLfloat), &vertices, GLenum(GL_STATIC_DRAW) )
+        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(3*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:0) )
+        glEnableVertexAttribArray(0)
+        glBindVertexArray(0)
+        
+        glAsset = vao
+        return true
+    }
 }
 
 
