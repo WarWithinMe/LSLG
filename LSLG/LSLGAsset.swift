@@ -242,25 +242,28 @@ class LSLGAssetModel : LSLGAsset {
     
     private override func delGLAsset() { glDeleteVertexArrays(1, &glAsset!) }
     private override func initGLAsset() -> Bool {
-        var vbo:GLuint = 0
-        glGenBuffers(1, &vbo)
+        
+        var vertices = LSLGModelCubeVertex
+        var indices  = LSLGModelCubeIndex
         
         var vao:GLuint = 0
         glGenVertexArrays(1, &vao)
-        
-        var vertices:[GLfloat] = [
-            -0.5, -0.5, 0.0
-          ,  0.5, -0.5, 0.0
-          ,  0.0,  0.5, 0.0
-        ]
-        
         glBindVertexArray(vao)
+        
+        var vbo:GLuint = 0
+        glGenBuffers(1, &vbo)
         glBindBuffer( GLenum(GL_ARRAY_BUFFER), vbo )
         glBufferData( GLenum(GL_ARRAY_BUFFER), vertices.count * sizeof(GLfloat), &vertices, GLenum(GL_STATIC_DRAW) )
+        
         glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(3*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:0) )
         glEnableVertexAttribArray(0)
-        glBindVertexArray(0)
         
+        var ebo:GLuint = 0
+        glGenBuffers(1, &ebo)
+        glBindBuffer( GLenum(GL_ELEMENT_ARRAY_BUFFER), ebo )
+        glBufferData( GLenum(GL_ELEMENT_ARRAY_BUFFER), indices.count * sizeof(GLuint), &indices, GLenum(GL_STATIC_DRAW) )
+        
+        glBindVertexArray(0)
         glAsset = vao
         return true
     }

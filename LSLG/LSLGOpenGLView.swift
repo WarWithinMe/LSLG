@@ -135,7 +135,8 @@ class LSLGOpenGLView: NSOpenGLView {
         // glCullFace( GLenum(GL_BACK) )
         
         println("render\(glGetError())")
-        glDrawArrays( GLenum(GL_TRIANGLES), 0, 3 )
+        //glDrawArrays( GLenum(GL_TRIANGLES), 0, 6 )
+        glDrawElements( GLenum(GL_TRIANGLES), 6, GLenum(GL_UNSIGNED_INT), UnsafePointer<Void>(bitPattern:0))
         println("render\(glGetError())")
         openGLContext.flushBuffer()
     }

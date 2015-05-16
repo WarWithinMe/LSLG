@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A503ABE61AD7D5CE00BABA9B /* LSLGWindowElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A503ABE51AD7D5CE00BABA9B /* LSLGWindowElement.swift */; };
+		A5117E0C1B074AEB0091EA29 /* LSLGAssetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5117E0B1B074AEB0091EA29 /* LSLGAssetData.swift */; };
 		A51B65541AD7B2CF008EAA9D /* LSLGQuickLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51B65531AD7B2CF008EAA9D /* LSLGQuickLog.swift */; };
 		A531407B1AD3D76D00419887 /* LSLGLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A531407A1AD3D76D00419887 /* LSLGLogView.swift */; };
 		A531407D1AD3DA8400419887 /* LSLGWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A531407C1AD3DA8400419887 /* LSLGWindowController.swift */; };
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		A503ABE51AD7D5CE00BABA9B /* LSLGWindowElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindowElement.swift; sourceTree = "<group>"; };
+		A5117E0B1B074AEB0091EA29 /* LSLGAssetData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGAssetData.swift; sourceTree = "<group>"; };
 		A51B65531AD7B2CF008EAA9D /* LSLGQuickLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGQuickLog.swift; sourceTree = "<group>"; };
 		A531407A1AD3D76D00419887 /* LSLGLogView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGLogView.swift; sourceTree = "<group>"; };
 		A531407C1AD3DA8400419887 /* LSLGWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindowController.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 			isa = PBXGroup;
 			children = (
 				A5DDD3DF1ACA89F400303D71 /* LSLGAppDelegate.swift */,
+				A5117E0B1B074AEB0091EA29 /* LSLGAssetData.swift */,
 				A586C27F1AEA434100CE2DC1 /* LSLGAsset.swift */,
 				A5877E4E1AE8CC260089F33A /* LSLGAssetManager.swift */,
 				A548B2531AFB7BE900DEF48D /* LSLGFolderMonitor.swift */,
@@ -272,6 +275,7 @@
 				A5DDD3E01ACA89F400303D71 /* LSLGAppDelegate.swift in Sources */,
 				A5B20BB21ACA911D000F17AB /* LSLGWindow.swift in Sources */,
 				A543C5CC1ACE97F800C9F0E8 /* PocketSVG.m in Sources */,
+				A5117E0C1B074AEB0091EA29 /* LSLGAssetData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
