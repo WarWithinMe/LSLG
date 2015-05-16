@@ -26,7 +26,7 @@ class LSLGOpenGLView: NSOpenGLView {
         var pfAttr:[NSOpenGLPixelFormatAttribute] = [
             UInt32(NSOpenGLPFADoubleBuffer)
           , UInt32(NSOpenGLPFADepthSize), 24
-          , UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion3_2Core)
+          , UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion4_1Core)
           , 0
         ] 
         var pf = NSOpenGLPixelFormat(attributes: pfAttr)
@@ -40,9 +40,6 @@ class LSLGOpenGLView: NSOpenGLView {
             initError = "Failed to create OGL context"
             return
         }
-        
-        // Turn this on for OpenGL newbie
-        CGLEnable(ctx!.CGLContextObj, kCGLCECrashOnRemovedFunctions);
         
         pixelFormat = pf
         openGLContext = ctx
@@ -76,5 +73,80 @@ class LSLGOpenGLView: NSOpenGLView {
     
     override func drawRect(dirtyRect: NSRect) {
         openGLContext.makeCurrentContext()
+        var assetManager = (window?.windowController() as! LSLGWindowController).assetManager
+        
+        if ( __updateModel || true ) {
+            glBindVertexArray( assetManager.glCurrModel.getGLAsset() )
+            __updateModel = false
+        }
+        
+        if ( __updateProgram ) {
+            var program = glCreateProgram()
+            
+            glAttachShader( program, assetManager.glCurrVertShader.getGLAsset() )
+            glAttachShader( program, assetManager.glCurrFragShader.getGLAsset() )
+            var geo = assetManager.glCurrGeomShader
+            if (!geo.isBuiltIn) { glAttachShader( program, geo.getGLAsset() ) }
+            
+            glProgram = program
+            
+            glLinkProgram(program)
+            glUseProgram(program)
+            
+            var success:GLint = 0
+            glGetProgramiv(program, GLenum(GL_LINK_STATUS), &success)
+            if (success == GL_FALSE) {
+                var infoLog = [GLchar](count:512,repeatedValue:0)
+                glGetProgramInfoLog(program, 512, nil, &infoLog)
+                println("\(NSString(CString: &infoLog, encoding: NSASCIIStringEncoding))")
+            }
+            
+            __updateProgram = false
+        }
+        
+        if ( __updateTexture && false ) {
+            glBindTexture( GLenum(GL_TEXTURE_2D), assetManager.glCurrTexture.getGLAsset() )
+            __updateTexture = false
+        }
+        
+        // Render 3D Content
+        // Set up the modelview and projection matricies
+        var modelView  = [GLfloat](count:16, repeatedValue:0)
+        var projection = [GLfloat](count:16, repeatedValue:0)
+        var mvp        = [GLfloat](count:16, repeatedValue:0)
+        
+        glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
+        
+//        // Calculate the projection matrix
+//        mtxLoadPerspective(projection, 90, (float)m_viewWidth / (float)m_viewHeight,5.0,10000);
+//        // Calculate the modelview matrix to render our character at the proper position and rotation
+//        mtxLoadTranslate(modelView, 0, 150, -1050);
+//        mtxRotateXApply(modelView, -90.0f);	
+//        mtxRotateApply(modelView, m_characterAngle, 0.7, 0.3, 1);
+//        // Multiply the modelview and projection matrix and set it in the shader
+//        mtxMultiply(mvp, projection, modelView);
+        
+        // Have our shader use the modelview projection matrix 
+        // that we calculated above
+        // glGetUniformLocation( glProgram, "projection" )
+        // glUniformMatrix4fv(m_characterMvpUniformIdx, 1, GL_FALSE, [1,0,0,0 ,0,1,0,0 ,0,0,0,1]);
+        
+        // Cull back faces now that we no longer render with an inverted matrix
+        // glCullFace( GLenum(GL_BACK) )
+        
+        println("render\(glGetError())")
+        glDrawArrays( GLenum(GL_TRIANGLES), 0, 3 )
+        println("render\(glGetError())")
+        openGLContext.flushBuffer()
     }
+    
+    private var __updateModel:Bool   = true
+    private var __updateProgram:Bool = true
+    private var __updateTexture:Bool = true
+    
+    private var glProgram:GLuint = 0
+    
+    func updateModel()   { needsDisplay = true; __updateModel   = true }
+    func updateProgram() { needsDisplay = true; __updateProgram = true }
+    func updateTexture() { needsDisplay = true; __updateTexture = true }
 }
