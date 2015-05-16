@@ -27,6 +27,17 @@ enum LSLGAssetType:Int {
     }
 }
 
+ func glErrorString( error:Int32 )-> String {
+    switch error {
+        case GL_INVALID_ENUM: return "GL_INVALID_ENUM"
+        case GL_INVALID_VALUE: return "GL_INVALID_VALUE"
+        case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION"
+        case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY"
+        case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION"
+        default: return "GL_NO_ERROR"
+    }
+}
+
 let LSLGAssetInitFailure = "LSLGAssetInitFailure"
 
 class LSLGAsset: NSObject {
@@ -89,6 +100,7 @@ class LSLGAsset: NSObject {
       , LSLGAssetModel.donut()
       , LSLGAssetModel.sphere()
       , LSLGAssetModel.cube()
+      , LSLGAssetImage.defaultAsset()
     ]
     
     // When the content in the file system changes, this method is called.
@@ -131,6 +143,91 @@ func > (l:LSLGAsset, r:LSLGAsset)->Bool {
 /* Subclass */
 class LSLGAssetImage : LSLGAsset {
     override var type:LSLGAssetType { return .Image }
+    
+    class func defaultAsset()->LSLGAsset {
+        var a = LSLGAssetImage(path:"")
+        a.markAsBuiltIn()
+        a.name = "None"
+        return a
+    }
+    
+    private func getImageRep()->NSBitmapImageRep? {
+        if (isBuiltIn) {
+            var rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 1, pixelsHigh: 1, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: NSCalibratedRGBColorSpace, bytesPerRow: 0, bitsPerPixel: 0)
+            var transparent = 0
+            rep?.setPixel(&transparent, atX: 0, y: 0)
+            return rep
+        } else {
+            return NSImage( contentsOfFile: path )?.representations[0] as? NSBitmapImageRep
+        }
+    }
+    
+    private override func delGLAsset() { glDeleteTextures(1, &glAsset!) }
+    private override func initGLAsset() -> Bool {
+        
+        var error = ""
+        
+        if let imageRep = getImageRep() {
+            
+            let components = imageRep.samplesPerPixel
+            
+            var t1:[GLenum]
+            
+            if (imageRep.samplesPerPixel == 4) {
+                t1 = [ GLenum( GL_RGBA ), GLenum( GL_BGRA ), GLenum( GL_UNSIGNED_INT_8_8_8_8_REV ) ]
+                println("The image's component is 4")
+            } else {
+                t1 = [ GLenum( GL_RGB ), GLenum( GL_BGR ), GLenum( GL_UNSIGNED_BYTE ) ]
+            }
+            
+            var textureName:GLuint = 0
+            let GLT2D:GLenum = GLenum( GL_TEXTURE_2D )
+            
+            glGenTextures(1, &textureName)
+            glBindTexture(GLT2D, textureName)
+            glAsset = textureName
+            
+            glTexParameteri(GLT2D, GLenum(GL_TEXTURE_WRAP_S), GL_CLAMP_TO_EDGE)
+            glTexParameteri(GLT2D, GLenum(GL_TEXTURE_WRAP_T), GL_CLAMP_TO_EDGE)
+            glTexParameteri(GLT2D, GLenum(GL_TEXTURE_MAG_FILTER), GL_LINEAR)
+            glTexParameteri(GLT2D, GLenum(GL_TEXTURE_MIN_FILTER), GL_LINEAR_MIPMAP_LINEAR)
+            
+            // Indicate that pixel rows are tightly packed 
+            //  (defaults to stride of 4 which is kind of only good for
+            //  RGBA or FLOAT data types)
+            //glPixelStorei(GLenum(GL_UNPACK_ALIGNMENT), 1)
+            
+            // Allocate and load image data into texture
+            glTexImage2D(
+                GLT2D, 0, GLint(t1[0])
+              , GLsizei(imageRep.pixelsWide)
+              , GLsizei(imageRep.pixelsHigh)
+                // , 0 , GLenum(GL_RGBA) , GLenum(GL_UNSIGNED_BYTE)
+              , 0 , t1[1] , t1[2]
+              , imageRep.bitmapData
+            )
+            
+            // Create mipmaps for this texture for better image quality
+            glGenerateMipmap(GLT2D)
+            
+            var glErr = Int32(glGetError())
+            if (glErr != GL_NO_ERROR) {
+                error = "Error occured when binding texture:\(glErrorString(glErr))"
+            }
+            
+        } else {
+            error = "Cannot load image at \(path)"
+        }
+        
+        if ( !error.isEmpty ) {
+            NSNotificationCenter.defaultCenter().postNotificationName(
+                LSLGAssetInitFailure , object:self , userInfo:["info":error]
+            )
+            return false
+        }
+        
+        return true
+    }
 }
 
 
@@ -155,9 +252,9 @@ class LSLGAssetShader : LSLGAsset {
         self.markAsBuiltIn()
     }
     
-    override func delGLAsset() { glDeleteShader(glAsset!) }
+    private override func delGLAsset() { glDeleteShader(glAsset!) }
     
-    override func initGLAsset()-> Bool {
+    private override func initGLAsset()-> Bool {
         // Get shader source
         var shaderContent:NSString? = self.shaderContent
         if shaderContent == nil {
