@@ -47,14 +47,25 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     private var usingAssetMap = [LSLGAssetType:LSLGAsset]()
     
     func onFileChanged(paths: [String]) {
+        var pipelineUpdated = [Int]()
         for path in paths {
-            assetMap[ path ]?.update()
+            if let a = assetMap[path] {
+                a.update()
+                if isAssetUsing(a) {
+                    pipelineUpdated.append(a.type.rawValue)
+                }
+            }
         } 
+        if !pipelineUpdated.isEmpty {
+            NSNotificationCenter.defaultCenter().postNotification(
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["changedTypes":pipelineUpdated])
+            ) 
+        }
     }
     
     func onFolderChanged(added: [String], _ modified: [String], _ removed: [String]) {
         
-        var pipelineUpdated = false
+        var pipelineUpdated = [Int]()
         
         for path in added {
             if let a = LSLGAsset.assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
@@ -63,18 +74,19 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         }
         
         for path in modified {
-            var a = assetMap[ path ]
-            a?.update()
-            if a != nil && isAssetUsing( a! ) {
-                pipelineUpdated = true
+            if let a = assetMap[ path ] {
+                a.update()
+                if isAssetUsing(a) {
+                    pipelineUpdated.append( a.type.rawValue )
+                }
             }
         }
         
         for path in removed {
             if let a = assetMap[path] {
                 if isAssetUsing( a ) {
-                    pipelineUpdated = true
                     useDefaultAsset(a.type)
+                    pipelineUpdated.append( a.type.rawValue )
                 }
                 assetMap[ path ] = nil
             }
@@ -89,9 +101,9 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
             useAsset(info["vertex"],   type: .VertexShader)
             useAsset(info["fragment"], type: .FragmentShader)
             useAsset(info["geometry"], type: .GeometryShader)
-        } else if pipelineUpdated {
+        } else if !pipelineUpdated.isEmpty {
             NSNotificationCenter.defaultCenter().postNotification(
-                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:nil)
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["changedTypes":pipelineUpdated])
             )
         }
         
@@ -135,9 +147,11 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
             
             usingAssetMap[asset.type] = asset
             
-            NSNotificationCenter.defaultCenter().postNotification(
-                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:nil)
-            )
+            NSNotificationCenter.defaultCenter().postNotification( NSNotification(
+               name: LSLGWindowPipelineChange
+              , object: self
+              , userInfo: ["changedTypes":[asset.type.rawValue]]
+            ))
             println("Using asset \(asset.name)")
         } else {
             println("Using invalid asset \(asset.name)")

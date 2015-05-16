@@ -20,7 +20,7 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     private var realContentView:NSView!
     private var renderControl:LSLGRenderControl!
     private var quickLogView:LSLGQuickLog!
-    private var oglView:LSLGOpenGLView!
+    var oglView:LSLGOpenGLView!
     
     init() {
         let sf = NSScreen.mainScreen()!.frame
@@ -125,8 +125,6 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         view.frame = frame
         realContentView.addSubview(view)
     }
-    
-    func renderGL() { oglView.needsDisplay = true }
     
     func quickLog(desc:String, _ isError:Bool) { quickLogView.scheduleLog( desc, isError ) }
     

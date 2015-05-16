@@ -102,7 +102,17 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     func pipelineUpdated( aNotify:NSNotification ) {
         if assetManager != (aNotify.object as? LSLGAssetManager) { return }
-        (window as! LSLGWindow).renderGL()
+        var oglView = (window as! LSLGWindow).oglView
+        var changedTypes = (aNotify.userInfo as! [String:AnyObject])["changedTypes"] as! [Int]
+        
+        if ( find(changedTypes, LSLGAssetType.Model.rawValue) != nil ) { oglView.updateModel() }
+        if ( find(changedTypes, LSLGAssetType.Image.rawValue) != nil ) { oglView.updateTexture() }
+        if ( find(changedTypes, LSLGAssetType.VertexShader.rawValue) != nil
+          || find(changedTypes, LSLGAssetType.GeometryShader.rawValue) != nil
+          || find(changedTypes, LSLGAssetType.FragmentShader.rawValue) != nil
+        ) {
+            oglView.updateProgram()
+        }
     }
     
     
