@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		A503ABE61AD7D5CE00BABA9B /* LSLGWindowElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A503ABE51AD7D5CE00BABA9B /* LSLGWindowElement.swift */; };
 		A5117E0C1B074AEB0091EA29 /* LSLGAssetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5117E0B1B074AEB0091EA29 /* LSLGAssetData.swift */; };
+		A5117E0E1B099D5F0091EA29 /* LSLGSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5117E0D1B099D5F0091EA29 /* LSLGSettings.swift */; };
+		A5117E101B099FAA0091EA29 /* Settings.xib in Resources */ = {isa = PBXBuildFile; fileRef = A5117E0F1B099FAA0091EA29 /* Settings.xib */; };
 		A51B65541AD7B2CF008EAA9D /* LSLGQuickLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51B65531AD7B2CF008EAA9D /* LSLGQuickLog.swift */; };
 		A531407B1AD3D76D00419887 /* LSLGLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A531407A1AD3D76D00419887 /* LSLGLogView.swift */; };
 		A531407D1AD3DA8400419887 /* LSLGWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A531407C1AD3DA8400419887 /* LSLGWindowController.swift */; };
@@ -42,6 +44,8 @@
 /* Begin PBXFileReference section */
 		A503ABE51AD7D5CE00BABA9B /* LSLGWindowElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindowElement.swift; sourceTree = "<group>"; };
 		A5117E0B1B074AEB0091EA29 /* LSLGAssetData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGAssetData.swift; sourceTree = "<group>"; };
+		A5117E0D1B099D5F0091EA29 /* LSLGSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGSettings.swift; sourceTree = "<group>"; };
+		A5117E0F1B099FAA0091EA29 /* Settings.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Settings.xib; sourceTree = "<group>"; };
 		A51B65531AD7B2CF008EAA9D /* LSLGQuickLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGQuickLog.swift; sourceTree = "<group>"; };
 		A531407A1AD3D76D00419887 /* LSLGLogView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGLogView.swift; sourceTree = "<group>"; };
 		A531407C1AD3DA8400419887 /* LSLGWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGWindowController.swift; sourceTree = "<group>"; };
@@ -123,11 +127,13 @@
 				A51B65531AD7B2CF008EAA9D /* LSLGQuickLog.swift */,
 				A5654BED1AD6699D002FE313 /* LSLGRenderControl.swift */,
 				A5A6E6811ACD1180004DA4B9 /* LSLGSegmentedControl.swift */,
+				A5117E0D1B099D5F0091EA29 /* LSLGSettings.swift */,
 				A5B20BB11ACA911D000F17AB /* LSLGWindow.swift */,
 				A531407C1AD3DA8400419887 /* LSLGWindowController.swift */,
 				A503ABE51AD7D5CE00BABA9B /* LSLGWindowElement.swift */,
 				A543C5C91ACE97F800C9F0E8 /* LSLG-Bridging-Header.h */,
 				A5DDD3E31ACA89F400303D71 /* MainMenu.xib */,
+				A5117E0F1B099FAA0091EA29 /* Settings.xib */,
 				A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */,
 				A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */,
 				A5DDD3E11ACA89F400303D71 /* Images.xcassets */,
@@ -242,6 +248,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5117E101B099FAA0091EA29 /* Settings.xib in Resources */,
 				A5DDD3E21ACA89F400303D71 /* Images.xcassets in Resources */,
 				A5DDD3E51ACA89F400303D71 /* MainMenu.xib in Resources */,
 			);
@@ -261,6 +268,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5117E0E1B099D5F0091EA29 /* LSLGSettings.swift in Sources */,
 				A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */,
 				A503ABE61AD7D5CE00BABA9B /* LSLGWindowElement.swift in Sources */,
 				A548B2541AFB7BE900DEF48D /* LSLGFolderMonitor.swift in Sources */,

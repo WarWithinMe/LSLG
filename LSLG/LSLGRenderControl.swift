@@ -50,6 +50,8 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
       , "Suzanne" : LSLGIcon.Suzanne
     ]
     
+    private var settings:LSLGSettings? = nil
+    
     override func itemClicked(item: LSLGRCItem) {
         
         switch item.id {
@@ -65,7 +67,14 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
                 }
             
             case "Setting":
-                (window?.windowController() as! LSLGWindowController).appendLog("TestLogfsaklfjsdjf log fsadtjekklj vewnfsai fdaskflsffsdfsdaf fsdakjfsdj fasfsa fdsf ", isError:Int(arc4random_uniform(3)) == 1, desc:"TestLog\( arc4random_uniform(1000000))")
+                var w = window as! LSLGWindow
+                if let s = settings {
+                    w.removeContent(s.view)
+                    settings = nil
+                } else {
+                    settings = LSLGSettings()
+                    w.setContent(settings!.view, fillWindow: true)
+                }
             
             case "Geometry": showAssetMenu("Geometry", type: .GeometryShader)
             case "Fragment": showAssetMenu("Fragment", type: .FragmentShader)

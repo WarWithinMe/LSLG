@@ -86,9 +86,9 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         
         
         // Title controls
-        contentView.addSubview( LSLGWCCloseBtn  (x:6,  y:frame.height-6) )
-        contentView.addSubview( LSLGWCOnTopBtn  (x:22, y:frame.height-6) )
-        contentView.addSubview( LSLGWCOpacityBtn(x:38, y:frame.height-6) )
+        contentView.addSubview( LSLGWCCloseBtn  (x:8,  y:frame.height-6) )
+        contentView.addSubview( LSLGWCOnTopBtn  (x:26, y:frame.height-6) )
+        contentView.addSubview( LSLGWCOpacityBtn(x:44, y:frame.height-6) )
         
         
         // Quick Log
