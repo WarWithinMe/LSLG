@@ -6,6 +6,14 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="LSLGSettings" customModule="LSLG" customModuleProvider="target">
             <connections>
+                <outlet property="cbFxaa" destination="h5Z-6Q-R7T" id="NOO-rv-0aB"/>
+                <outlet property="cbQuitLastWin" destination="wjw-2X-GkT" id="77Q-9z-kDD"/>
+                <outlet property="cbYaxisRotate" destination="6R9-ss-gYX" id="b5w-8L-dRW"/>
+                <outlet property="iptModel" destination="Ufq-un-G63" id="2va-0Q-BYS"/>
+                <outlet property="iptShFrag" destination="lGy-7d-ri8" id="lWS-XR-0lL"/>
+                <outlet property="iptShGeom" destination="y9B-In-StY" id="gje-ys-lAv"/>
+                <outlet property="iptShVert" destination="juk-k6-oTx" id="E73-EE-LCN"/>
+                <outlet property="iptTexture" destination="ITI-CF-24w" id="BbH-6V-C4g"/>
                 <outlet property="settingsView" destination="dH3-6R-bN1" id="xQT-tq-Cb9"/>
                 <outlet property="view" destination="17e-WN-3zc" id="iW7-CD-zxq"/>
             </connections>
@@ -35,37 +43,46 @@
             <point key="canvasLocation" x="1002.5" y="-1370"/>
         </scrollView>
         <view wantsLayer="YES" focusRingType="none" translatesAutoresizingMaskIntoConstraints="NO" id="dH3-6R-bN1" customClass="LSLGSettingsView" customModule="LSLG" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="378" height="341"/>
+            <rect key="frame" x="0.0" y="0.0" width="378" height="355"/>
             <subviews>
                 <button tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="wjw-2X-GkT">
-                    <rect key="frame" x="12" y="284" width="203" height="20"/>
+                    <rect key="frame" x="12" y="298" width="203" height="20"/>
                     <buttonCell key="cell" type="bevel" title="Quit when last window closed" bezelStyle="regularSquare" image="CBNormal" imagePosition="left" alignment="left" alternateImage="CBChecked" state="on" inset="2" id="IZQ-4a-DU6">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" size="12" name="Verdana"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="toggleQuitLast:" target="-2" id="tCU-C9-zRq"/>
+                    </connections>
                 </button>
                 <button tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="6R9-ss-gYX">
-                    <rect key="frame" x="12" y="261" width="132" height="20"/>
+                    <rect key="frame" x="12" y="275" width="132" height="20"/>
                     <buttonCell key="cell" type="bevel" title="Y-axis auto rotate" bezelStyle="regularSquare" image="CBNormal" imagePosition="left" alignment="left" alternateImage="CBChecked" state="on" inset="2" id="if7-AD-uQY">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" size="12" name="Verdana"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="toggleYRotate:" target="-2" id="nRb-0w-pZJ"/>
+                    </connections>
                 </button>
-                <button tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="h5Z-6Q-R7T">
-                    <rect key="frame" x="12" y="238" width="56" height="20"/>
-                    <buttonCell key="cell" type="bevel" title="FXAA" bezelStyle="regularSquare" image="CBNormal" imagePosition="left" alignment="left" alternateImage="CBChecked" state="on" inset="2" id="yKZ-lD-F4Y">
+                <button hidden="YES" tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="h5Z-6Q-R7T">
+                    <rect key="frame" x="12" y="252" width="140" height="20"/>
+                    <buttonCell key="cell" type="bevel" title="FXAA (Placeholder)" bezelStyle="regularSquare" image="CBNormal" imagePosition="left" alignment="left" alternateImage="CBChecked" inset="2" id="yKZ-lD-F4Y">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" size="12" name="Verdana"/>
                     </buttonCell>
+                    <connections>
+                        <action selector="toggleFxaa:" target="-2" id="o2r-LG-CmO"/>
+                    </connections>
                 </button>
                 <customView focusRingType="none" translatesAutoresizingMaskIntoConstraints="NO" id="oR1-vD-DSa" customClass="LSLGSettingsLine" customModule="LSLG" customModuleProvider="target">
-                    <rect key="frame" x="0.0" y="220" width="378" height="1"/>
+                    <rect key="frame" x="0.0" y="234" width="378" height="1"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="1" id="MC5-88-bBQ"/>
                     </constraints>
                 </customView>
                 <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="none" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="jm2-1P-3zJ">
-                    <rect key="frame" x="20" y="185" width="338" height="20"/>
+                    <rect key="frame" x="20" y="199" width="338" height="20"/>
                     <view key="contentView">
                         <rect key="frame" x="0.0" y="0.0" width="338" height="20"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -73,16 +90,16 @@
                     <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                     <color key="fillColor" red="0.41529563069999997" green="0.41537168619999998" blue="0.41529083249999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                 </box>
-                <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dhG-49-3Lc">
-                    <rect key="frame" x="25" y="188" width="441" height="15"/>
-                    <textFieldCell key="cell" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" alignment="left" title="LSLG uses Regex to map your files to different kinds of resource." drawsBackground="YES" id="OKk-kx-G06">
+                <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dhG-49-3Lc">
+                    <rect key="frame" x="25" y="202" width="546" height="15"/>
+                    <textFieldCell key="cell" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" alignment="left" title="LSLG uses Regex to map your files to different kinds of resource. Changes won't apply to existing windows." drawsBackground="YES" id="OKk-kx-G06">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.13536003229999999" green="0.13536423440000001" blue="0.13536196950000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="backgroundColor" red="0.41529563069999997" green="0.41537168619999998" blue="0.41529083249999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gK2-TA-U6Y">
-                    <rect key="frame" x="38" y="133" width="98" height="15"/>
+                    <rect key="frame" x="38" y="147" width="98" height="15"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Fragment Shader:" id="ceq-6J-Un3">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070000003" green="0.71377092600000003" blue="0.71363872289999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -90,7 +107,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Hwh-iz-Dt2">
-                    <rect key="frame" x="38" y="105" width="98" height="15"/>
+                    <rect key="frame" x="38" y="119" width="98" height="15"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Geometry Shader:" id="G4T-gi-1gc">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070000003" green="0.71377092600000003" blue="0.71363872289999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -98,7 +115,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bh1-td-VIh">
-                    <rect key="frame" x="38" y="53" width="98" height="15"/>
+                    <rect key="frame" x="38" y="67" width="98" height="15"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Texture:" id="DD1-9F-LvE">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070000003" green="0.71377092600000003" blue="0.71363872289999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -106,7 +123,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BsY-A7-kkY">
-                    <rect key="frame" x="38" y="78" width="98" height="15"/>
+                    <rect key="frame" x="38" y="92" width="98" height="15"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Model:" id="Ahh-j9-qo5">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070000003" green="0.71377092600000003" blue="0.71363872289999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -114,7 +131,7 @@
                     </textFieldCell>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" tag="200" translatesAutoresizingMaskIntoConstraints="NO" id="juk-k6-oTx" customClass="LSLGSettingsTextField" customModule="LSLG" customModuleProvider="target">
-                    <rect key="frame" x="142" y="158" width="134" height="17"/>
+                    <rect key="frame" x="142" y="172" width="134" height="17"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="130" id="fNm-Oc-ynU"/>
                         <constraint firstAttribute="height" constant="17" id="pTh-oT-THm"/>
@@ -124,33 +141,45 @@
                         <color key="textColor" red="0.71364659070968628" green="0.71377092599868774" blue="0.71363872289657593" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="backgroundColor" red="0.073986746370792389" green="0.074007607996463776" blue="0.07398543506860733" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                     </textFieldCell>
+                    <connections>
+                        <action selector="changeRegVert:" target="-2" id="4jn-cs-NlU"/>
+                    </connections>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" tag="200" translatesAutoresizingMaskIntoConstraints="NO" id="y9B-In-StY" customClass="LSLGSettingsTextField" customModule="LSLG" customModuleProvider="target">
-                    <rect key="frame" x="144" y="105" width="130" height="17"/>
+                    <rect key="frame" x="142" y="119" width="134" height="17"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" focusRingType="none" usesSingleLineMode="YES" id="Vus-8W-RKF">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070968628" green="0.71377092599868774" blue="0.71363872289657593" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="backgroundColor" red="0.074060820040000003" green="0.074081696569999994" blue="0.074059508740000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </textFieldCell>
+                    <connections>
+                        <action selector="changeRegGeom:" target="-2" id="qvB-Es-Tbl"/>
+                    </connections>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" tag="200" translatesAutoresizingMaskIntoConstraints="NO" id="Ufq-un-G63" customClass="LSLGSettingsTextField" customModule="LSLG" customModuleProvider="target">
-                    <rect key="frame" x="144" y="78" width="130" height="17"/>
+                    <rect key="frame" x="142" y="92" width="134" height="17"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" focusRingType="none" usesSingleLineMode="YES" id="lQR-Vv-x29">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070968628" green="0.71377092599868774" blue="0.71363872289657593" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="backgroundColor" red="0.074060820040000003" green="0.074081696569999994" blue="0.074059508740000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </textFieldCell>
+                    <connections>
+                        <action selector="changeRegModel:" target="-2" id="xql-p8-eGn"/>
+                    </connections>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" tag="200" translatesAutoresizingMaskIntoConstraints="NO" id="ITI-CF-24w" customClass="LSLGSettingsTextField" customModule="LSLG" customModuleProvider="target">
-                    <rect key="frame" x="144" y="51" width="130" height="17"/>
+                    <rect key="frame" x="142" y="65" width="134" height="17"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" focusRingType="none" usesSingleLineMode="YES" id="XXl-WM-ujb">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070968628" green="0.71377092599868774" blue="0.71363872289657593" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="backgroundColor" red="0.074060820040000003" green="0.074081696569999994" blue="0.074059508740000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </textFieldCell>
+                    <connections>
+                        <action selector="changeRegTexture:" target="-2" id="QZT-EU-qze"/>
+                    </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fWw-ZD-A2H">
-                    <rect key="frame" x="38" y="160" width="98" height="15"/>
+                    <rect key="frame" x="38" y="174" width="98" height="15"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Vertex Shader:" id="4FW-02-cYc">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070000003" green="0.71377092600000003" blue="0.71363872289999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -158,12 +187,15 @@
                     </textFieldCell>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" tag="200" translatesAutoresizingMaskIntoConstraints="NO" id="lGy-7d-ri8" customClass="LSLGSettingsTextField" customModule="LSLG" customModuleProvider="target">
-                    <rect key="frame" x="142" y="131" width="134" height="17"/>
+                    <rect key="frame" x="142" y="145" width="134" height="17"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" focusRingType="none" usesSingleLineMode="YES" id="ECO-aZ-Icf">
                         <font key="font" size="10" name="Verdana"/>
                         <color key="textColor" red="0.71364659070968628" green="0.71377092599868774" blue="0.71363872289657593" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="backgroundColor" red="0.074060820040000003" green="0.074081696569999994" blue="0.074059508740000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </textFieldCell>
+                    <connections>
+                        <action selector="changeRegFrag:" target="-2" id="7wz-Gg-RJA"/>
+                    </connections>
                 </textField>
             </subviews>
             <constraints>

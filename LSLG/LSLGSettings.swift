@@ -32,6 +32,53 @@ class LSLGSettings : NSViewController {
         scrollView.contentView.addConstraints(
             NSLayoutConstraint.constraintsWithVisualFormat("V:[settings(>=super)]", options: .allZeros, metrics: nil, views:dict)
         )
+        
+        var defaults = NSUserDefaults.standardUserDefaults()
+        println(defaults.stringForKey("RegexModel"))
+        cbQuitLastWin.state = defaults.boolForKey("QuitWhenLastWindowClosed") ? NSOnState : NSOffState
+        cbYaxisRotate.state = defaults.boolForKey("AutoYaxisRotation") ? NSOnState : NSOffState
+        cbFxaa.state        = defaults.boolForKey("FXAA") ? NSOnState : NSOffState
+        
+        if let s = defaults.stringForKey("RegexVertex")   { iptShVert.stringValue  = s }
+        if let s = defaults.stringForKey("RegexFragment") { iptShFrag.stringValue  = s }
+        if let s = defaults.stringForKey("RegexGeometry") { iptShGeom.stringValue  = s }
+        if let s = defaults.stringForKey("RegexModel")    { iptModel.stringValue   = s }
+        if let s = defaults.stringForKey("RegexImage")    { iptTexture.stringValue = s }
+    }
+    
+    @IBOutlet weak var cbQuitLastWin: NSButton!
+    @IBOutlet weak var cbYaxisRotate: NSButton!
+    @IBOutlet weak var cbFxaa: NSButton!
+    @IBOutlet weak var iptShVert: LSLGSettingsTextField!
+    @IBOutlet weak var iptShFrag: LSLGSettingsTextField!
+    @IBOutlet weak var iptShGeom: LSLGSettingsTextField!
+    @IBOutlet weak var iptModel: LSLGSettingsTextField!
+    @IBOutlet weak var iptTexture: LSLGSettingsTextField!
+    
+    @IBAction func toggleQuitLast(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setBool(cbQuitLastWin.state == NSOnState, forKey: "QuitWhenLastWindowClosed")
+    }
+    @IBAction func toggleYRotate(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setBool(cbYaxisRotate.state == NSOnState, forKey: "AutoYaxisRotation")
+    }
+    @IBAction func toggleFxaa(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setBool(cbFxaa.state == NSOnState, forKey: "FXAA")
+    }
+    
+    @IBAction func changeRegVert(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setObject( iptShVert.stringValue, forKey: "RegexVertex" )
+    }
+    @IBAction func changeRegFrag(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setObject( iptShFrag.stringValue, forKey: "RegexFragment" )
+    }
+    @IBAction func changeRegGeom(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setObject( iptShGeom.stringValue, forKey: "RegexGeometry" )
+    }
+    @IBAction func changeRegModel(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setObject( iptModel.stringValue, forKey: "RegexModel" )
+    }
+    @IBAction func changeRegTexture(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setObject( iptTexture.stringValue, forKey: "RegexImage" )
     }
     
     override func viewDidAppear() {
@@ -122,12 +169,13 @@ class LSLGSettingsTextField: NSTextField {
             NSColor(white: 0.266, alpha: 1).setStroke()
             var path = NSBezierPath()
             if window!.backingScaleFactor == 1.0 {
-                
+                path.moveToPoint( NSMakePoint( 0, rect.height - 0.5 ) )
+                path.lineToPoint( NSMakePoint( rect.width, rect.height - 0.5 ) )
             } else {
                 path.moveToPoint( NSMakePoint( 0, rect.height ) )
                 path.lineToPoint( NSMakePoint( rect.width, rect.height ) )
-                path.closePath()
             }
+            path.closePath()
             path.stroke()
         }
         

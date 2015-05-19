@@ -15,6 +15,7 @@ private let OldLogMarkerAddDelay:NSTimeInterval = 20
 // Notification names
 let LSLGWindowLogUpdate      = "LSLGWindowLogUpdate"
 let LSLGWindowFolderChange   = "LSLGWindowFolderChange"
+let LSLGWindowSubviewToggle  = "LSLGWindowSubviewToggle"
 
 
 class LSLGWindowController: NSWindowController, NSWindowDelegate {
@@ -113,6 +114,51 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         ) {
             oglView.updateProgram()
         }
+    }
+    
+    private var settings:LSLGSettings? = nil
+    func toggleSettings() {
+        var w = window as! LSLGWindow
+        if let p = settings {
+            w.removeContent(p.view)
+            settings = nil
+        } else {
+            
+            if logView != nil { toggleLogView() /* Hide logview */ }
+            
+            settings = LSLGSettings()
+            w.setContent(settings!.view, fillWindow: true)
+        }
+        
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowSubviewToggle, object: self, userInfo:[
+                "subview" : "settings"
+              , "visible" : settings != nil
+            ])
+        )
+    }
+    
+    private var logView:LSLGLogView? = nil
+    func toggleLogView() {
+        var w = window as! LSLGWindow
+        if let l = logView {
+            w.removeContent( l )
+            logView = nil
+        } else {
+            
+            if settings != nil { toggleSettings() /* Hide settings */ }
+            
+            logView = LSLGLogView( frame:NSZeroRect )
+            w.setContent( logView!, fillWindow:false )
+        } 
+        
+        
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowSubviewToggle, object: self, userInfo:[
+                "subview" : "logs"
+              , "visible" : logView != nil
+            ])
+        )
     }
     
     

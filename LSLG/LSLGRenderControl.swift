@@ -34,13 +34,19 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         
         NSNotificationCenter.defaultCenter().addObserver(
             self
+          , selector : "onWinSubviewToggle:"
+          , name     : LSLGWindowSubviewToggle
+          , object   : nil
+        )
+        
+        NSNotificationCenter.defaultCenter().addObserver(
+            self
           , selector : "onPipelineChange:"
           , name     : LSLGWindowAssetsAvailable
           , object   : nil
         )
     }
     
-    private var logView:LSLGLogView? = nil
     
     static private var DefaultModelIcon = LSLGIcon.Model
     static private var ModelIcons = [
@@ -50,32 +56,13 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
       , "Suzanne" : LSLGIcon.Suzanne
     ]
     
-    private var settings:LSLGSettings? = nil
-    
     override func itemClicked(item: LSLGRCItem) {
         
+        var controller = (window?.windowController() as? LSLGWindowController)
+        
         switch item.id {
-            case "Log":
-                if logView != nil {
-                    (window as! LSLGWindow).removeContent( logView! )
-                    logView = nil
-                    item.selected = false
-                } else {
-                    logView = LSLGLogView( frame:frame )
-                    (window as! LSLGWindow).setContent( logView!, fillWindow:false )
-                    item.selected = true
-                }
-            
-            case "Setting":
-                var w = window as! LSLGWindow
-                if let s = settings {
-                    w.removeContent(s.view)
-                    settings = nil
-                } else {
-                    settings = LSLGSettings()
-                    w.setContent(settings!.view, fillWindow: true)
-                }
-            
+            case "Log"     : controller?.toggleLogView()
+            case "Setting" : controller?.toggleSettings()
             case "Geometry": showAssetMenu("Geometry", type: .GeometryShader)
             case "Fragment": showAssetMenu("Fragment", type: .FragmentShader)
             case "Vertex"  : showAssetMenu("Vertex",   type: .VertexShader)
@@ -156,8 +143,17 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         }
     }
     
-    func onPipelineChange(n:NSNotification) {
-        updateControl( n.object as? LSLGAssetManager )
+    func onPipelineChange(n:NSNotification) { updateControl( n.object as? LSLGAssetManager ) }
+    func onWinSubviewToggle(n:NSNotification)  {
+        if let c:AnyObject = window?.windowController(), userInfo = n.userInfo where c === n.object {
+            var item:LSLGRCItem!
+            if userInfo["subview"]! as! String == "logs" {
+                item = getItemById("Log")!
+            } else {
+                item = getItemById("Setting")!
+            }
+            item.selected = userInfo["visible"]! as! Bool
+        }
     }
     
     func menuDidClose(menu: NSMenu) {

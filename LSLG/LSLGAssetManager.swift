@@ -17,7 +17,21 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     private var monitor:LSLGFolderMonitor?
     
+    private var REG_FRAG:NSRegularExpression 
+    private var REG_GEOM:NSRegularExpression
+    private var REG_VERT:NSRegularExpression
+    private var REG_MODL:NSRegularExpression
+    private var REG_IMGE:NSRegularExpression
+    
     override init() {
+        var defaults = NSUserDefaults.standardUserDefaults()
+        typealias REGEX = NSRegularExpression 
+        REG_FRAG = REGEX(pattern: defaults.stringForKey("RegexFragment")!, options: .CaseInsensitive, error: nil)!
+        REG_GEOM = REGEX(pattern: defaults.stringForKey("RegexGeometry")!, options: .CaseInsensitive, error: nil)!
+        REG_VERT = REGEX(pattern: defaults.stringForKey("RegexVertex")!, options: .CaseInsensitive, error: nil)!
+        REG_MODL = REGEX(pattern: defaults.stringForKey("RegexModel")!, options: .CaseInsensitive, error: nil)!
+        REG_IMGE = REGEX(pattern: defaults.stringForKey("RegexImage")!,  options: .CaseInsensitive, error: nil)!
+        
         super.init()
         
         // Add default assets
@@ -68,7 +82,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         var pipelineUpdated = [Int]()
         
         for path in added {
-            if let a = LSLGAsset.assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
+            if let a = assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
                 assetMap[ path ] = a
             }
         }
@@ -112,6 +126,27 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
                 NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:nil)
             )
         }
+    }
+    
+    private func assetWithPath( path:String )-> LSLGAsset? {
+        var p = path.lastPathComponent
+        let r = NSMakeRange(0, count(p))
+        let o = NSMatchingOptions.WithoutAnchoringBounds
+        
+        var type:LSLGAssetType = .Generic
+        
+        if REG_FRAG.numberOfMatchesInString(p, options: o, range: r) > 0 {
+            type = .FragmentShader
+        } else if REG_VERT.numberOfMatchesInString(p, options: o, range: r) > 0 {
+            type = .VertexShader
+        } else if REG_GEOM.numberOfMatchesInString(p, options: o, range: r) > 0 {
+            type = .GeometryShader
+        } else if REG_IMGE.numberOfMatchesInString(p, options: o, range: r) > 0 {
+            type = .Image
+        } else if REG_MODL.numberOfMatchesInString(p, options: o, range: r) > 0 {
+            type = .Model
+        }
+        return LSLGAsset.assetWithPath( path, type:type )
     }
     
     func assetsByType(type:LSLGAssetType)->[LSLGAsset] {

@@ -11,14 +11,29 @@ import Cocoa
 @NSApplicationMain
 class LSLGAppDelegate: NSObject, NSApplicationDelegate {
     
-    func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool { return true }
+    func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool {
+        return NSUserDefaults.standardUserDefaults().boolForKey("QuitWhenLastWindowClosed")
+    }
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Create default window
         LSLGWindowController.createWindowOnAppLaunch()
+        
+        var defaults = NSUserDefaults.standardUserDefaults()
+        defaults.registerDefaults([
+            "RegexFragment" : "\\.frag$"
+          , "RegexGeometry" : "\\.geom$"
+          , "RegexVertex"   : "\\.vert$"
+          , "RegexModel"    : "\\.modl$"
+          , "RegexImage"    : "\\.png$||\\.jpg$||\\.bmp$"
+            
+          , "QuitWhenLastWindowClosed" : true
+          , "AutoYaxisRotation" : true
+          , "FXAA" : false
+        ])
     }
     
-    @IBAction func showPreference(sender: AnyObject) { (NSApplication.sharedApplication().keyWindow as? LSLGWindow)?.showPreference() }
+    @IBAction func showPreference(sender: AnyObject) { (NSApplication.sharedApplication().keyWindow?.windowController() as? LSLGWindowController)?.toggleSettings() }
     @IBAction func newWindow(sender: AnyObject)   { LSLGWindowController() }
     @IBAction func closeWindow(sender: AnyObject) { NSApplication.sharedApplication().keyWindow?.close() }
     
@@ -29,14 +44,6 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
         return .TerminateNow
     }
     
-    func applicationWillTerminate(aNotification: NSNotification) {
-    }
-    
-    
-    var REG_FRAG = NSRegularExpression(pattern: "\\.frag$", options: .CaseInsensitive, error: nil)!
-    var REG_GEOM = NSRegularExpression(pattern: "\\.geom$", options: .CaseInsensitive, error: nil)!
-    var REG_VERT = NSRegularExpression(pattern: "\\.vert$", options: .CaseInsensitive, error: nil)!
-    var REG_MODL = NSRegularExpression(pattern: "\\.modl$", options: .CaseInsensitive, error: nil)!
-    var REG_IMGE = NSRegularExpression(pattern: "\\.png$||\\.jpg$||\\.bmp$",  options: .CaseInsensitive, error: nil)!
+    func applicationWillTerminate(aNotification: NSNotification) {}
 }
 

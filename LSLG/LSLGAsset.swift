@@ -62,23 +62,15 @@ class LSLGAsset: NSObject {
     
     private(set) var path:String
     
-    class func assetWithPath( path:String )-> LSLGAsset? {
-        var delegate = NSApplication.sharedApplication().delegate as! LSLGAppDelegate
-        var p = path.lastPathComponent
-        let r = NSMakeRange(0, count(p))
-        let o = NSMatchingOptions.WithoutAnchoringBounds
-        if delegate.REG_FRAG.numberOfMatchesInString(p, options: o, range: r) > 0 {
-            return LSLGAssetFragSh( path: path )
-        } else if delegate.REG_VERT.numberOfMatchesInString(p, options: o, range: r) > 0 {
-            return LSLGAssetVertexSh( path: path )
-        } else if delegate.REG_GEOM.numberOfMatchesInString(p, options: o, range: r) > 0 {
-            return LSLGAssetGeoSh( path: path )
-        } else if delegate.REG_IMGE.numberOfMatchesInString(p, options: o, range: r) > 0 {
-            return LSLGAssetImage( path: path )
-        } else if delegate.REG_MODL.numberOfMatchesInString(p, options: o, range: r) > 0 {
-            return LSLGAssetModel( path: path )
+    class func assetWithPath( path:String, type:LSLGAssetType )-> LSLGAsset? {
+        switch type {
+            case .FragmentShader: return LSLGAssetFragSh( path: path ) 
+            case .GeometryShader: return LSLGAssetGeoSh( path: path ) 
+            case .VertexShader:   return LSLGAssetVertexSh( path: path ) 
+            case .Model:          return LSLGAssetModel( path: path ) 
+            case .Image:          return LSLGAssetImage( path: path ) 
+            default : return nil
         }
-        return nil
     }
     
     // Built-In assets

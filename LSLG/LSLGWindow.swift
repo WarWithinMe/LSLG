@@ -196,6 +196,4 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     }
     
     func onDropFolder(path:String) { (windowController() as! LSLGWindowController).monitorFolder(path) }
-    
-    func showPreference() {}
 }
