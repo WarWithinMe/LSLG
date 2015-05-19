@@ -85,3 +85,53 @@ class LSLGSettingsLine: NSView {
         super.drawRect(dirtyRect)
     }
 }
+
+class LSLGSettingsTextField: NSTextField {
+    
+    override func becomeFirstResponder() -> Bool {
+        if super.becomeFirstResponder() {
+            var text = currentEditor() as? NSTextView
+            text?.insertionPointColor = NSColor(white: 0.713, alpha: 1)
+            return true
+        }
+        return false
+    }
+    
+    override func drawRect(dirtyRect: NSRect) {
+        
+        var rect = self.bounds
+        
+        // Background
+        NSColor(white: 0.074, alpha: 1).setFill()
+        NSRectFill(rect)
+        
+        // Border
+        if let ce = currentEditor() where ce == window?.firstResponder {
+            NSColor(calibratedRed:0.114, green:0.546, blue:0.895, alpha:1).setStroke()
+            if window!.backingScaleFactor == 1.0 {
+                NSBezierPath(rect:NSMakeRect(
+                    rect.origin.x + 0.5
+                  , rect.origin.y + 0.5
+                  , rect.width  - 1
+                  , rect.height - 1
+                )).stroke()
+            } else {
+                NSBezierPath(rect:rect).stroke()
+            }
+        } else {
+            NSColor(white: 0.266, alpha: 1).setStroke()
+            var path = NSBezierPath()
+            if window!.backingScaleFactor == 1.0 {
+                
+            } else {
+                path.moveToPoint( NSMakePoint( 0, rect.height ) )
+                path.lineToPoint( NSMakePoint( rect.width, rect.height ) )
+                path.closePath()
+            }
+            path.stroke()
+        }
+        
+        super.drawRect(dirtyRect)
+    }
+    
+}
