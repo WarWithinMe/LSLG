@@ -80,10 +80,12 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     func onFolderChanged(added: [String], _ modified: [String], _ removed: [String]) {
         
         var pipelineUpdated = [Int]()
+        var assetChanges    = [Int]()
         
         for path in added {
             if let a = assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
                 assetMap[ path ] = a
+                assetChanges.append( a.type.rawValue )
             }
         }
         
@@ -93,6 +95,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
                 if isAssetUsing(a) {
                     pipelineUpdated.append( a.type.rawValue )
                 }
+                assetChanges.append( a.type.rawValue )
             }
         }
         
@@ -103,6 +106,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
                     pipelineUpdated.append( a.type.rawValue )
                 }
                 assetMap[ path ] = nil
+                assetChanges.append( a.type.rawValue )
             }
         }
         
@@ -110,7 +114,6 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         if let info = initialAssetsInfo {
             initialAssetsInfo = nil
             
-            useAsset(info["texture"],  type: .Image)
             useAsset(info["model"],    type: .Model)
             useAsset(info["vertex"],   type: .VertexShader)
             useAsset(info["fragment"], type: .FragmentShader)
@@ -123,7 +126,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         
         if !(added.isEmpty && removed.isEmpty) {
             NSNotificationCenter.defaultCenter().postNotification(
-                NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:nil)
+                NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:["changedTypes":assetChanges])
             )
         }
     }
@@ -218,6 +221,6 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     var glCurrTexture    :LSLGAsset { return glCurrAsset( .Image ) }
     
-    func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetsByType(  type )  }
+    func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetsByType( type )  }
     func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return usingAssetMap[type]! }
 }

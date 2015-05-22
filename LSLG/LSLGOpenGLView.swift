@@ -155,7 +155,31 @@ class LSLGOpenGLView: NSOpenGLView {
         }
         
         if ( __updateTexture ) {
-            glBindTexture( GLenum(GL_TEXTURE_2D), assetManager.glCurrTexture.getGLAsset() )
+            var textures = assetManager.assetsByType( .Image )
+            if textures.count > 1 {
+                // There's always a builtIn texture. Which is a placeholder.
+                // Ignore this texture.
+                sort( &textures, {
+                    (a:LSLGAsset, b:LSLGAsset)->Bool in
+                    return a.path > b.path
+                })
+                
+                var textureIdx = 0
+                for ( var i = 0; i < textures.count; ++i ) {
+                    var t = textures[i]
+                    if t.isBuiltIn {
+                        textureIdx--
+                        continue
+                    }
+                    
+                    glActiveTexture( GLenum(GL_TEXTURE0 + textureIdx) )
+                    glBindTexture( GLenum(GL_TEXTURE_2D), t.getGLAsset() )
+                    glUniform1i( glGetUniformLocation( glProgram, "texture\(textureIdx + 1)"), GLint(textureIdx) )
+                    
+                    ++textureIdx
+                }
+            }
+            
             __updateTexture = false
         }
         

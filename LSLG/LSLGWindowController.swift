@@ -53,6 +53,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
             self, selector: "pipelineUpdated:", name: LSLGWindowPipelineChange, object: nil
         )
         
+        NSNotificationCenter.defaultCenter().addObserver(
+            self, selector : "onAssetAvaible:", name: LSLGWindowAssetsAvailable, object: nil
+        )
+        
         NSTimer.scheduledTimerWithTimeInterval(0, target: self, selector: "updateOGL:", userInfo: nil, repeats: true)
     }
     
@@ -106,6 +110,14 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         } else {
             appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
         }
+    }
+    
+    func onAssetAvaible( aNotify:NSNotification ) {
+        if assetManager != (aNotify.object as? LSLGAssetManager) { return }
+        var oglView = (window as! LSLGWindow).oglView
+        var changedTypes = (aNotify.userInfo as! [String:AnyObject])["changedTypes"] as! [Int]
+        
+        if ( find(changedTypes, LSLGAssetType.Image.rawValue) != nil ) { oglView.updateTexture() }
     }
     
     func pipelineUpdated( aNotify:NSNotification ) {
@@ -198,7 +210,6 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
               , "vertex"   : c.assetManager.glCurrVertShader.name
               , "fragment" : c.assetManager.glCurrFragShader.name
               , "geometry" : c.assetManager.glCurrGeomShader.name
-              , "texture"  : c.assetManager.glCurrTexture.name
             ] )
         }
         

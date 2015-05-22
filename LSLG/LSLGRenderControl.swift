@@ -22,7 +22,6 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
           , LSLGRCItem(icon:LSLGIcon.Fragment, content:"Fragment", desc:"Fragment Shader")
           , LSLGRCItem(icon:LSLGIcon.Geometry, content:"Geometry", desc:"Geometry Shader")
           , LSLGRCItem(icon:LSLGIcon.Vertex,   content:"Vertex",   desc:"Vertex Shader")
-          , LSLGRCItem(icon:LSLGIcon.Texture,  content:"Texture",  desc:"Texture")
         ])
         
         NSNotificationCenter.defaultCenter().addObserver(
@@ -66,7 +65,6 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
             case "Geometry": showAssetMenu("Geometry", type: .GeometryShader)
             case "Fragment": showAssetMenu("Fragment", type: .FragmentShader)
             case "Vertex"  : showAssetMenu("Vertex",   type: .VertexShader)
-            case "Texture" : showAssetMenu("Texture",  type: .Image)
             case "Model"   :
                 showAssetMenu("Model", type: .Model) {
                     (menuItem, asset) in
@@ -132,10 +130,6 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         item.visible = cc.glVertShaders.count > 1
         item.content = cc.glCurrVertShader.name
         
-        item = getItemById("Texture")!
-        item.visible = cc.glTextures.count > 1
-        item.content = cc.glCurrTexture.name
-        
         if let icon = LSLGRenderControl.ModelIcons[cc.glCurrModel.name] {
             getItemById("Model")!.icon = icon
         } else {
@@ -164,7 +158,6 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
             case "Geometry" : type = .GeometryShader
             case "Fragment" : type = .FragmentShader
             case "Vertex"   : type = .VertexShader
-            case "Texture"  : type = .Image
             case "Model"    : type = .Model
             default: return
         }
