@@ -62,6 +62,10 @@ class LSLGOpenGLView: NSOpenGLView {
         openGLContext.setValues(&v, forParameter:NSOpenGLContextParameter.GLCPSwapInterval)
         v = 0
         openGLContext.setValues(&v, forParameter:NSOpenGLContextParameter.GLCPSurfaceOpacity)
+        
+        openGLContext.makeCurrentContext()
+        glEnable( GLenum(GL_DEPTH_TEST) )
+        //glEnable( GLenum(GL_CULL_FACE) ) 
     }
     
     override func reshape() {
@@ -71,6 +75,8 @@ class LSLGOpenGLView: NSOpenGLView {
         glViewport( 0, 0, Int32(b.width), Int32(b.height) )
     }
     
+    var rotate:Float = 0
+    var renderError:Int32 = GL_NO_ERROR
     override func drawRect(dirtyRect: NSRect) {
         openGLContext.makeCurrentContext()
         
@@ -148,45 +154,60 @@ class LSLGOpenGLView: NSOpenGLView {
             __updateProgram = false
         }
         
-        if ( __updateTexture && false ) {
+        if ( __updateTexture ) {
             glBindTexture( GLenum(GL_TEXTURE_2D), assetManager.glCurrTexture.getGLAsset() )
             __updateTexture = false
         }
         
-        // Render 3D Content
-        // Set up the modelview and projection matricies
-        var modelView  = [GLfloat](count:16, repeatedValue:0)
-        var projection = [GLfloat](count:16, repeatedValue:0)
-        var mvp        = [GLfloat](count:16, repeatedValue:0)
+        var rPerDegree:Float = Float(M_PI) / 180.0
+        var zoom:Float    = 30 // 45 - 90 
+        var rotateX:Float = 0  // 
+        var rotateY:Float = Float(rotate) // 0 - 360
+        var rotateZ:Float = 0  // 
         
+        var camX:Float = 0
+        var camY:Float = 0
         
-//        // Calculate the projection matrix
-//        mtxLoadPerspective(projection, 90, (float)m_viewWidth / (float)m_viewHeight,5.0,10000);
-//        // Calculate the modelview matrix to render our character at the proper position and rotation
-//        mtxLoadTranslate(modelView, 0, 150, -1050);
-//        mtxRotateXApply(modelView, -90.0f);	
-//        mtxRotateApply(modelView, m_characterAngle, 0.7, 0.3, 1);
-//        // Multiply the modelview and projection matrix and set it in the shader
-//        mtxMultiply(mvp, projection, modelView);
+        rotate = (rotate+0.01) % 360 
         
-        // Have our shader use the modelview projection matrix 
-        // that we calculated above
-        // glGetUniformLocation( glProgram, "projection" )
-        // glUniformMatrix4fv(m_characterMvpUniformIdx, 1, GL_FALSE, [1,0,0,0 ,0,1,0,0 ,0,0,0,1]);
+        glUniformMatrix4fv(
+            glGetUniformLocation( glProgram, "model" )
+          , 1, GLboolean(GL_FALSE)
+          , getRawMatrix4( GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
+        )
         
-        // Cull back faces now that we no longer render with an inverted matrix
-        // glCullFace( GLenum(GL_BACK) )
+        glUniformMatrix4fv(
+            glGetUniformLocation( glProgram, "view" )
+          , 1, GLboolean(GL_FALSE)
+          , getRawMatrix4( GLKMatrix4MakeLookAt( camX, camY, 3, camX, camY, -1, 0, 1, 0 ) )
+        )
         
-        //glDrawArrays( GLenum(GL_TRIANGLES), 0, 6 )
+        glUniformMatrix4fv(
+            glGetUniformLocation( glProgram, "projection" )
+          , 1, GLboolean(GL_FALSE)
+          , getRawMatrix4( GLKMatrix4MakePerspective( zoom * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
+        )
         
+        //glCullFace( GLenum(GL_BACK) )
         glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
-        glDrawElements( GLenum(GL_TRIANGLES), 6, GLenum(GL_UNSIGNED_INT), UnsafePointer<Void>(bitPattern:0))
+        
+        glDrawArrays( GLenum(GL_TRIANGLES), 0, 24)
         openGLContext.flushBuffer()
         
-        if Int32(glGetError()) != GL_NO_ERROR {
-            // TODO: appending log in render() might flood the logs.
-            controller.appendLog("Failed to render", isError: true, desc: "Failed to render")
+        var error = Int32( glGetError() )
+        if error != renderError {
+            renderError = error
+            if renderError != GL_NO_ERROR {
+                controller.appendLog("Failed to render, reason:\(glErrorString(renderError))", isError: true, desc: "Failed to render")
+            }
         }
+    }
+    
+    private func getRawMatrix4( mp:GLKMatrix4 ) -> [GLfloat] {
+        return [ mp.m00, mp.m01, mp.m02, mp.m03
+            , mp.m10, mp.m11, mp.m12, mp.m13
+            , mp.m20, mp.m21, mp.m22, mp.m23
+            , mp.m30, mp.m31, mp.m32, mp.m33 ]
     }
     
     private var __updateModel:Bool   = true
@@ -205,3 +226,5 @@ class LSLGOpenGLView: NSOpenGLView {
         }
     }
 }
+
+func * ( left:GLKMatrix4, right:GLKMatrix4 ) -> GLKMatrix4 { return GLKMatrix4Multiply( left, right ) }

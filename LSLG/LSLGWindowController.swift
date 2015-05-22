@@ -52,7 +52,14 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector: "pipelineUpdated:", name: LSLGWindowPipelineChange, object: nil
         )
+        
+        NSTimer.scheduledTimerWithTimeInterval(0, target: self, selector: "updateOGL:", userInfo: nil, repeats: true)
     }
+    
+    func updateOGL( t:NSTimer ) {
+        (window as! LSLGWindow).oglView.needsDisplay = true
+    }
+    
    
     /* Log Related Functions */
     func appendLog(aLog:String, isError:Bool = false, desc:String = "") {

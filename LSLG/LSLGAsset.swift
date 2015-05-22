@@ -150,7 +150,8 @@ class LSLGAssetImage : LSLGAsset {
             rep?.setPixel(&transparent, atX: 0, y: 0)
             return rep
         } else {
-            return NSImage( contentsOfFile: path )?.representations[0] as? NSBitmapImageRep
+            var img = NSImage( contentsOfFile: path )
+            return img?.representations[0] as? NSBitmapImageRep
         }
     }
     
@@ -160,17 +161,6 @@ class LSLGAssetImage : LSLGAsset {
         var error = ""
         
         if let imageRep = getImageRep() {
-            
-            let components = imageRep.samplesPerPixel
-            
-            var t1:[GLenum]
-            
-            if (imageRep.samplesPerPixel == 4) {
-                t1 = [ GLenum( GL_RGBA ), GLenum( GL_BGRA ), GLenum( GL_UNSIGNED_INT_8_8_8_8_REV ) ]
-                println("The image's component is 4")
-            } else {
-                t1 = [ GLenum( GL_RGB ), GLenum( GL_BGR ), GLenum( GL_UNSIGNED_BYTE ) ]
-            }
             
             var textureName:GLuint = 0
             let GLT2D:GLenum = GLenum( GL_TEXTURE_2D )
@@ -184,18 +174,12 @@ class LSLGAssetImage : LSLGAsset {
             glTexParameteri(GLT2D, GLenum(GL_TEXTURE_MAG_FILTER), GL_LINEAR)
             glTexParameteri(GLT2D, GLenum(GL_TEXTURE_MIN_FILTER), GL_LINEAR_MIPMAP_LINEAR)
             
-            // Indicate that pixel rows are tightly packed 
-            //  (defaults to stride of 4 which is kind of only good for
-            //  RGBA or FLOAT data types)
-            //glPixelStorei(GLenum(GL_UNPACK_ALIGNMENT), 1)
-            
             // Allocate and load image data into texture
             glTexImage2D(
-                GLT2D, 0, GLint(t1[0])
+                GLT2D, 0, GL_RGBA
               , GLsizei(imageRep.pixelsWide)
               , GLsizei(imageRep.pixelsHigh)
-                // , 0 , GLenum(GL_RGBA) , GLenum(GL_UNSIGNED_BYTE)
-              , 0 , t1[1] , t1[2]
+              , 0 , GLenum( GL_RGBA ) , GLenum( GL_UNSIGNED_INT_8_8_8_8_REV )
               , imageRep.bitmapData
             )
             
@@ -235,7 +219,7 @@ class LSLGAssetModel : LSLGAsset {
     private override func delGLAsset() { glDeleteVertexArrays(1, &glAsset!) }
     private override func initGLAsset() -> Bool {
         
-        var vertices = LSLGModelCubeVertex
+        var vertices = LSLGModelCubeVertexTest2
         var indices  = LSLGModelCubeIndex
         
         var vao:GLuint = 0
@@ -247,13 +231,11 @@ class LSLGAssetModel : LSLGAsset {
         glBindBuffer( GLenum(GL_ARRAY_BUFFER), vbo )
         glBufferData( GLenum(GL_ARRAY_BUFFER), vertices.count * sizeof(GLfloat), &vertices, GLenum(GL_STATIC_DRAW) )
         
-        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(3*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:0) )
+        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(5*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:0) )
         glEnableVertexAttribArray(0)
         
-        var ebo:GLuint = 0
-        glGenBuffers(1, &ebo)
-        glBindBuffer( GLenum(GL_ELEMENT_ARRAY_BUFFER), ebo )
-        glBufferData( GLenum(GL_ELEMENT_ARRAY_BUFFER), indices.count * sizeof(GLuint), &indices, GLenum(GL_STATIC_DRAW) )
+        glVertexAttribPointer(1, 2, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(5*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:3*sizeof(GLfloat)) )
+        glEnableVertexAttribArray(1)
         
         glBindVertexArray(0)
         glAsset = vao
