@@ -133,6 +133,7 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         }
         view.frame = frame
         realContentView.addSubview(view)
+        makeFirstResponder( view )
     }
     
     func quickLog(desc:String, _ isError:Bool) { quickLogView.scheduleLog( desc, isError ) }

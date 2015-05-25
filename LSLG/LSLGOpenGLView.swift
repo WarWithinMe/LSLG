@@ -45,6 +45,8 @@ class LSLGOpenGLView: NSOpenGLView {
         openGLContext = ctx
         
         wantsBestResolutionOpenGLSurface = true
+        
+        addGestureRecognizer( NSPanGestureRecognizer(target: self, action: "onPanGesture:") )
     }
     
     override func viewDidMoveToWindow() {
@@ -75,7 +77,6 @@ class LSLGOpenGLView: NSOpenGLView {
         glViewport( 0, 0, Int32(b.width), Int32(b.height) )
     }
     
-    var rotate:Float = 0
     var renderError:Int32 = GL_NO_ERROR
     override func drawRect(dirtyRect: NSRect) {
         openGLContext.makeCurrentContext()
@@ -184,32 +185,27 @@ class LSLGOpenGLView: NSOpenGLView {
         }
         
         var rPerDegree:Float = Float(M_PI) / 180.0
-        var zoom:Float    = 30 // 45 - 90 
-        var rotateX:Float = 0  // 
-        var rotateY:Float = Float(rotate) // 0 - 360
-        var rotateZ:Float = 0  // 
         
-        var camX:Float = 0
-        var camY:Float = 0
-        
-        rotate = (rotate+0.01) % 360 
-        
+        if !panning {
+            rotateY = (rotateY+0.01) % 360 
+        }
+
         glUniformMatrix4fv(
             glGetUniformLocation( glProgram, "model" )
           , 1, GLboolean(GL_FALSE)
-          , getRawMatrix4( GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
+          , getRawMatrix4( GLKMatrix4MakeXRotation( rotateX * rPerDegree ) * GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
         )
         
         glUniformMatrix4fv(
             glGetUniformLocation( glProgram, "view" )
           , 1, GLboolean(GL_FALSE)
-          , getRawMatrix4( GLKMatrix4MakeLookAt( camX, camY, 3, camX, camY, -1, 0, 1, 0 ) )
+          , getRawMatrix4( GLKMatrix4MakeLookAt( -camX, -camY, 3, -camX, -camY, -1, 0, 1, 0 ) )
         )
         
         glUniformMatrix4fv(
             glGetUniformLocation( glProgram, "projection" )
           , 1, GLboolean(GL_FALSE)
-          , getRawMatrix4( GLKMatrix4MakePerspective( zoom * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
+          , getRawMatrix4( GLKMatrix4MakePerspective( Float(zoom) * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
         )
         
         //glCullFace( GLenum(GL_BACK) )
@@ -248,6 +244,87 @@ class LSLGOpenGLView: NSOpenGLView {
         if glProgram != 0 {
             glDeleteProgram( glProgram )
         }
+    }
+    
+    
+    private var zoom:Float = 30
+    private var rotateX:Float = 0
+    private var rotateY:Float = 0
+    private var lastPanX:CGFloat = 0
+    private var lastPanY:CGFloat = 0
+    private var panning:Bool = false
+    private var camX:Float = 0
+    private var camY:Float = 0
+    private var showNormal:Bool = false
+    
+    func onPanGesture( gesture:NSPanGestureRecognizer ) {
+        if gesture.state == .Began {
+            lastPanX = 0
+            lastPanY = 0
+            panning = true
+        } else if ( gesture.state == .Ended ) {
+            panning = false
+        } else if ( gesture.state == .Changed ) {
+            var t = gesture.translationInView(self)
+            var s = self.bounds.size
+            t.x *= 180.0 / s.width
+            t.y *= -180.0 / s.height
+            rotateX = min( max( rotateX + Float(t.y - lastPanY) , -90 ), 90 )
+            rotateY = (rotateY + Float( t.x - lastPanX )) % 360
+            lastPanX = t.x
+            lastPanY = t.y
+        }
+    }
+    
+    override func magnifyWithEvent(event: NSEvent) {
+        var r = zoom - Float(event.magnification * 10)
+        if r > 100 { r = 100 }
+        if r < 30 { r = 30 }
+        zoom = r
+    }
+    override func scrollWheel(theEvent: NSEvent) {
+        var r = zoom - Float(theEvent.deltaY * 0.3)
+        if r > 100 { r = 100 }
+        if r < 30 { r = 30 }
+        zoom = r
+    }
+    
+    override func keyDown(theEvent: NSEvent) {
+        switch theEvent.charactersIgnoringModifiers! {
+            case "s": camY = max( camY - 0.01, -0.5 )
+            case "w": camY = min( camY + 0.01, 0.5 )
+            case "a": camX = max( camX - 0.01, -0.5 )
+            case "d": camX = min( camX + 0.01, 0.5 )
+            case "r": resetTransform()
+            case "n": showNormal = !showNormal
+            
+            default:
+                if theEvent.keyCode == 123 {
+                    camX = max( camX - 0.01, -0.5 )
+                } else if theEvent.keyCode == 124 {
+                    camX = min( camX + 0.01, 0.5 )
+                } else if theEvent.keyCode == 125 {
+                    camY = max( camY - 0.01, -0.5 )
+                } else if theEvent.keyCode == 126 {
+                    camY = min( camY + 0.01, 0.5 )
+                }
+        }
+    }
+    
+    override func acceptsFirstMouse(theEvent: NSEvent) -> Bool { return true }
+    
+    override func rightMouseDragged(theEvent: NSEvent) {
+        camX = max( min( camX + Float(theEvent.deltaX * 0.01), 0.5 ), -0.5 )
+        camY = max( min( camY - Float(theEvent.deltaY * 0.01), 0.5 ), -0.5 )
+    }
+    
+    func resetTransform() {
+        camX = 0
+        camY = 0
+        rotateX = 0
+        rotateY = 0
+        zoom = 30
+        showNormal = false
     }
 }
 
