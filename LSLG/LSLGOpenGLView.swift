@@ -241,7 +241,7 @@ class LSLGOpenGLView: NSOpenGLView {
     private var glProgram:GLuint = 0
     
     func updateModel()   { needsDisplay = true; __updateModel   = true }
-    func updateProgram() { needsDisplay = true; __updateProgram = true }
+    func updateProgram() { needsDisplay = true; __updateProgram = true; __updateTexture = true }
     func updateTexture() { needsDisplay = true; __updateTexture = true }
     
     deinit {
