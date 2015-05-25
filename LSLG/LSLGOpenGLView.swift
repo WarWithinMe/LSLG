@@ -186,7 +186,7 @@ class LSLGOpenGLView: NSOpenGLView {
         
         var rPerDegree:Float = Float(M_PI) / 180.0
         
-        if !panning {
+        if !panning && autoRotate {
             rotateY = (rotateY+0.01) % 360 
         }
 
@@ -257,6 +257,8 @@ class LSLGOpenGLView: NSOpenGLView {
     private var camY:Float = 0
     private var showNormal:Bool = false
     
+    var autoRotate:Bool = NSUserDefaults.standardUserDefaults().boolForKey("AutoYaxisRotation")
+    
     func onPanGesture( gesture:NSPanGestureRecognizer ) {
         if gesture.state == .Began {
             lastPanX = 0
@@ -297,6 +299,7 @@ class LSLGOpenGLView: NSOpenGLView {
             case "d": camX = min( camX + 0.01, 0.5 )
             case "r": resetTransform()
             case "n": showNormal = !showNormal
+            case " ": panning = true
             
             default:
                 if theEvent.keyCode == 123 {
@@ -308,6 +311,11 @@ class LSLGOpenGLView: NSOpenGLView {
                 } else if theEvent.keyCode == 126 {
                     camY = min( camY + 0.01, 0.5 )
                 }
+        }
+    }
+    override func keyUp(theEvent: NSEvent) {
+        if theEvent.charactersIgnoringModifiers == " " {
+            panning = false
         }
     }
     

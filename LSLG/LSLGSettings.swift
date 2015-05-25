@@ -60,6 +60,9 @@ class LSLGSettings : NSViewController {
     }
     @IBAction func toggleYRotate(sender: AnyObject) {
         NSUserDefaults.standardUserDefaults().setBool(cbYaxisRotate.state == NSOnState, forKey: "AutoYaxisRotation")
+        for window in NSApp.windows as! [LSLGWindow] {
+            (window.windowController() as! LSLGWindowController).setYRotate( cbYaxisRotate.state == NSOnState )
+        }
     }
     @IBAction func toggleFxaa(sender: AnyObject) {
         NSUserDefaults.standardUserDefaults().setBool(cbFxaa.state == NSOnState, forKey: "FXAA")

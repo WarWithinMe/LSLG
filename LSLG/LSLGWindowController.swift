@@ -180,6 +180,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         )
     }
     
+    func setYRotate( rotate:Bool ) {
+        (window as! LSLGWindow).oglView.autoRotate = rotate
+    }
+    
     
     /* Tear Down */
     func windowWillClose(notification: NSNotification) {
