@@ -408,7 +408,6 @@ class LSLGAssetShader : LSLGAsset {
         var compileSuccess = GLint()
         glGetShaderiv(shaderHandle, GLenum(GL_COMPILE_STATUS), &compileSuccess)
         if (compileSuccess == GL_FALSE) {
-            initError = "Cannot compile shader `\(name)`"
             
             var logLength = GLint()
             glGetShaderiv(shaderHandle, GLenum(GL_INFO_LOG_LENGTH), &logLength)
@@ -417,11 +416,9 @@ class LSLGAssetShader : LSLGAsset {
                 var log = [GLchar](count:Int(logLength), repeatedValue: 0)
                 glGetShaderInfoLog(shaderHandle, logLength, &logLength, &log)
                 
-                NSNotificationCenter.defaultCenter().postNotificationName(
-                    LSLGAssetInitFailure
-                  , object:self
-                  , userInfo:["info":NSString(bytes: &log, length:Int(logLength), encoding: NSUTF8StringEncoding)!]
-                )
+                initError = "\n" + (NSString(bytes: &log, length:Int(logLength), encoding: NSUTF8StringEncoding)! as String)
+            } else {
+                initError = "Cannot compile shader `\(name)`"
             }
             
             return false
@@ -434,11 +431,11 @@ class LSLGAssetShader : LSLGAsset {
 
 class LSLGAssetFragSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .FragmentShader }
-    class func defaultAsset()-> LSLGAsset { return LSLGAssetFragSh(dc:"") }
+    class func defaultAsset()-> LSLGAsset { return LSLGAssetFragSh(dc:LSLGShaderSrcFragment) }
 }
 class LSLGAssetVertexSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .VertexShader }
-    class func defaultAsset()-> LSLGAsset { return LSLGAssetVertexSh(dc:"") }
+    class func defaultAsset()-> LSLGAsset { return LSLGAssetVertexSh(dc:LSLGShaderSrcVertex) }
 }
 class LSLGAssetGeoSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .GeometryShader }
