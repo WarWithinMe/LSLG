@@ -210,17 +210,134 @@ class LSLGAssetImage : LSLGAsset {
 class LSLGAssetModel : LSLGAsset {
     override var type:LSLGAssetType { return .Model }
     
-    private convenience init( name:String ) { self.init(path:""); markAsBuiltIn(); self.name = name }
+    private convenience init( name:String ) { self.init(path:""); markAsBuiltIn(); self.name = name; }
+    
     class func cube()->    LSLGAsset { return LSLGAssetModel(name:"Cube")    }
     class func sphere()->  LSLGAsset { return LSLGAssetModel(name:"Sphere")  }
     class func donut()->   LSLGAsset { return LSLGAssetModel(name:"Donut")   }
     class func suzanne()-> LSLGAsset { return LSLGAssetModel(name:"Suzanne") }
     
+    var vertexData = [GLfloat]()
+    private(set) var vertexCount:Int = 0
+    
+    private func getObjString()->String {
+        if isBuiltIn {
+            switch name {
+                case "Cube"    : return LSLGModelObjCube
+                case "Sphere"  : return LSLGModelObjSphere
+                case "Donut"   : return LSLGModelObjDonut
+                case "Suzanne" : return LSLGModelObjSuzanne
+                default : return ""
+            }
+        }
+        
+        var error:NSError? = nil
+        var model = NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding, error: &error)
+        if error != nil {
+            initError = "Cannot read model `\(name)` : \(path)"
+            return ""
+        }
+        return model! as String
+    }
+    
+    private func readFromObjData() {
+        let src = getObjString()
+        
+        var lineScanner  = NSScanner(string: src)
+        var csNewline    = NSCharacterSet.newlineCharacterSet()
+        var csWhitespace = NSCharacterSet.whitespaceCharacterSet()
+        var line:NSString? = nil
+        var type:NSString? = nil
+        
+        typealias vec3 = (x:Float,y:Float,z:Float)
+        typealias vec2 = (u:Float,v:Float)
+        
+        var vertexArray  = [vec3]()
+        var normalArray  = [vec3]()
+        var textureArray = [vec2]()
+        
+        while !lineScanner.atEnd {
+            lineScanner.scanUpToCharactersFromSet(csNewline, intoString: &line)
+            if line == nil { break }
+            
+            var scanner = NSScanner(string: line! as String)
+            scanner.scanUpToCharactersFromSet(csWhitespace, intoString: &type)
+            
+            if type == "v" {
+                var vertex:vec3 = (0,0,0)
+                scanner.scanFloat(&vertex.x)
+                scanner.scanFloat(&vertex.y)
+                scanner.scanFloat(&vertex.z)
+                vertexArray.append(vertex)
+            } else if type == "vt" {
+                var texture:vec2 = (0,0)
+                scanner.scanFloat(&texture.u)
+                scanner.scanFloat(&texture.v)
+                textureArray.append(texture)
+            } else if type == "vn" {
+                var normal:vec3 = (0,0,0)
+                scanner.scanFloat(&normal.x)
+                scanner.scanFloat(&normal.y)
+                scanner.scanFloat(&normal.z)
+                normalArray.append(normal)
+            } else if type == "f" {
+                var component:NSString? = ""
+                var face = [NSString]()
+                while !scanner.atEnd {
+                    scanner.scanUpToCharactersFromSet(csWhitespace, intoString: &component)
+                    if component != nil {
+                        face.append( component! )
+                    }
+                }
+                var count = 3
+                if face.count > 3 {
+                    face.insert( face[0], atIndex: 3 )
+                    face.insert( face[2], atIndex: 4 )
+                    count = 6
+                }
+                for var i = 0; i < count; ++i {
+                    var parts = face[i].componentsSeparatedByString("/")
+                    var vec3  = vertexArray[ parts[0].integerValue! - 1 ]
+                    vertexData.append( vec3.x )
+                    vertexData.append( vec3.y )
+                    vertexData.append( vec3.z )
+                    
+                    vec3 = (0,0,0)
+                    if parts.count > 2 {
+                        var idx = parts[1].integerValue
+                        if idx > 0 {
+                            vec3 = vertexArray[ idx - 1 ]
+                        }
+                    }
+                    vertexData.append( vec3.x )
+                    vertexData.append( vec3.y )
+                    vertexData.append( vec3.z )
+                    
+                    vec3 = (0,0,0)
+                    if parts.count > 2 {
+                        var idx = parts[1].integerValue
+                        if idx > 0 {
+                            var vec2 = textureArray[ idx - 1 ]
+                            vec3.x = vec2.u
+                            vec3.y = vec2.v
+                        }
+                    }
+                    vertexData.append( vec3.x )
+                    vertexData.append( vec3.y )
+                }
+            }
+        }
+        
+        vertexCount = vertexData.count / 8
+    }
+    
+    
     private override func delGLAsset() { glDeleteVertexArrays(1, &glAsset!) }
     private override func initGLAsset() -> Bool {
         
-        var vertices = LSLGModelCubeVertexTest2
-        var indices  = LSLGModelCubeIndex
+        readFromObjData()
+        
+        let vertices = vertexData
         
         var vao:GLuint = 0
         glGenVertexArrays(1, &vao)
@@ -229,13 +346,21 @@ class LSLGAssetModel : LSLGAsset {
         var vbo:GLuint = 0
         glGenBuffers(1, &vbo)
         glBindBuffer( GLenum(GL_ARRAY_BUFFER), vbo )
-        glBufferData( GLenum(GL_ARRAY_BUFFER), vertices.count * sizeof(GLfloat), &vertices, GLenum(GL_STATIC_DRAW) )
+        glBufferData( GLenum(GL_ARRAY_BUFFER), vertices.count * sizeof(GLfloat), vertices, GLenum(GL_STATIC_DRAW) )
         
-        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(5*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:0) )
+        
         glEnableVertexAttribArray(0)
-        
-        glVertexAttribPointer(1, 2, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(5*sizeof(GLfloat)), UnsafePointer<Void>(bitPattern:3*sizeof(GLfloat)) )
         glEnableVertexAttribArray(1)
+        glEnableVertexAttribArray(2)
+        
+        let size = GLsizei(8*sizeof(GLfloat)) 
+        // position
+        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), size, UnsafePointer<Void>(bitPattern:0) )
+        // normal
+        glVertexAttribPointer(1, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), size, UnsafePointer<Void>(bitPattern:3*sizeof(GLfloat)) )
+        // texcord
+        glVertexAttribPointer(2, 2, GLenum(GL_FLOAT), GLboolean(GL_FALSE), size, UnsafePointer<Void>(bitPattern:6*sizeof(GLfloat)) )
+        
         
         glBindVertexArray(0)
         glAsset = vao

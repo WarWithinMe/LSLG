@@ -211,7 +211,7 @@ class LSLGOpenGLView: NSOpenGLView {
         //glCullFace( GLenum(GL_BACK) )
         glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
         
-        glDrawArrays( GLenum(GL_TRIANGLES), 0, 24)
+        glDrawArrays( GLenum(GL_TRIANGLES), 0, GLsizei((assetManager.glCurrModel as! LSLGAssetModel).vertexCount) )
         openGLContext.flushBuffer()
         
         var error = Int32( glGetError() )
