@@ -97,7 +97,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         
         // The statement after "in" ( a.k.a c.glAssets(type) )
         // will store in a unnamed local variable(without retain/release), according to the assembly
-        for sh in sorted( c.glAssets(type), < ) {
+        for sh in sorted( c.glAssets(type, false), < ) {
             var m = menu.addItemWithTitle(sh.name, action: nil, keyEquivalent: "")!
             setupItem?( m, sh )
             if selectedItem == nil || sh == selected { selectedItem = m }

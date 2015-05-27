@@ -152,10 +152,10 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         return LSLGAsset.assetWithPath( path, type:type )
     }
     
-    func assetsByType(type:LSLGAssetType)->[LSLGAsset] {
+    func assetsByType(type:LSLGAssetType, _ visible:Bool = true)->[LSLGAsset] {
         var r = [LSLGAsset]()
         for (p, asset) in assetMap {
-            if asset.type == type {
+            if asset.type == type && (!visible || asset.visible){
                 r.append(asset)
             }
         }
@@ -199,7 +199,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     func useDefaultAsset( assetType:LSLGAssetType ) {
         var name = ""
         switch assetType {
-            case .Model: name = "Suzanne"
+            case .Model: name = "Cube"
             case .Image: name = "None"
             default:     name = "BuiltIn"
         }
@@ -221,6 +221,6 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     var glCurrTexture    :LSLGAsset { return glCurrAsset( .Image ) }
     
-    func glAssets(type:LSLGAssetType) -> [LSLGAsset]  { return assetsByType( type )  }
+    func glAssets(type:LSLGAssetType, _ visible:Bool=true) -> [LSLGAsset]  { return assetsByType( type, visible )  }
     func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return usingAssetMap[type]! }
 }

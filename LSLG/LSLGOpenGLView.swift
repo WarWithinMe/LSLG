@@ -70,6 +70,15 @@ class LSLGOpenGLView: NSOpenGLView {
         glEnable( GLenum(GL_DEPTH_TEST) )
         glEnable( GLenum(GL_CULL_FACE) ) 
         glEnable( GLenum(GL_MULTISAMPLE) )
+        
+        var controller   = window?.windowController() as! LSLGWindowController
+        var assetManager = controller.assetManager
+        
+        normalProgram = glCreateProgram()
+        glAttachShader( normalProgram, assetManager.assetByName("normal", type: .VertexShader)!.getGLAsset() )
+        glAttachShader( normalProgram, assetManager.assetByName("normal", type: .FragmentShader)!.getGLAsset() )
+        glAttachShader( normalProgram, assetManager.assetByName("normal", type: .GeometryShader)!.getGLAsset() )
+        glLinkProgram( normalProgram )
     }
     
     override func reshape() {
@@ -214,6 +223,31 @@ class LSLGOpenGLView: NSOpenGLView {
         glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
         
         glDrawArrays( GLenum(GL_TRIANGLES), 0, GLsizei((assetManager.glCurrModel as! LSLGAssetModel).vertexCount) )
+        
+        if showNormal {
+            glUseProgram( normalProgram )
+            glUniformMatrix4fv(
+                glGetUniformLocation( glProgram, "model" )
+                , 1, GLboolean(GL_FALSE)
+                , getRawMatrix4( GLKMatrix4MakeXRotation( rotateX * rPerDegree ) * GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
+            )
+            
+            glUniformMatrix4fv(
+                glGetUniformLocation( glProgram, "view" )
+                , 1, GLboolean(GL_FALSE)
+                , getRawMatrix4( GLKMatrix4MakeLookAt( -camX, -camY, 3, -camX, -camY, -1, 0, 1, 0 ) )
+            )
+            
+            glUniformMatrix4fv(
+                glGetUniformLocation( glProgram, "projection" )
+                , 1, GLboolean(GL_FALSE)
+                , getRawMatrix4( GLKMatrix4MakePerspective( Float(zoom) * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
+            )
+            
+            glDrawArrays( GLenum(GL_TRIANGLES), 0, GLsizei((assetManager.glCurrModel as! LSLGAssetModel).vertexCount) )
+            glUseProgram( glProgram )
+        }
+        
         openGLContext.flushBuffer()
         
         var error = Int32( glGetError() )
@@ -237,6 +271,7 @@ class LSLGOpenGLView: NSOpenGLView {
     private var __updateTexture:Bool = true
     
     private var glProgram:GLuint = 0
+    private var normalProgram:GLuint = 0
     
     func updateModel()   { needsDisplay = true; __updateModel   = true }
     func updateProgram() { needsDisplay = true; __updateProgram = true; __updateTexture = true }
@@ -245,6 +280,9 @@ class LSLGOpenGLView: NSOpenGLView {
     deinit {
         if glProgram != 0 {
             glDeleteProgram( glProgram )
+        }
+        if normalProgram != 0 {
+            glDeleteProgram( normalProgram )
         }
     }
     
@@ -300,7 +338,11 @@ class LSLGOpenGLView: NSOpenGLView {
             case "a": camX = max( camX - 0.01, -0.5 )
             case "d": camX = min( camX + 0.01, 0.5 )
             case "r": resetTransform()
-            case "n": showNormal = !showNormal
+            case "n":
+                showNormal = !showNormal
+                if showNormal {
+                    (window?.windowController() as? LSLGWindowController)?.appendLog("Trying to show normal, but the normal shader is broken. Need fix.", isError:true, desc:"The normal shader is broken." )
+                }
             case " ": panning = true
             
             default:

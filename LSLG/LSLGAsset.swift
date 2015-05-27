@@ -82,12 +82,17 @@ class LSLGAsset: NSObject {
         return self
     }
     
+    private(set) var visible:Bool = true
+    
     static let StripExtReg = NSRegularExpression(pattern: "\\.[^.]+$", options:.CaseInsensitive, error: nil)!
     static private var DefaultAssetId:Int = 0
     static let DefaultAssets = [
         LSLGAssetFragSh.defaultAsset()
       , LSLGAssetVertexSh.defaultAsset()
       , LSLGAssetGeoSh.defaultAsset()
+      , LSLGAssetGeoSh.normalShader()
+      , LSLGAssetFragSh.normalShader()
+      , LSLGAssetVertexSh.normalShader()
       , LSLGAssetModel.suzanne()
       , LSLGAssetModel.donut()
       , LSLGAssetModel.sphere()
@@ -373,8 +378,9 @@ class LSLGAssetShader : LSLGAsset {
     
     // The variable is used to store default content of a shader.
     private var shaderContent:NSString?
-    private convenience init( dc:String ) {
+    private convenience init( dc:String, v:Bool = true ) {
         self.init(path:"")
+        self.visible = v
         self.shaderContent = dc
         self.markAsBuiltIn()
     }
@@ -432,12 +438,15 @@ class LSLGAssetShader : LSLGAsset {
 class LSLGAssetFragSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .FragmentShader }
     class func defaultAsset()-> LSLGAsset { return LSLGAssetFragSh(dc:LSLGShaderSrcFragment) }
+    class func normalShader()-> LSLGAsset { var a = LSLGAssetFragSh(dc:LSLGShaderSrcNormalF,v:false); a.name = "normal"; return a }
 }
 class LSLGAssetVertexSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .VertexShader }
     class func defaultAsset()-> LSLGAsset { return LSLGAssetVertexSh(dc:LSLGShaderSrcVertex) }
+    class func normalShader()-> LSLGAsset { var a = LSLGAssetVertexSh(dc:LSLGShaderSrcNormalV,v:false); a.name = "normal"; return a }
 }
 class LSLGAssetGeoSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .GeometryShader }
     class func defaultAsset()-> LSLGAsset { return LSLGAssetGeoSh(dc:"") }
+    class func normalShader()-> LSLGAsset { var a = LSLGAssetGeoSh(dc:LSLGShaderSrcNormalG,v:false); a.name = "normal"; return a }
 }
