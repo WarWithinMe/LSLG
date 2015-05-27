@@ -34,7 +34,6 @@ class LSLGSettings : NSViewController {
         )
         
         var defaults = NSUserDefaults.standardUserDefaults()
-        println(defaults.stringForKey("RegexModel"))
         cbQuitLastWin.state = defaults.boolForKey("QuitWhenLastWindowClosed") ? NSOnState : NSOffState
         cbYaxisRotate.state = defaults.boolForKey("AutoYaxisRotation") ? NSOnState : NSOffState
         cbFxaa.state        = defaults.boolForKey("FXAA") ? NSOnState : NSOffState
