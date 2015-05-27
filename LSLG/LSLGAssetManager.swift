@@ -35,7 +35,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         super.init()
         
         // Add default assets
-        for asset in LSLGAsset.DefaultAssets { assetMap[asset.assetKey] = asset }
+        for asset in LSLGAsset.defaultAssets() { assetMap[asset.assetKey] = asset }
         
         useDefaultAsset( .Image )
         useDefaultAsset( .Model )

@@ -86,7 +86,8 @@ class LSLGAsset: NSObject {
     
     static let StripExtReg = NSRegularExpression(pattern: "\\.[^.]+$", options:.CaseInsensitive, error: nil)!
     static private var DefaultAssetId:Int = 0
-    static let DefaultAssets = [
+    class func defaultAssets()->[LSLGAsset]{
+        return [
         LSLGAssetFragSh.defaultAsset()
       , LSLGAssetVertexSh.defaultAsset()
       , LSLGAssetGeoSh.defaultAsset()
@@ -99,6 +100,7 @@ class LSLGAsset: NSObject {
       , LSLGAssetModel.cube()
       , LSLGAssetImage.defaultAsset()
     ]
+    }
     
     // When the content in the file system changes, this method is called.
     // Typically called by AssetManager
