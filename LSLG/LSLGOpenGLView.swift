@@ -27,6 +27,7 @@ class LSLGOpenGLView: NSOpenGLView {
             UInt32(NSOpenGLPFADoubleBuffer)
           , UInt32(NSOpenGLPFADepthSize), 24
           , UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion4_1Core)
+          , UInt32(NSOpenGLPFASampleBuffers), 4
           , 0
         ] 
         var pf = NSOpenGLPixelFormat(attributes: pfAttr)
@@ -68,6 +69,7 @@ class LSLGOpenGLView: NSOpenGLView {
         openGLContext.makeCurrentContext()
         glEnable( GLenum(GL_DEPTH_TEST) )
         glEnable( GLenum(GL_CULL_FACE) ) 
+        glEnable( GLenum(GL_MULTISAMPLE) )
     }
     
     override func reshape() {
