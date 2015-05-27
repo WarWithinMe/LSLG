@@ -67,7 +67,7 @@ class LSLGOpenGLView: NSOpenGLView {
         
         openGLContext.makeCurrentContext()
         glEnable( GLenum(GL_DEPTH_TEST) )
-        //glEnable( GLenum(GL_CULL_FACE) ) 
+        glEnable( GLenum(GL_CULL_FACE) ) 
     }
     
     override func reshape() {
@@ -208,7 +208,7 @@ class LSLGOpenGLView: NSOpenGLView {
           , getRawMatrix4( GLKMatrix4MakePerspective( Float(zoom) * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
         )
         
-        //glCullFace( GLenum(GL_BACK) )
+        glCullFace( GLenum(GL_BACK) )
         glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
         
         glDrawArrays( GLenum(GL_TRIANGLES), 0, GLsizei((assetManager.glCurrModel as! LSLGAssetModel).vertexCount) )
