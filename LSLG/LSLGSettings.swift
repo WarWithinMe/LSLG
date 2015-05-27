@@ -60,7 +60,7 @@ class LSLGSettings : NSViewController {
     }
     @IBAction func toggleYRotate(sender: AnyObject) {
         NSUserDefaults.standardUserDefaults().setBool(cbYaxisRotate.state == NSOnState, forKey: "AutoYaxisRotation")
-        for window in NSApp.windows as! [LSLGWindow] {
+        for window in NSApp.windows as! [NSWindow] {
             (window.windowController() as! LSLGWindowController).setYRotate( cbYaxisRotate.state == NSOnState )
         }
     }
