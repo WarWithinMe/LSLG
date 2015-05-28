@@ -27,7 +27,9 @@ class LSLGOpenGLView: NSOpenGLView {
             UInt32(NSOpenGLPFADoubleBuffer)
           , UInt32(NSOpenGLPFADepthSize), 24
           , UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion4_1Core)
-          , UInt32(NSOpenGLPFASampleBuffers), 4
+          , UInt32(NSOpenGLPFASampleBuffers), 1
+          , UInt32(NSOpenGLPFASamples), 4
+          , UInt32(NSOpenGLPFANoRecovery), 1
           , 0
         ] 
         var pf = NSOpenGLPixelFormat(attributes: pfAttr)
