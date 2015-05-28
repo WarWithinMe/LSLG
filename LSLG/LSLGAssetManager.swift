@@ -59,6 +59,43 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     private var assetMap = [String:LSLGAsset]()
     private var usingAssetMap = [LSLGAssetType:LSLGAsset]()
     
+    func onFolderRenamed() {
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowFolderChange, object: nil, userInfo:nil)
+        ) 
+    }
+    func onFolderRemoved() {
+        var builtInAsset = [String:LSLGAsset]()
+        var pipelineUpdated = [Int]()
+        var assetChanges    = [Int]()
+        
+        for (p, asset) in assetMap {
+            if asset.isBuiltIn {
+                builtInAsset[p] = asset
+                continue
+            }
+            
+            if isAssetUsing( asset ) {
+                useDefaultAsset(asset.type)
+                pipelineUpdated.append( asset.type.rawValue )
+            } 
+            
+            assetChanges.append( asset.type.rawValue )
+        }
+        
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["changedTypes":pipelineUpdated])
+        )
+            
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:["changedTypes":assetChanges])
+        )
+        
+        NSNotificationCenter.defaultCenter().postNotification(
+            NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil)
+        ) 
+    }
+    
     func onFileChanged(paths: [String]) {
         var pipelineUpdated = [Int]()
         for path in paths {
@@ -185,12 +222,12 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     func useAsset( asset:LSLGAsset ) {
         if assetMap[asset.assetKey] != nil {
-            if usingAssetMap[ asset.type ] == asset { return }
+            if usingAssetMap[asset.type] == asset { return }
             
             usingAssetMap[asset.type] = asset
             
             NSNotificationCenter.defaultCenter().postNotification( NSNotification(
-               name: LSLGWindowPipelineChange
+                name: LSLGWindowPipelineChange
               , object: self
               , userInfo: ["changedTypes":[asset.type.rawValue]]
             ))

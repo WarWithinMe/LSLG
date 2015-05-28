@@ -193,12 +193,9 @@ class LSLGTitle: NSView {
         sub.selectable = false
         sub.alignment  = NSTextAlignment.CenterTextAlignment
         addSubview( sub )
-        
-        
-        NSNotificationCenter.defaultCenter().addObserver( self, selector: "onWorkingFolderChanged:", name: LSLGWindowFolderChange, object: nil )
     }
     
-    override func viewDidMoveToWindow() {
+    func updateTitle() {
         if let c = window?.windowController() as? LSLGWindowController {
             if c.folderPath.isEmpty {
                 (subviews[0] as! NSTextView).string = "No working folder"
@@ -230,13 +227,5 @@ class LSLGTitle: NSView {
         super.drawRect(dirtyRect)
     }
     
-    func onWorkingFolderChanged(n:NSNotification) {
-        if let c = (window?.windowController() as? LSLGWindowController) where c == (n.object as! LSLGWindowController) {
-           viewDidMoveToWindow()
-        }
-    }
-    
-    deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
-    }
+    override func viewDidMoveToWindow() { updateTitle() }
 }

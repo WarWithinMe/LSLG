@@ -105,10 +105,18 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         if path.isEmpty { return }
         
         if assetManager.watchFolder( path ) {
-            NSNotificationCenter.defaultCenter().postNotification( NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil) )
+            (window as? LSLGWindow)?.titleView.updateTitle()
             appendLog("Watching folder: \(path)", isError:false, desc:"Watching '\(path.lastPathComponent)'" )
         } else {
             appendLog("Failed to watch folder: \(path)", isError:true, desc:"Failed to watch '\(path.lastPathComponent)'" )
+        }
+    }
+    
+    func onWorkingFolderChanged( n:NSNotification ) {
+        (window as! LSLGWindow).titleView.updateTitle()
+        
+        if let am = n.object as? LSLGAssetManager where (am == assetManager && am.folderPath.isEmpty) {
+            appendLog("Working folder has been deleted.", isError:false, desc:"Working folder has been deleted" )
         }
     }
     

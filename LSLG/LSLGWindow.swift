@@ -20,6 +20,7 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     private var realContentView:NSView!
     private var renderControl:LSLGRenderControl!
     private var quickLogView:LSLGQuickLog!
+    var titleView:LSLGTitle!
     var oglView:LSLGOpenGLView!
     
     init() {
@@ -62,8 +63,8 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         layer.addSublayer( gradientLayer )
         
         
-        // A view to prevent dragging the window, making the titlebar is only
-        // element that can drag the window
+        // A view to prevent dragging the window, making the titlebar the only
+        // element which can drag the window
         var maskView = UndraggableView( frame:contentView.bounds )
         maskView.frame.size.height = maskView.frame.height - 25.0
         maskView.autoresizingMask = .ViewMinYMargin | .ViewWidthSizable
@@ -80,9 +81,8 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         setContent( oglView )
         
         // Title, which makes the window draggable
-        self.contentView.addSubview(
-            LSLGTitle(frame: NSMakeRect(0, contentView.frame.height-25, contentView.frame.width, 25))
-        )
+        titleView = LSLGTitle(frame: NSMakeRect(0, contentView.frame.height-25, contentView.frame.width, 25))
+        contentView.addSubview( titleView )
         
         
         // Title controls
@@ -165,7 +165,6 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     func draggingEntered(sender: NSDraggingInfo) -> NSDragOperation {
         var pb = sender.draggingPasteboard()
         if let pl:Array = pb.propertyListForType( NSFilenamesPboardType ) as? [AnyObject] {
-            println("draggingEntered, \(pl)")
             var fm = NSFileManager.defaultManager()
             for path in pl {
                 var exist = ObjCBool(false)
@@ -182,7 +181,6 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
     func performDragOperation(sender: NSDraggingInfo) -> Bool {
         var pb = sender.draggingPasteboard()
         if let pl:Array = pb.propertyListForType( NSFilenamesPboardType ) as? [AnyObject] {
-            println("draggingEntered, \(pl)")
             var fm = NSFileManager.defaultManager()
             for path in pl {
                 var exist = ObjCBool(false)
