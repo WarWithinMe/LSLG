@@ -82,6 +82,8 @@ class LSLGOpenGLView: NSOpenGLView {
         
         if msaa {
             glEnable( GLenum(GL_MULTISAMPLE) )
+        } else {
+            glDisable( GLenum(GL_MULTISAMPLE) )
         }
         
         // Create normal shaders
