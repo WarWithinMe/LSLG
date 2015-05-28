@@ -10,6 +10,7 @@ import Cocoa
 
 let LSLGWindowPipelineChange  = "LSLGWindowPipelineChange"
 let LSLGWindowAssetsAvailable = "LSLGWindowAssetsAvailable"
+let LSLGWindowFolderChange    = "LSLGWindowFolderChange"
 
 class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
@@ -47,6 +48,9 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         if path == folderPath { return true }
         if path.isEmpty { return false }
         
+        // Remove all loaded assets in the previous folder.
+        wipeAssets()
+        
         // Create monitor
         monitor = LSLGFolderMonitor(path: path)
         monitor?.delegate = self
@@ -61,10 +65,10 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     
     func onFolderRenamed() {
         NSNotificationCenter.defaultCenter().postNotification(
-            NSNotification(name: LSLGWindowFolderChange, object: nil, userInfo:nil)
+            NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil)
         ) 
     }
-    func onFolderRemoved() {
+    func wipeAssets() {
         var builtInAsset = [String:LSLGAsset]()
         var pipelineUpdated = [Int]()
         var assetChanges    = [Int]()
@@ -83,14 +87,23 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
             assetChanges.append( asset.type.rawValue )
         }
         
-        NSNotificationCenter.defaultCenter().postNotification(
-            NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["changedTypes":pipelineUpdated])
-        )
-            
-        NSNotificationCenter.defaultCenter().postNotification(
-            NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:["changedTypes":assetChanges])
-        )
+        assetMap = builtInAsset
         
+        if !pipelineUpdated.isEmpty {
+            NSNotificationCenter.defaultCenter().postNotification(
+                NSNotification(name: LSLGWindowPipelineChange, object: self, userInfo:["changedTypes":pipelineUpdated])
+            )
+        }
+            
+        if !assetChanges.isEmpty {
+            NSNotificationCenter.defaultCenter().postNotification(
+                NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:["changedTypes":assetChanges])
+            )
+        }
+    }
+    
+    func onFolderRemoved() {
+        wipeAssets()
         NSNotificationCenter.defaultCenter().postNotification(
             NSNotification(name: LSLGWindowFolderChange, object: self, userInfo:nil)
         ) 

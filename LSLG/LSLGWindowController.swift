@@ -14,7 +14,6 @@ private let OldLogMarkerAddDelay:NSTimeInterval = 20
 
 // Notification names
 let LSLGWindowLogUpdate      = "LSLGWindowLogUpdate"
-let LSLGWindowFolderChange   = "LSLGWindowFolderChange"
 let LSLGWindowSubviewToggle  = "LSLGWindowSubviewToggle"
 
 
@@ -29,6 +28,8 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     convenience init() { self.init(savedInfo:nil) }
     
     init(savedInfo:[String:String]?) {
+        
+        assetManager = LSLGAssetManager()
         
         super.init(window:nil)
         
@@ -55,6 +56,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector : "onAssetAvaible:", name: LSLGWindowAssetsAvailable, object: nil
+        )
+        
+        NSNotificationCenter.defaultCenter().addObserver(
+            self, selector: "onWorkingFolderChanged:", name: LSLGWindowFolderChange, object: assetManager
         )
         
         NSTimer.scheduledTimerWithTimeInterval(0, target: self, selector: "updateOGL:", userInfo: nil, repeats: true)
@@ -100,7 +105,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     /* Asset Management */
     var folderPath:String { return assetManager.folderPath }
-    private(set) var assetManager = LSLGAssetManager()
+    private(set) var assetManager:LSLGAssetManager
     func monitorFolder(path:String) {
         if path.isEmpty { return }
         
@@ -241,5 +246,9 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         } else {
             LSLGWindowController()
         }
+    }
+    
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
 }
