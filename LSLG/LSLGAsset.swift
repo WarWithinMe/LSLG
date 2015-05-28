@@ -38,29 +38,38 @@ enum LSLGAssetType:Int {
     }
 }
 
-let LSLGAssetInitFailure = "LSLGAssetInitFailure"
+
 
 class LSLGAsset: NSObject {
     
     var type:LSLGAssetType { return .Generic }
     
     private(set) var name:String
-    var assetKey:String { return isBuiltIn ? "/BuiltInAsset\(builtInId)/" : path.lastPathComponent }
-    
-    init( path:String ) {
-        self.path = path
+    private(set) var assetKey:String
         
-        var n = path.lastPathComponent
-        self.name = LSLGAsset.StripExtReg.stringByReplacingMatchesInString(
-            n
-          , options: NSMatchingOptions.allZeros
-          , range: NSMakeRange(0, count(n))
+    init( path:String = "" ) {
+        if path.isEmpty {
+            name = "BuiltIn"
+            builtInId = (++LSLGAsset.DefaultAssetId)
+            assetKey  = "/BuiltInAsset\(builtInId)/"
+        } else {
+            assetKey = path.lastPathComponent
+            name = LSLGAsset.StripExtReg.stringByReplacingMatchesInString(
+                assetKey
+              , options: .allZeros
+              , range: NSMakeRange(0, count(assetKey))
           , withTemplate: ""
         )
+            
+        }
+        
         super.init()
     }
     
-    private(set) var path:String
+    // Set by LSLGAssetManager
+    weak var assetManager:LSLGAssetManager?
+    
+    var path:String { return assetManager == nil ? assetKey : assetManager!.folderPath + "/" + assetKey }
     
     class func assetWithPath( path:String, type:LSLGAssetType )-> LSLGAsset? {
         switch type {
@@ -76,12 +85,8 @@ class LSLGAsset: NSObject {
     // Built-In assets
     private var builtInId:Int = -1
     var isBuiltIn:Bool { return builtInId >= 0 }
-    private func markAsBuiltIn()->LSLGAsset {
-        self.name      = "BuiltIn"
-        self.builtInId = (++LSLGAsset.DefaultAssetId)
-        return self
-    }
     
+    // Internal asset is not visible to user.
     private(set) var visible:Bool = true
     
     static let StripExtReg = NSRegularExpression(pattern: "\\.[^.]+$", options:.CaseInsensitive, error: nil)!
@@ -98,7 +103,6 @@ class LSLGAsset: NSObject {
       , LSLGAssetModel.donut()
       , LSLGAssetModel.sphere()
       , LSLGAssetModel.cube()
-      , LSLGAssetImage.defaultAsset()
     ]
     }
     
@@ -122,9 +126,8 @@ class LSLGAsset: NSObject {
     private(set) var initError:String = ""
     private func initGLAsset() -> Bool { return false }
     private func delGLAsset() {}
-    deinit {
-        if glAssetInited { delGLAsset() }
-    }
+    
+    deinit { if glAssetInited { delGLAsset() } }
 }
 
 
@@ -143,31 +146,12 @@ func > (l:LSLGAsset, r:LSLGAsset)->Bool {
 class LSLGAssetImage : LSLGAsset {
     override var type:LSLGAssetType { return .Image }
     
-    class func defaultAsset()->LSLGAsset {
-        var a = LSLGAssetImage(path:"")
-        a.markAsBuiltIn()
-        a.name = "None"
-        return a
-    }
-    
-    private func getImageRep()->NSBitmapImageRep? {
-        if (isBuiltIn) {
-            var rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 1, pixelsHigh: 1, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: NSCalibratedRGBColorSpace, bytesPerRow: 0, bitsPerPixel: 0)
-            var transparent = 0
-            rep?.setPixel(&transparent, atX: 0, y: 0)
-            return rep
-        } else {
-            var img = NSImage( contentsOfFile: path )
-            return img?.representations[0] as? NSBitmapImageRep
-        }
-    }
-    
     private override func delGLAsset() { glDeleteTextures(1, &glAsset!) }
     private override func initGLAsset() -> Bool {
         
-        var error = ""
+        initError = ""
         
-        if let imageRep = getImageRep() {
+        if let imageRep = NSImage( contentsOfFile: path )?.representations[0] as? NSBitmapImageRep {
             
             var textureName:GLuint = 0
             let GLT2D:GLenum = GLenum( GL_TEXTURE_2D )
@@ -195,21 +179,13 @@ class LSLGAssetImage : LSLGAsset {
             
             var glErr = Int32(glGetError())
             if (glErr != GL_NO_ERROR) {
-                error = "Error occured when binding texture:\(glErrorString(glErr))"
+                initError = "Error occured when binding texture:\(glErrorString(glErr))"
             }
-            
         } else {
-            error = "Cannot load image at \(path)"
+            initError = "Cannot load image at \(path)"
         }
         
-        if ( !error.isEmpty ) {
-            NSNotificationCenter.defaultCenter().postNotificationName(
-                LSLGAssetInitFailure , object:self , userInfo:["info":error]
-            )
-            return false
-        }
-        
-        return true
+        return initError.isEmpty
     }
 }
 
@@ -217,25 +193,20 @@ class LSLGAssetImage : LSLGAsset {
 class LSLGAssetModel : LSLGAsset {
     override var type:LSLGAssetType { return .Model }
     
-    private convenience init( name:String ) { self.init(path:""); markAsBuiltIn(); self.name = name; }
-    
-    class func cube()->    LSLGAsset { return LSLGAssetModel(name:"Cube")    }
-    class func sphere()->  LSLGAsset { return LSLGAssetModel(name:"Sphere")  }
-    class func donut()->   LSLGAsset { return LSLGAssetModel(name:"Donut")   }
-    class func suzanne()-> LSLGAsset { return LSLGAssetModel(name:"Suzanne") }
+    private convenience init( _ n:String, _ c:String ) { self.init(); name = n; objContent = c }
+    class func cube()->    LSLGAsset { return LSLGAssetModel("Cube",    LSLGModelObjCube)    }
+    class func sphere()->  LSLGAsset { return LSLGAssetModel("Sphere",  LSLGModelObjSphere)  }
+    class func donut()->   LSLGAsset { return LSLGAssetModel("Donut",   LSLGModelObjDonut)   }
+    class func suzanne()-> LSLGAsset { return LSLGAssetModel("Suzanne", LSLGModelObjSuzanne) }
     
     var vertexData = [GLfloat]()
     private(set) var vertexCount:Int = 0
     
+    private var objContent:String?
+    
     private func getObjString()->String {
         if isBuiltIn {
-            switch name {
-                case "Cube"    : return LSLGModelObjCube
-                case "Sphere"  : return LSLGModelObjSphere
-                case "Donut"   : return LSLGModelObjDonut
-                case "Suzanne" : return LSLGModelObjSuzanne
-                default : return ""
-            }
+            return objContent!
         }
         
         var error:NSError? = nil
@@ -302,7 +273,7 @@ class LSLGAssetModel : LSLGAsset {
                     face.insert( face[2], atIndex: 4 )
                     count = 6
                 }
-                for var i = 0; i < count; ++i {
+                for i in 0..<count {
                     var parts = face[i].componentsSeparatedByString("/")
                     var vec3  = vertexArray[ parts[0].integerValue! - 1 ]
                     vertexData.append( vec3.x )
@@ -380,12 +351,7 @@ class LSLGAssetShader : LSLGAsset {
     
     // The variable is used to store default content of a shader.
     private var shaderContent:NSString?
-    private convenience init( dc:String, v:Bool = true ) {
-        self.init(path:"")
-        self.visible = v
-        self.shaderContent = dc
-        self.markAsBuiltIn()
-    }
+    private convenience init( dc:String ) { self.init(); shaderContent = dc }
     
     private override func delGLAsset() { glDeleteShader(glAsset!) }
     
@@ -440,15 +406,24 @@ class LSLGAssetShader : LSLGAsset {
 class LSLGAssetFragSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .FragmentShader }
     class func defaultAsset()-> LSLGAsset { return LSLGAssetFragSh(dc:LSLGShaderSrcFragment) }
-    class func normalShader()-> LSLGAsset { var a = LSLGAssetFragSh(dc:LSLGShaderSrcNormalF,v:false); a.name = "normal"; return a }
+    class func normalShader()-> LSLGAsset {
+        var a = LSLGAssetFragSh(dc:LSLGShaderSrcNormalF)
+        a.visible = false; a.name = "normal"; return a
+    }
 }
 class LSLGAssetVertexSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .VertexShader }
     class func defaultAsset()-> LSLGAsset { return LSLGAssetVertexSh(dc:LSLGShaderSrcVertex) }
-    class func normalShader()-> LSLGAsset { var a = LSLGAssetVertexSh(dc:LSLGShaderSrcNormalV,v:false); a.name = "normal"; return a }
+    class func normalShader()-> LSLGAsset {
+        var a = LSLGAssetVertexSh(dc:LSLGShaderSrcNormalV)
+        a.visible = false; a.name = "normal"; return a
+    }
 }
 class LSLGAssetGeoSh : LSLGAssetShader {
     override var type:LSLGAssetType { return .GeometryShader }
     class func defaultAsset()-> LSLGAsset { return LSLGAssetGeoSh(dc:"") }
-    class func normalShader()-> LSLGAsset { var a = LSLGAssetGeoSh(dc:LSLGShaderSrcNormalG,v:false); a.name = "normal"; return a }
+    class func normalShader()-> LSLGAsset {
+        var a = LSLGAssetGeoSh(dc:LSLGShaderSrcNormalG)
+        a.visible = false; a.name = "normal"; return a
+    }
 }

@@ -35,9 +35,8 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         super.init()
         
         // Add default assets
-        for asset in LSLGAsset.defaultAssets() { assetMap[asset.assetKey] = asset }
+        for asset in LSLGAsset.defaultAssets() { addAsset(asset) }
         
-        useDefaultAsset( .Image )
         useDefaultAsset( .Model )
         useDefaultAsset( .VertexShader )
         useDefaultAsset( .FragmentShader )
@@ -84,7 +83,7 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         
         for path in added {
             if let a = assetWithPath(folderPath.stringByAppendingPathComponent(path)) {
-                assetMap[ path ] = a
+                addAsset( a )
                 assetChanges.append( a.type.rawValue )
             }
         }
@@ -129,6 +128,11 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
                 NSNotification(name: LSLGWindowAssetsAvailable, object: self, userInfo:["changedTypes":assetChanges])
             )
         }
+    }
+    
+    private func addAsset( asset:LSLGAsset ) {
+        asset.assetManager = self
+        assetMap[ asset.assetKey ] = asset
     }
     
     private func assetWithPath( path:String )-> LSLGAsset? {
@@ -200,7 +204,6 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         var name = ""
         switch assetType {
             case .Model: name = "Cube"
-            case .Image: name = "None"
             default:     name = "BuiltIn"
         }
         if !name.isEmpty {
@@ -214,13 +217,11 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     var glModels      :[LSLGAsset] { return assetsByType( .Model ) }
     var glTextures    :[LSLGAsset] { return assetsByType( .Image ) }
     
-    var glCurrModel      :LSLGAsset { return glCurrAsset( .Model ) }
-    var glCurrVertShader :LSLGAsset { return glCurrAsset( .VertexShader ) }
-    var glCurrFragShader :LSLGAsset { return glCurrAsset( .FragmentShader ) }
-    var glCurrGeomShader :LSLGAsset { return glCurrAsset( .GeometryShader ) }
-    
-    var glCurrTexture    :LSLGAsset { return glCurrAsset( .Image ) }
+    var glCurrModel      :LSLGAsset { return glCurrAsset( .Model )! }
+    var glCurrVertShader :LSLGAsset { return glCurrAsset( .VertexShader )! }
+    var glCurrFragShader :LSLGAsset { return glCurrAsset( .FragmentShader )! }
+    var glCurrGeomShader :LSLGAsset { return glCurrAsset( .GeometryShader )! }
     
     func glAssets(type:LSLGAssetType, _ visible:Bool=true) -> [LSLGAsset]  { return assetsByType( type, visible )  }
-    func glCurrAsset(type:LSLGAssetType) -> LSLGAsset { return usingAssetMap[type]! }
+    func glCurrAsset(type:LSLGAssetType) -> LSLGAsset? { return usingAssetMap[type] }
 }

@@ -19,6 +19,7 @@
 		A543C5CE1ACE986A00C9F0E8 /* LSLGIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */; };
 		A548B2541AFB7BE900DEF48D /* LSLGFolderMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A548B2531AFB7BE900DEF48D /* LSLGFolderMonitor.swift */; };
 		A558A6331AF8D0FE00F5C3FF /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A558A6321AF8D0FE00F5C3FF /* OpenGL.framework */; };
+		A55EA8E11B16CE6B00CEB0E7 /* LSLGBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A55EA8E01B16CE6B00CEB0E7 /* LSLGBridge.m */; };
 		A5654BEE1AD6699D002FE313 /* LSLGRenderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5654BED1AD6699D002FE313 /* LSLGRenderControl.swift */; };
 		A586C2801AEA434100CE2DC1 /* LSLGAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A586C27F1AEA434100CE2DC1 /* LSLGAsset.swift */; };
 		A5877E4F1AE8CC260089F33A /* LSLGAssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5877E4E1AE8CC260089F33A /* LSLGAssetManager.swift */; };
@@ -56,6 +57,8 @@
 		A543C5CD1ACE986A00C9F0E8 /* LSLGIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGIcon.swift; sourceTree = "<group>"; };
 		A548B2531AFB7BE900DEF48D /* LSLGFolderMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGFolderMonitor.swift; sourceTree = "<group>"; };
 		A558A6321AF8D0FE00F5C3FF /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		A55EA8DF1B16CE6B00CEB0E7 /* LSLGBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSLGBridge.h; sourceTree = "<group>"; };
+		A55EA8E01B16CE6B00CEB0E7 /* LSLGBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSLGBridge.m; sourceTree = "<group>"; };
 		A5654BED1AD6699D002FE313 /* LSLGRenderControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGRenderControl.swift; sourceTree = "<group>"; };
 		A586C27F1AEA434100CE2DC1 /* LSLGAsset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGAsset.swift; sourceTree = "<group>"; };
 		A5877E4E1AE8CC260089F33A /* LSLGAssetManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LSLGAssetManager.swift; sourceTree = "<group>"; };
@@ -136,6 +139,8 @@
 				A5117E0F1B099FAA0091EA29 /* Settings.xib */,
 				A543C5CA1ACE97F800C9F0E8 /* PocketSVG.h */,
 				A543C5CB1ACE97F800C9F0E8 /* PocketSVG.m */,
+				A55EA8DF1B16CE6B00CEB0E7 /* LSLGBridge.h */,
+				A55EA8E01B16CE6B00CEB0E7 /* LSLGBridge.m */,
 				A5DDD3E11ACA89F400303D71 /* Images.xcassets */,
 				A5DDD3DD1ACA89F400303D71 /* Supporting Files */,
 			);
@@ -274,6 +279,7 @@
 				A548B2541AFB7BE900DEF48D /* LSLGFolderMonitor.swift in Sources */,
 				A531407B1AD3D76D00419887 /* LSLGLogView.swift in Sources */,
 				A531407D1AD3DA8400419887 /* LSLGWindowController.swift in Sources */,
+				A55EA8E11B16CE6B00CEB0E7 /* LSLGBridge.m in Sources */,
 				A586C2801AEA434100CE2DC1 /* LSLGAsset.swift in Sources */,
 				A51B65541AD7B2CF008EAA9D /* LSLGQuickLog.swift in Sources */,
 				A5877E4F1AE8CC260089F33A /* LSLGAssetManager.swift in Sources */,

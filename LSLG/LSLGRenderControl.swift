@@ -92,7 +92,7 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         menu.autoenablesItems = false
         
         var c = (window!.windowController() as! LSLGWindowController).assetManager
-        var selected = c.glCurrAsset( type )
+        var selected = c.glCurrAsset( type )!
         var selectedItem:NSMenuItem? = nil
         
         // The statement after "in" ( a.k.a c.glAssets(type) )
