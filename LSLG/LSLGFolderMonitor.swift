@@ -17,9 +17,6 @@ protocol LSLGFolderMonitorDelegate: class {
     func onFolderRenamed()
 }
 
-/*
-    Currently the LSLGFolderMonitor cannot handle the event of Folder Removal
-*/
 class LSLGFolderMonitor {
     
     static var eventQueue = dispatch_queue_create("wwm.LSLGFolderMonitor",  DISPATCH_QUEUE_SERIAL) 
@@ -79,7 +76,7 @@ class LSLGFolderMonitor {
         dispatch_resume( _src )
     }
     
-    private func onFolderRemoved() {
+    private func onFolderRemoved( callDelegate:Bool = true ) {
         if let src = folderDSrc {
             dispatch_source_cancel( src )
             folderDSrc = nil
@@ -89,12 +86,16 @@ class LSLGFolderMonitor {
             folderStatus.removeAll(keepCapacity: false)
         } 
         folderPath = ""
-        delegate?.onFolderRemoved()
+        
+        if callDelegate {
+            dispatch_async( dispatch_get_main_queue(), { self.delegate?.onFolderRemoved() } )
+        }
     }
     
     private func onFolderRenamed(newPath:String) {
         folderPath = newPath
-        delegate?.onFolderRenamed()
+        
+        dispatch_async( dispatch_get_main_queue(), { self.delegate?.onFolderRenamed() } )
     }
     
     private var sheduledCheck = false
@@ -252,6 +253,6 @@ class LSLGFolderMonitor {
     /* Cleanup */
     deinit {
         delegate = nil
-        onFolderRemoved()
+        onFolderRemoved(callDelegate: false)
     }
 }
