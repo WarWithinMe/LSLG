@@ -32,7 +32,7 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
             
           , "QuitWhenLastWindowClosed" : true
           , "AutoYaxisRotation" : true
-          , "FXAA" : false
+          , "MSAA" : false
         ])
     }
     

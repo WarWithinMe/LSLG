@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7702" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14E17e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7702"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="LSLGSettings" customModule="LSLG" customModuleProvider="target">
             <connections>
-                <outlet property="cbFxaa" destination="h5Z-6Q-R7T" id="NOO-rv-0aB"/>
+                <outlet property="cbMsaa" destination="h5Z-6Q-R7T" id="Cqg-Gf-3xB"/>
                 <outlet property="cbQuitLastWin" destination="wjw-2X-GkT" id="77Q-9z-kDD"/>
                 <outlet property="cbYaxisRotate" destination="6R9-ss-gYX" id="b5w-8L-dRW"/>
                 <outlet property="iptModel" destination="Ufq-un-G63" id="2va-0Q-BYS"/>
@@ -36,7 +36,7 @@
                 <rect key="frame" x="1" y="79" width="181" height="16"/>
                 <autoresizingMask key="autoresizingMask"/>
             </scroller>
-            <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="trF-YU-L12">
+            <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="trF-YU-L12">
                 <rect key="frame" x="166" y="1" width="16" height="94"/>
                 <autoresizingMask key="autoresizingMask"/>
             </scroller>
@@ -65,14 +65,14 @@
                         <action selector="toggleYRotate:" target="-2" id="nRb-0w-pZJ"/>
                     </connections>
                 </button>
-                <button hidden="YES" tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="h5Z-6Q-R7T">
-                    <rect key="frame" x="12" y="252" width="140" height="20"/>
-                    <buttonCell key="cell" type="bevel" title="FXAA (Placeholder)" bezelStyle="regularSquare" image="CBNormal" imagePosition="left" alignment="left" alternateImage="CBChecked" inset="2" id="yKZ-lD-F4Y">
+                <button tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="h5Z-6Q-R7T">
+                    <rect key="frame" x="12" y="252" width="233" height="20"/>
+                    <buttonCell key="cell" type="bevel" title="4xMSAA (Only affect new window)" bezelStyle="regularSquare" image="CBNormal" imagePosition="left" alignment="left" alternateImage="CBChecked" inset="2" id="yKZ-lD-F4Y">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" size="12" name="Verdana"/>
                     </buttonCell>
                     <connections>
-                        <action selector="toggleFxaa:" target="-2" id="o2r-LG-CmO"/>
+                        <action selector="toggleMsaa:" target="-2" id="c62-Ew-1Ha"/>
                     </connections>
                 </button>
                 <customView focusRingType="none" translatesAutoresizingMaskIntoConstraints="NO" id="oR1-vD-DSa" customClass="LSLGSettingsLine" customModule="LSLG" customModuleProvider="target">

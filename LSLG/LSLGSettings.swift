@@ -36,7 +36,7 @@ class LSLGSettings : NSViewController {
         var defaults = NSUserDefaults.standardUserDefaults()
         cbQuitLastWin.state = defaults.boolForKey("QuitWhenLastWindowClosed") ? NSOnState : NSOffState
         cbYaxisRotate.state = defaults.boolForKey("AutoYaxisRotation") ? NSOnState : NSOffState
-        cbFxaa.state        = defaults.boolForKey("FXAA") ? NSOnState : NSOffState
+        cbMsaa.state        = defaults.boolForKey("MSAA") ? NSOnState : NSOffState
         
         if let s = defaults.stringForKey("RegexVertex")   { iptShVert.stringValue  = s }
         if let s = defaults.stringForKey("RegexFragment") { iptShFrag.stringValue  = s }
@@ -47,7 +47,7 @@ class LSLGSettings : NSViewController {
     
     @IBOutlet weak var cbQuitLastWin: NSButton!
     @IBOutlet weak var cbYaxisRotate: NSButton!
-    @IBOutlet weak var cbFxaa: NSButton!
+    @IBOutlet weak var cbMsaa: NSButton!
     @IBOutlet weak var iptShVert: LSLGSettingsTextField!
     @IBOutlet weak var iptShFrag: LSLGSettingsTextField!
     @IBOutlet weak var iptShGeom: LSLGSettingsTextField!
@@ -63,8 +63,8 @@ class LSLGSettings : NSViewController {
             (window.windowController() as! LSLGWindowController).setYRotate( cbYaxisRotate.state == NSOnState )
         }
     }
-    @IBAction func toggleFxaa(sender: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setBool(cbFxaa.state == NSOnState, forKey: "FXAA")
+    @IBAction func toggleMsaa(sender: AnyObject) {
+        NSUserDefaults.standardUserDefaults().setBool(cbMsaa.state == NSOnState, forKey: "MSAA")
     }
     
     @IBAction func changeRegVert(sender: AnyObject) {

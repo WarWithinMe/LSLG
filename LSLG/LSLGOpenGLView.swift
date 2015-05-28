@@ -15,6 +15,7 @@ class LSLGOpenGLView: NSOpenGLView {
     override var mouseDownCanMoveWindow:Bool { return true }
     
     private var initError:String = ""
+    private var msaa:Bool = false
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override init?(frame frameRect: NSRect, pixelFormat format: NSOpenGLPixelFormat!) {
@@ -27,11 +28,18 @@ class LSLGOpenGLView: NSOpenGLView {
             UInt32(NSOpenGLPFADoubleBuffer)
           , UInt32(NSOpenGLPFADepthSize), 24
           , UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion4_1Core)
-          , UInt32(NSOpenGLPFASampleBuffers), 1
-          , UInt32(NSOpenGLPFASamples), 4
-          , UInt32(NSOpenGLPFANoRecovery), 1
-          , 0
         ] 
+        
+        msaa = NSUserDefaults.standardUserDefaults().boolForKey("MSAA")
+        if msaa {
+            pfAttr += [
+                UInt32(NSOpenGLPFASampleBuffers), 1
+              , UInt32(NSOpenGLPFASamples), 4
+              , UInt32(NSOpenGLPFANoRecovery), 1
+            ]
+        }
+        
+        pfAttr.append(0)
         var pf = NSOpenGLPixelFormat(attributes: pfAttr)
         if pf == nil {
             initError = "Failed to create OGL pixel format"
@@ -59,6 +67,8 @@ class LSLGOpenGLView: NSOpenGLView {
         }
     }
     
+    private var displayLink:CVDisplayLinkRef?
+    
     override func prepareOpenGL() {
         super.prepareOpenGL()
         
@@ -71,11 +81,14 @@ class LSLGOpenGLView: NSOpenGLView {
         openGLContext.makeCurrentContext()
         glEnable( GLenum(GL_DEPTH_TEST) )
         glEnable( GLenum(GL_CULL_FACE) ) 
-        glEnable( GLenum(GL_MULTISAMPLE) )
         
+        if msaa {
+            glEnable( GLenum(GL_MULTISAMPLE) )
+        }
+        
+        // Create normal shaders
         var controller   = window?.windowController() as! LSLGWindowController
         var assetManager = controller.assetManager
-        
         normalProgram = glCreateProgram()
         glAttachShader( normalProgram, assetManager.assetByName("normal", type: .VertexShader)!.getGLAsset() )
         glAttachShader( normalProgram, assetManager.assetByName("normal", type: .FragmentShader)!.getGLAsset() )
