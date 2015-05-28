@@ -24,8 +24,8 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
             "RegexFragment" : "\\.frag$"
           , "RegexGeometry" : "\\.geom$"
           , "RegexVertex"   : "\\.vert$"
-          , "RegexModel"    : "\\.modl$"
-          , "RegexImage"    : "\\.png$||\\.jpg$||\\.bmp$"
+          , "RegexModel"    : "\\.obj$"
+          , "RegexImage"    : "\\.(png|jpg|bmp)$"
             
           , "QuitWhenLastWindowClosed" : true
           , "AutoYaxisRotation" : true
