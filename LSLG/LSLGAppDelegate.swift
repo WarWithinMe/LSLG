@@ -15,7 +15,10 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
         return NSUserDefaults.standardUserDefaults().boolForKey("QuitWhenLastWindowClosed")
     }
     
+    private var finishedLaunching:Bool = false
     func applicationDidFinishLaunching(aNotification: NSNotification) {
+        finishedLaunching = true
+        
         // Create default window
         LSLGWindowController.createWindowOnAppLaunch()
         
@@ -34,7 +37,7 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func showPreference(sender: AnyObject) { (NSApplication.sharedApplication().keyWindow?.windowController() as? LSLGWindowController)?.toggleSettings() }
-    @IBAction func newWindow(sender: AnyObject)   { LSLGWindowController() }
+    @IBAction func newWindow(sender: AnyObject)   { LSLGWindowController(path:"") }
     @IBAction func closeWindow(sender: AnyObject) { NSApplication.sharedApplication().keyWindow?.close() }
     
     func applicationShouldTerminate(app:NSApplication)->NSApplicationTerminateReply {
@@ -45,5 +48,21 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(aNotification: NSNotification) {}
+    
+    func openFolder( path:String ) { LSLGWindowController(path:path) }
+    
+    func application(sender: NSApplication, openFiles filenames: [AnyObject]) {
+        for file in (filenames as! [String]) {
+            openFolder(file)
+        }
+    }
+    func application(sender: NSApplication, openFile: String) -> Bool {
+        openFolder(openFile)
+        return true
+    }
+    func applicationOpenUntitledFile(sender: NSApplication) -> Bool {
+        if finishedLaunching { openFolder("") }
+        return true
+    }
 }
 

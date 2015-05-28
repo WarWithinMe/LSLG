@@ -25,13 +25,40 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     var logs:[LogEntry] = []
     private var logSepTimer:NSTimer?
     
-    convenience init() { self.init(savedInfo:nil) }
+    override init(window: NSWindow?) { super.init(window: window) }
     
-    init(savedInfo:[String:String]?) {
+    convenience init?( path:String ) {
+        if path.isEmpty {
+            // Always open blank window if the user request.
+            self.init(savedInfo:["path":path])
+            return
+        }
+        
+        var nonWorking:LSLGWindowController? = nil
+        for c in WindowControllerArray {
+            if c.folderPath == path {
+                self.init(window:nil)
+                return nil
+            } else if c.folderPath.isEmpty {
+                nonWorking = c
+            }
+        }
+        if let c = nonWorking {
+            // If there's a blank window, use that window instead of create a new one.
+            c.monitorFolder(path)
+            c.window?.makeMainWindow()
+            self.init(window:nil)
+            return nil
+        } else {
+            self.init(savedInfo:["path":path])
+        }
+    }
+    
+    convenience init(savedInfo:[String:String]?) {
+        
+        self.init(window:nil)
         
         assetManager = LSLGAssetManager()
-        
-        super.init(window:nil)
         
         // Window data
         if let info = savedInfo {
@@ -105,9 +132,13 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     /* Asset Management */
     var folderPath:String { return assetManager.folderPath }
-    private(set) var assetManager:LSLGAssetManager
+    private(set) var assetManager:LSLGAssetManager! 
     func monitorFolder(path:String) {
-        if path.isEmpty { return }
+        if path.isEmpty || path == folderPath { return }
+        
+        for c in WindowControllerArray {
+            if c.folderPath == path { return }
+        }
         
         if assetManager.watchFolder( path ) {
             (window as? LSLGWindow)?.titleView.updateTitle()
@@ -250,5 +281,9 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
+        
+        // Once the window is removed, call persistWindowInfo() to remove info
+        // about the closed window.
+        LSLGWindowController.persistWindowInfo()
     }
 }
