@@ -12,6 +12,9 @@ protocol LSLGFolderMonitorDelegate: class {
     // These two function is called in the main queue.
     func onFileChanged( paths:[String] )
     func onFolderChanged( added:[String], _ modified:[String], _ removed:[String] )
+    
+    func onFolderRemoved()
+    func onFolderRenamed()
 }
 
 /*
@@ -37,7 +40,7 @@ class LSLGFolderMonitor {
         var _src = dispatch_source_create(
             DISPATCH_SOURCE_TYPE_VNODE 
             , UInt(dirFD)
-            , DISPATCH_VNODE_WRITE
+            , DISPATCH_VNODE_WRITE | DISPATCH_VNODE_DELETE | DISPATCH_VNODE_RENAME
             , LSLGFolderMonitor.eventQueue
         )
         if _src == nil {
@@ -47,7 +50,26 @@ class LSLGFolderMonitor {
         
         // Setup the dispatch source
         dispatch_source_set_cancel_handler(_src, { Darwin.close( dirFD ) })
-        dispatch_source_set_event_handler (_src, { [weak self] in if let strongSelf = self {strongSelf.onFolderEvt()} })
+        dispatch_source_set_event_handler (_src, {
+            [weak self] in
+            if let strongSelf = self {
+                var evt = dispatch_source_get_data(_src)
+                if (evt & DISPATCH_VNODE_DELETE) > 0 {
+                    strongSelf.onFolderRemoved()
+                } else if ( evt & DISPATCH_VNODE_RENAME ) > 0 {
+                    var newPath = lslgGetFdPath(dirFD)
+                    if newPath == nil {
+                        strongSelf.onFolderRemoved()
+                    } else if let range = newPath!.rangeOfString("/.Trash/") {
+                        strongSelf.onFolderRemoved()
+                    } else {
+                        strongSelf.onFolderRenamed(newPath!)
+                    }
+                } else {
+                    strongSelf.onFolderEvt()
+                }
+            }
+        })
         
         // Self init
         folderPath = path
@@ -55,6 +77,24 @@ class LSLGFolderMonitor {
         self.scanFolder()
         
         dispatch_resume( _src )
+    }
+    
+    private func onFolderRemoved() {
+        if let src = folderDSrc {
+            dispatch_source_cancel( src )
+            folderDSrc = nil
+        }
+        for (string,attr) in folderStatus {
+            if let src = attr.dSrc { dispatch_source_cancel( src ) }
+            folderStatus.removeAll(keepCapacity: false)
+        } 
+        folderPath = ""
+        delegate?.onFolderRemoved()
+    }
+    
+    private func onFolderRenamed(newPath:String) {
+        folderPath = newPath
+        delegate?.onFolderRenamed()
     }
     
     private var sheduledCheck = false
@@ -184,7 +224,7 @@ class LSLGFolderMonitor {
                     // Example: TextEdit will re-create the file the first time it tries to save, cause the dirFD not usable.
                     strongSelf.folderStatus[path.lastPathComponent]?.dSrc = nil
                     strongSelf.onFolderEvt()
-                    println( "\(path) changed casuing a rescan." )
+                    println( "\(path) changed causing a rescan." )
                     return
                 }
                 
@@ -211,7 +251,7 @@ class LSLGFolderMonitor {
     
     /* Cleanup */
     deinit {
-        if let src = folderDSrc { dispatch_source_cancel( src ) }
-        for (string,attr) in folderStatus { if let src = attr.dSrc { dispatch_source_cancel( src ) } }
+        delegate = nil
+        onFolderRemoved()
     }
 }
