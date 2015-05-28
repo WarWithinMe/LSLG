@@ -73,10 +73,8 @@ class LSLGOpenGLView: NSOpenGLView {
         super.prepareOpenGL()
         
         // VSync
-        var v:GLint = 1
-        openGLContext.setValues(&v, forParameter:NSOpenGLContextParameter.GLCPSwapInterval)
-        v = 0
-        openGLContext.setValues(&v, forParameter:NSOpenGLContextParameter.GLCPSurfaceOpacity)
+        openGLContext.setValues([1], forParameter:NSOpenGLContextParameter.GLCPSwapInterval)
+        openGLContext.setValues([0], forParameter:NSOpenGLContextParameter.GLCPSurfaceOpacity)
         
         openGLContext.makeCurrentContext()
         glEnable( GLenum(GL_DEPTH_TEST) )
