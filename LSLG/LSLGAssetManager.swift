@@ -206,10 +206,10 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
         return LSLGAsset.assetWithPath( path, type:type )
     }
     
-    func assetsByType(type:LSLGAssetType, _ visible:Bool = true)->[LSLGAsset] {
+    func assetsByType(type:LSLGAssetType, _ includeInvisible:Bool = true)->[LSLGAsset] {
         var r = [LSLGAsset]()
         for (p, asset) in assetMap {
-            if asset.type == type && (!visible || asset.visible){
+            if asset.type == type && (includeInvisible || asset.visible){
                 r.append(asset)
             }
         }
@@ -272,6 +272,6 @@ class LSLGAssetManager: NSObject, LSLGFolderMonitorDelegate {
     var glCurrFragShader :LSLGAsset { return glCurrAsset( .FragmentShader )! }
     var glCurrGeomShader :LSLGAsset { return glCurrAsset( .GeometryShader )! }
     
-    func glAssets(type:LSLGAssetType, _ visible:Bool=true) -> [LSLGAsset]  { return assetsByType( type, visible )  }
+    func glAssets(type:LSLGAssetType, _ includeInvisible:Bool=true) -> [LSLGAsset]  { return assetsByType( type, includeInvisible )  }
     func glCurrAsset(type:LSLGAssetType) -> LSLGAsset? { return usingAssetMap[type] }
 }

@@ -119,15 +119,15 @@ class LSLGRenderControl:LSLGSegmentedControl, NSMenuDelegate {
         
         
         var item = getItemById("Geometry")!
-        item.visible = cc.glGeomShaders.count > 1
+        item.visible = cc.glAssets(.GeometryShader, false).count > 1
         item.content = cc.glCurrGeomShader.name
         
         item = getItemById("Fragment")!
-        item.visible = cc.glFragShaders.count > 1
+        item.visible = cc.glAssets(.FragmentShader, false).count > 1
         item.content = cc.glCurrFragShader.name
         
         item = getItemById("Vertex")!
-        item.visible = cc.glVertShaders.count > 1
+        item.visible = cc.glAssets(.VertexShader, false).count > 1
         item.content = cc.glCurrVertShader.name
         
         if let icon = LSLGRenderControl.ModelIcons[cc.glCurrModel.name] {
