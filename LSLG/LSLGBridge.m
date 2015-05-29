@@ -17,3 +17,12 @@ NSString* __nullable  lslgGetFdPath(int fd) {
     }
     return nil;
 }
+
+// Remove these stuff when swift support C Function Pointers
+#import "LSLG-Swift.h"
+CVReturn CVDLCallbackFunction( CVDisplayLinkRef displayLink, const CVTimeStamp *inNow, const CVTimeStamp *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext )
+{
+    return [(__bridge LSLGAppDelegate*)displayLinkContext onCVDisplayCallback:inOutputTime];
+}
+
+CVDisplayLinkOutputCallback __nonnull lslgGetCVDisplayLinkCallback() { return CVDLCallbackFunction; }

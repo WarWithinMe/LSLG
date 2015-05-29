@@ -27,7 +27,7 @@ enum LSLGAssetType:Int {
     }
 }
 
- func glErrorString( error:Int32 )-> String {
+func glErrorString( error:Int32 )-> String {
     switch error {
         case GL_INVALID_ENUM: return "GL_INVALID_ENUM"
         case GL_INVALID_VALUE: return "GL_INVALID_VALUE"
@@ -46,7 +46,7 @@ class LSLGAsset: NSObject {
     
     private(set) var name:String
     private(set) var assetKey:String
-        
+    
     init( path:String = "" ) {
         if path.isEmpty {
             name = "BuiltIn"
@@ -58,8 +58,8 @@ class LSLGAsset: NSObject {
                 assetKey
               , options: .allZeros
               , range: NSMakeRange(0, count(assetKey))
-          , withTemplate: ""
-        )
+              , withTemplate: ""
+            )
             
         }
         
@@ -93,23 +93,23 @@ class LSLGAsset: NSObject {
     static private var DefaultAssetId:Int = 0
     class func defaultAssets()->[LSLGAsset]{
         return [
-        LSLGAssetFragSh.defaultAsset()
-      , LSLGAssetVertexSh.defaultAsset()
-      , LSLGAssetGeoSh.defaultAsset()
-      , LSLGAssetGeoSh.normalShader()
-      , LSLGAssetFragSh.normalShader()
-      , LSLGAssetVertexSh.normalShader()
-      , LSLGAssetModel.suzanne()
-      , LSLGAssetModel.donut()
-      , LSLGAssetModel.sphere()
-      , LSLGAssetModel.cube()
-    ]
+            LSLGAssetFragSh.defaultAsset()
+          , LSLGAssetVertexSh.defaultAsset()
+          , LSLGAssetGeoSh.defaultAsset()
+          , LSLGAssetGeoSh.normalShader()
+          , LSLGAssetFragSh.normalShader()
+          , LSLGAssetVertexSh.normalShader()
+          , LSLGAssetModel.suzanne()
+          , LSLGAssetModel.donut()
+          , LSLGAssetModel.sphere()
+          , LSLGAssetModel.cube()
+        ]
     }
     
     // When the content in the file system changes, this method is called.
     // Typically called by AssetManager
     func update(){
-        initError = ""
+        assetInitError = ""
         if glAssetInited {
             delGLAsset()
             glAsset = nil
@@ -123,7 +123,7 @@ class LSLGAsset: NSObject {
     
     var glAssetInited:Bool { return glAsset != nil  }
     private var glAsset:GLuint?
-    private(set) var initError:String = ""
+    private(set) var assetInitError:String = ""
     private func initGLAsset() -> Bool { return false }
     private func delGLAsset() {}
     
@@ -149,7 +149,7 @@ class LSLGAssetImage : LSLGAsset {
     private override func delGLAsset() { glDeleteTextures(1, &glAsset!) }
     private override func initGLAsset() -> Bool {
         
-        initError = ""
+        assetInitError = ""
         
         if let imageRep = NSImage( contentsOfFile: path )?.representations[0] as? NSBitmapImageRep {
             
@@ -179,13 +179,13 @@ class LSLGAssetImage : LSLGAsset {
             
             var glErr = Int32(glGetError())
             if (glErr != GL_NO_ERROR) {
-                initError = "Error occured when binding texture:\(glErrorString(glErr))"
+                assetInitError = "Error occured when binding texture:\(glErrorString(glErr))"
             }
         } else {
-            initError = "Cannot load image at \(path)"
+            assetInitError = "Cannot load image at \(path)"
         }
         
-        return initError.isEmpty
+        return assetInitError.isEmpty
     }
 }
 
@@ -212,7 +212,7 @@ class LSLGAssetModel : LSLGAsset {
         var error:NSError? = nil
         var model = NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding, error: &error)
         if error != nil {
-            initError = "Cannot read model `\(name)` : \(path)"
+            assetInitError = "Cannot read model `\(name)` : \(path)"
             return ""
         }
         return model! as String
@@ -362,7 +362,7 @@ class LSLGAssetShader : LSLGAsset {
             var error: NSError? = nil
             shaderContent = NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding, error: &error)
             if error != nil {
-                initError = "Cannot read shader `\(name)` : \(path)"
+                assetInitError = "Cannot read shader `\(name)` : \(path)"
                 return false
             }
         }
@@ -390,9 +390,9 @@ class LSLGAssetShader : LSLGAsset {
                 var log = [GLchar](count:Int(logLength), repeatedValue: 0)
                 glGetShaderInfoLog(shaderHandle, logLength, &logLength, &log)
                 
-                initError = "\n" + (NSString(bytes: &log, length:Int(logLength), encoding: NSUTF8StringEncoding)! as String)
+                assetInitError = "\n" + (NSString(bytes: &log, length:Int(logLength), encoding: NSUTF8StringEncoding)! as String)
             } else {
-                initError = "Cannot compile shader `\(name)`"
+                assetInitError = "Cannot compile shader `\(name)`"
             }
             
             return false

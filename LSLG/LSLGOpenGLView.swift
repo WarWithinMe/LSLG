@@ -14,7 +14,7 @@ class LSLGOpenGLView: NSOpenGLView {
     
     override var mouseDownCanMoveWindow:Bool { return true }
     
-    private var initError:String = ""
+    private var glInitError:String = ""
     private var msaa:Bool = false
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -42,13 +42,13 @@ class LSLGOpenGLView: NSOpenGLView {
         pfAttr.append(0)
         var pf = NSOpenGLPixelFormat(attributes: pfAttr)
         if pf == nil {
-            initError = "Failed to create OGL pixel format"
+            glInitError = "Failed to create OGL pixel format"
             return
         }
         
         var ctx = NSOpenGLContext(format: pf, shareContext: nil)
         if ctx == nil {
-            initError = "Failed to create OGL context"
+            glInitError = "Failed to create OGL context"
             return
         }
         
@@ -61,13 +61,39 @@ class LSLGOpenGLView: NSOpenGLView {
     }
     
     override func viewDidMoveToWindow() {
-        if let w = window where !initError.isEmpty {
-            (w.windowController() as! LSLGWindowController).appendLog( initError, isError: true, desc:"" )
-            initError = ""
+        if let w = window where !glInitError.isEmpty {
+            (w.windowController() as! LSLGWindowController).appendLog( glInitError, isError: true, desc:"" )
+            glInitError = ""
         }
     }
     
-    private var displayLink:CVDisplayLinkRef?
+    func updateOpenGL() {
+        // This method is called on CVDisplayLink's thread.
+        
+        // Do nothing if the view is not added to window.
+        if window == nil { return }
+        
+        lock.lock()
+        var update = __updateResource != ENUM_UR.none.rawValue
+        lock.unlock()
+        
+        if update {
+            // Ask main thread to update the resource for us
+            dispatch_sync( dispatch_get_main_queue(), { self.updateResource() })
+        }
+        
+        render()
+        
+        if update {
+            // If somethign updated, check if we have successfully rendered.
+            var error = Int32( glGetError() )
+            if error != GL_NO_ERROR {
+                dispatch_sync( dispatch_get_main_queue(), {
+                    (self.window?.windowController() as! LSLGWindowController).appendLog("Failed to render, reason:\(glErrorString(error))", isError: true, desc: "Failed to render")
+                })
+            }
+        }
+    }
     
     override func prepareOpenGL() {
         super.prepareOpenGL()
@@ -76,7 +102,6 @@ class LSLGOpenGLView: NSOpenGLView {
         openGLContext.setValues([1], forParameter:NSOpenGLContextParameter.GLCPSwapInterval)
         openGLContext.setValues([0], forParameter:NSOpenGLContextParameter.GLCPSurfaceOpacity)
         
-        openGLContext.makeCurrentContext()
         glEnable( GLenum(GL_DEPTH_TEST) )
         glEnable( GLenum(GL_CULL_FACE) ) 
         
@@ -103,28 +128,28 @@ class LSLGOpenGLView: NSOpenGLView {
         glViewport( 0, 0, Int32(b.width), Int32(b.height) )
     }
     
-    var renderError:Int32 = GL_NO_ERROR
-    override func drawRect(dirtyRect: NSRect) {
+    override func drawRect(dirtyRect: NSRect) {}
+    
+    func updateResource() {
         openGLContext.makeCurrentContext()
         
         var controller   = window?.windowController() as! LSLGWindowController
         var assetManager = controller.assetManager
         var asset:GLuint = 0
         
-        if ( __updateModel ) {
+        if shouldUpdateRes( .model ) {
             asset = assetManager.glCurrModel.getGLAsset()
             if asset == 0 {
                 controller.appendLog(
-                    "Failed to load model '\(assetManager.glCurrModel.name)': \(assetManager.glCurrModel.initError)"
-                  , isError: true, desc: "Failed to load model"
+                    "Failed to load model '\(assetManager.glCurrModel.name)': \(assetManager.glCurrModel.assetInitError)"
+                    , isError: true, desc: "Failed to load model"
                 )
             } else {
                 glBindVertexArray( asset )
-            }
-            __updateModel = false
+            } 
         }
         
-        if ( __updateProgram ) {
+        if shouldUpdateRes( .program ) {
             if glProgram != 0 { glDeleteProgram( glProgram ) }
             
             glProgram = glCreateProgram()
@@ -133,7 +158,7 @@ class LSLGOpenGLView: NSOpenGLView {
             asset = shader.getGLAsset()
             if asset == 0 {
                 controller.appendLog(
-                    "Failed to compile vertex shader '\(shader.name)': \(shader.initError)"
+                    "Failed to compile vertex shader '\(shader.name)': \(shader.assetInitError)"
                     , isError: true, desc: "Failed to compile vertex shader"
                 )
             } else {
@@ -144,8 +169,8 @@ class LSLGOpenGLView: NSOpenGLView {
             asset  = shader.getGLAsset()
             if asset == 0 {
                 controller.appendLog(
-                    "Failed to compile fragment shader '\(shader.name)': \(shader.initError)"
-                  , isError: true, desc: "Failed to compile fragment shader"
+                    "Failed to compile fragment shader '\(shader.name)': \(shader.assetInitError)"
+                    , isError: true, desc: "Failed to compile fragment shader"
                 )
             } else {
                 glAttachShader( glProgram, asset )
@@ -156,7 +181,7 @@ class LSLGOpenGLView: NSOpenGLView {
                 asset = shader.getGLAsset()
                 if asset == 0 {
                     controller.appendLog(
-                        "Failed to compile geometry shader '\(shader.name)': \(shader.initError)"
+                        "Failed to compile geometry shader '\(shader.name)': \(shader.assetInitError)"
                         , isError: true, desc: "Failed to compile geometry shader"
                     )
                 } else {
@@ -174,46 +199,38 @@ class LSLGOpenGLView: NSOpenGLView {
                 glGetProgramInfoLog(glProgram, 512, nil, &infoLog)
                 controller.appendLog(
                     NSString(CString: &infoLog, encoding: NSASCIIStringEncoding)! as String
-                  , isError: true, desc: "Failed to link program"
+                    , isError: true, desc: "Failed to link program"
                 )
             }
-            
-            __updateProgram = false
         }
         
-        if ( __updateTexture ) {
+        if shouldUpdateRes( .texture ) {
             var textures = assetManager.assetsByType( .Image )
-            if textures.count > 1 {
-                // There's always a builtIn texture. Which is a placeholder.
-                // Ignore this texture.
-                sort( &textures, {
-                    (a:LSLGAsset, b:LSLGAsset)->Bool in
-                    return a.path > b.path
-                })
-                
-                var textureIdx = 0
-                for ( var i = 0; i < textures.count; ++i ) {
-                    var t = textures[i]
-                    if t.isBuiltIn {
-                        textureIdx--
-                        continue
-                    }
-                    
-                    glActiveTexture( GLenum(GL_TEXTURE0 + textureIdx) )
-                    glBindTexture( GLenum(GL_TEXTURE_2D), t.getGLAsset() )
-                    glUniform1i( glGetUniformLocation( glProgram, "texture\(textureIdx + 1)"), GLint(textureIdx) )
-                    
-                    ++textureIdx
-                }
-            }
+            sort( &textures, {
+                (a:LSLGAsset, b:LSLGAsset)->Bool in
+                return a.path > b.path
+            } )
             
-            __updateTexture = false
+            for i in 0..<textures.count {
+                glActiveTexture( GLenum(GL_TEXTURE0 + i) )
+                glBindTexture( GLenum(GL_TEXTURE_2D), textures[i].getGLAsset() )
+                glUniform1i( glGetUniformLocation( glProgram, "texture\(i + 1)"), GLint(i) ) 
+            }
         }
+        
+        __updateResource = ENUM_UR.none.rawValue
+    }
+    
+    func render() {
+        openGLContext.makeCurrentContext()
+        
+        var controller   = window?.windowController() as! LSLGWindowController
+        var assetManager = controller.assetManager
         
         var rPerDegree:Float = Float(M_PI) / 180.0
         
         if !panning && autoRotate {
-            rotateY = (rotateY+0.01) % 360 
+            rotateY = (rotateY+0.1) % 360 
         }
 
         glUniformMatrix4fv(
@@ -264,14 +281,6 @@ class LSLGOpenGLView: NSOpenGLView {
         }
         
         openGLContext.flushBuffer()
-        
-        var error = Int32( glGetError() )
-        if error != renderError {
-            renderError = error
-            if renderError != GL_NO_ERROR {
-                controller.appendLog("Failed to render, reason:\(glErrorString(renderError))", isError: true, desc: "Failed to render")
-            }
-        }
     }
     
     private func getRawMatrix4( mp:GLKMatrix4 ) -> [GLfloat] {
@@ -281,16 +290,23 @@ class LSLGOpenGLView: NSOpenGLView {
             , mp.m30, mp.m31, mp.m32, mp.m33 ]
     }
     
-    private var __updateModel:Bool   = true
-    private var __updateProgram:Bool = true
-    private var __updateTexture:Bool = true
-    
     private var glProgram:GLuint = 0
     private var normalProgram:GLuint = 0
     
-    func updateModel()   { needsDisplay = true; __updateModel   = true }
-    func updateProgram() { needsDisplay = true; __updateProgram = true; __updateTexture = true }
-    func updateTexture() { needsDisplay = true; __updateTexture = true }
+    private var lock = NSLock()
+    private enum ENUM_UR:Int {
+        case none    = 0
+        case model   = 1
+        case texture = 2
+        case program = 6
+    }
+    private var __updateResource:Int = ENUM_UR.model.rawValue | ENUM_UR.texture.rawValue | ENUM_UR.program.rawValue
+    
+    private func shouldUpdateRes( flag:ENUM_UR )->Bool { return __updateResource & flag.rawValue > 0 }
+    
+    func updateModel()   { lock.lock(); __updateResource |= ENUM_UR.model.rawValue;   lock.unlock() }
+    func updateProgram() { lock.lock(); __updateResource |= ENUM_UR.program.rawValue; lock.unlock() }
+    func updateTexture() { lock.lock(); __updateResource |= ENUM_UR.texture.rawValue; lock.unlock() }
     
     deinit {
         if glProgram != 0 {

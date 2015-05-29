@@ -9,3 +9,5 @@
 #import <Cocoa/Cocoa.h>
 
 NSString* __nullable  lslgGetFdPath(int fd);
+
+CVDisplayLinkOutputCallback __nonnull  lslgGetCVDisplayLinkCallback();

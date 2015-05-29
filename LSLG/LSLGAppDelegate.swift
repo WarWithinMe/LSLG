@@ -34,7 +34,32 @@ class LSLGAppDelegate: NSObject, NSApplicationDelegate {
           , "AutoYaxisRotation" : true
           , "MSAA" : false
         ])
+        
+        // Each CVDisplayLink will create a high priority background thread.
+        // Tried to create a CVDisplayLilnk for each window, but the app
+        // freeze after second window is created.
+        var dlpointer:Unmanaged<CVDisplayLink>?
+        CVDisplayLinkCreateWithActiveCGDisplays(&dlpointer)
+        displayLink = dlpointer?.takeRetainedValue()
+        
+        CVDisplayLinkSetOutputCallback( displayLink!, lslgGetCVDisplayLinkCallback(), UnsafeMutablePointer<Void>(unsafeAddressOf(self)) )
+        CVDisplayLinkStart( displayLink! )
     }
+    
+    
+    private var displayLink:CVDisplayLink?
+    func onCVDisplayCallback( outPutTime:UnsafePointer<CVTimeStamp> )-> CVReturn {
+        // After some testing, it seems like when a method is call upon an object,
+        // the ARC will wrap the call with retain/release(), thus, the object will
+        // never get released before the method returns.
+        
+        // So if the opengl view will never get released before render fisnihed.
+        
+        // The only thing we need to do about CVDisplayLink is to stop it when app is terminating.
+        LSLGWindowController.updateOpenGl()
+        return kCVReturnSuccess.value
+    }
+    
     
     @IBAction func showPreference(sender: AnyObject) { (NSApplication.sharedApplication().keyWindow?.windowController() as? LSLGWindowController)?.toggleSettings() }
     @IBAction func newWindow(sender: AnyObject)   { LSLGWindowController(path:"") }

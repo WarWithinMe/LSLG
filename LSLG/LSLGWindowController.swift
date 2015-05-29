@@ -9,6 +9,7 @@
 import Darwin
 import Cocoa
 
+private var WindowControllerLock  = NSLock()
 private var WindowControllerArray = [LSLGWindowController]()
 private let OldLogMarkerAddDelay:NSTimeInterval = 20
 
@@ -75,7 +76,10 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         window = w
         w.createSubviews()
         w.makeKeyAndOrderFront(nil)
+        
+        WindowControllerLock.lock()
         WindowControllerArray.append(self)
+        WindowControllerLock.unlock()
         
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector: "pipelineUpdated:", name: LSLGWindowPipelineChange, object: nil
@@ -88,12 +92,6 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         NSNotificationCenter.defaultCenter().addObserver(
             self, selector: "onWorkingFolderChanged:", name: LSLGWindowFolderChange, object: assetManager
         )
-        
-        NSTimer.scheduledTimerWithTimeInterval(0, target: self, selector: "updateOGL:", userInfo: nil, repeats: true)
-    }
-    
-    func updateOGL( t:NSTimer ) {
-        (window as! LSLGWindow).oglView.needsDisplay = true
     }
     
    
@@ -238,9 +236,16 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
                 LSLGWindowController.persistWindowInfo()
             }
             
-            WindowControllerArray.removeAtIndex( find(WindowControllerArray, self)! )
             // Remove timer if it's still active.
             if let t = logSepTimer { t.invalidate() }
+            
+            WindowControllerLock.lock()
+            // Before the window closes, need to first remove the OpenGLView first.
+            // To stop OpenGLView from updating.
+            (window as! LSLGWindow).oglView.removeFromSuperview()
+            
+            WindowControllerArray.removeAtIndex( find(WindowControllerArray, self)! )
+            WindowControllerLock.unlock()
         }
     }
     
@@ -277,6 +282,14 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
         } else {
             LSLGWindowController()
         }
+    }
+    
+    class func updateOpenGl() {
+        WindowControllerLock.lock()
+        for c in WindowControllerArray {
+            (c.window as! LSLGWindow).oglView.updateOpenGL()
+        }
+        WindowControllerLock.unlock()
     }
     
     deinit {
