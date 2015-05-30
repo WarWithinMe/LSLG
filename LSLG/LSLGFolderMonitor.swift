@@ -239,8 +239,12 @@ class LSLGFolderMonitor {
                         var fs = strongSelf.changedFiles
                         strongSelf.changedFiles = []
                         strongSelf.changedFilesLock.unlock()
-                        
-                        strongSelf.delegate?.onFileChanged(fs)
+                        if !fs.isEmpty {
+                            // The fs might be empty. e.g. There're two event in check thread,
+                            // both schedule a change in main thread, but the change only occur
+                            // after the second event is done.
+                            strongSelf.delegate?.onFileChanged(fs)
+                        }
                     }
                 } )
             }
