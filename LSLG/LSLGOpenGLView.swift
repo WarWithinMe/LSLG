@@ -274,25 +274,27 @@ class LSLGOpenGLView: NSOpenGLView {
         
         if showNormal {
             glUseProgram( normalProgram )
+            
             glUniformMatrix4fv(
-                glGetUniformLocation( glProgram, "model" )
-                , 1, GLboolean(GL_FALSE)
-                , getRawMatrix4( GLKMatrix4MakeXRotation( rotateX * rPerDegree ) * GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
+                glGetUniformLocation( normalProgram, "model" )
+              , 1, GLboolean(GL_FALSE)
+              , getRawMatrix4( GLKMatrix4MakeXRotation( rotateX * rPerDegree ) * GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
             )
             
             glUniformMatrix4fv(
-                glGetUniformLocation( glProgram, "view" )
-                , 1, GLboolean(GL_FALSE)
-                , getRawMatrix4( GLKMatrix4MakeLookAt( -camX, -camY, 3, -camX, -camY, -1, 0, 1, 0 ) )
+                glGetUniformLocation( normalProgram, "view" )
+              , 1, GLboolean(GL_FALSE)
+              , getRawMatrix4( GLKMatrix4MakeLookAt( -camX, -camY, 3, -camX, -camY, -1, 0, 1, 0 ) )
             )
             
             glUniformMatrix4fv(
-                glGetUniformLocation( glProgram, "projection" )
-                , 1, GLboolean(GL_FALSE)
-                , getRawMatrix4( GLKMatrix4MakePerspective( Float(zoom) * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
+                glGetUniformLocation( normalProgram, "projection" )
+              , 1, GLboolean(GL_FALSE)
+              , getRawMatrix4( GLKMatrix4MakePerspective( Float(zoom) * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
             )
             
             glDrawArrays( GLenum(GL_TRIANGLES), 0, GLsizei((assetManager.glCurrModel as! LSLGAssetModel).vertexCount) )
+            glCullFace( GLenum(GL_BACK) )
             glUseProgram( glProgram )
         }
         
@@ -386,11 +388,7 @@ class LSLGOpenGLView: NSOpenGLView {
             case "a": camX = max( camX - 0.01, -0.5 )
             case "d": camX = min( camX + 0.01, 0.5 )
             case "r": resetTransform()
-            case "n":
-                showNormal = !showNormal
-                if showNormal {
-                    (window?.windowController() as? LSLGWindowController)?.appendLog("Trying to show normal, but the normal shader is broken. Need fix.", isError:true, desc:"The normal shader is broken." )
-                }
+            case "n": showNormal = !showNormal
             case " ": panning = true
             
             default:

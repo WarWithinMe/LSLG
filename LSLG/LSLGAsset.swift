@@ -282,9 +282,9 @@ class LSLGAssetModel : LSLGAsset {
                     
                     vec3 = (0,0,0)
                     if parts.count > 2 {
-                        var idx = parts[1].integerValue
+                        var idx = parts[2].integerValue
                         if idx > 0 {
-                            vec3 = vertexArray[ idx - 1 ]
+                            vec3 = normalArray[ idx - 1 ]
                         }
                     }
                     vertexData.append( vec3.x )
@@ -292,7 +292,7 @@ class LSLGAssetModel : LSLGAsset {
                     vertexData.append( vec3.z )
                     
                     vec3 = (0,0,0)
-                    if parts.count > 2 {
+                    if parts.count > 1 {
                         var idx = parts[1].integerValue
                         if idx > 0 {
                             var vec2 = textureArray[ idx - 1 ]
