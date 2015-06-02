@@ -85,16 +85,29 @@ class LSLGOpenGLView: NSOpenGLView {
         render()
         ++glFrame
         
+        var error = Int32( glGetError() ) // Always fetch the error
+        
         if update {
             // If something updated, check if we have successfully rendered.
-            var error = Int32( glGetError() )
+            var error1:String = "Render Successfully"
+            var error2:String = ""
             if error != GL_NO_ERROR {
+                error1 = "Render failed, because: \(glErrorString(error))" 
+                error2 = "Failed to render"
+            }
+            if error != GL_NO_ERROR || lastGlRenderError != GL_NO_ERROR {
+                lastGlRenderError = error
                 dispatch_sync( dispatch_get_main_queue(), {
-                    (self.window?.windowController() as! LSLGWindowController).appendLog("Failed to render, reason:\(glErrorString(error))", isError: true, desc: "Failed to render")
-                })
+                    if let w = self.window {
+                        (w.windowController() as! LSLGWindowController).appendLog(error1, isError:error != GL_NO_ERROR, desc:error2)
+                        
+                    }
+                }) 
             }
         }
     }
+    
+    private var lastGlRenderError:Int32 = GL_NO_ERROR
     
     override func prepareOpenGL() {
         super.prepareOpenGL()

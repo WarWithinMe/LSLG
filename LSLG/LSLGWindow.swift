@@ -112,11 +112,12 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
             if rcv === view {
                 view.removeFromSuperview()
                 setContent( oglView )
+                oglView.hidden = false
             }
         }
     }
     
-    func setContent(view:NSView, fillWindow:Bool = true) {
+    func setContent(view:NSView, fillWindow:Bool = true, keepOgl:Bool = false) {
         if let rcv:AnyObject = realContentView.subviews.first {
             if rcv === view {
                 return
@@ -136,6 +137,12 @@ class LSLGWindow: NSWindow, NSDraggingDestination {
         view.frame = frame
         realContentView.addSubview(view)
         makeFirstResponder( view )
+        
+        if keepOgl {
+            // Dirty, Allow oglView to be inside the window even when log is displayed.
+            realContentView.addSubview( oglView )
+            oglView.hidden = true
+        }
     }
     
     func quickLog(desc:String, _ isError:Bool) { quickLogView.scheduleLog( desc, isError ) }

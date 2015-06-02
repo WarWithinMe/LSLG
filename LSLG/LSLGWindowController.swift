@@ -210,7 +210,7 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
             if settings != nil { toggleSettings() /* Hide settings */ }
             
             logView = LSLGLogView( frame:NSZeroRect )
-            w.setContent( logView!, fillWindow:false )
+            w.setContent( logView!, fillWindow:false, keepOgl:true )
         } 
         
         
