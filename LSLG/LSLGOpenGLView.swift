@@ -83,9 +83,10 @@ class LSLGOpenGLView: NSOpenGLView {
         }
         
         render()
+        ++glFrame
         
         if update {
-            // If somethign updated, check if we have successfully rendered.
+            // If something updated, check if we have successfully rendered.
             var error = Int32( glGetError() )
             if error != GL_NO_ERROR {
                 dispatch_sync( dispatch_get_main_queue(), {
@@ -232,24 +233,26 @@ class LSLGOpenGLView: NSOpenGLView {
         if !panning && autoRotate {
             rotateY = (rotateY+0.1) % 360 
         }
-
+        
         glUniformMatrix4fv(
             glGetUniformLocation( glProgram, "model" )
           , 1, GLboolean(GL_FALSE)
           , getRawMatrix4( GLKMatrix4MakeXRotation( rotateX * rPerDegree ) * GLKMatrix4MakeYRotation( rotateY * rPerDegree ) )
         )
-        
+    
         glUniformMatrix4fv(
             glGetUniformLocation( glProgram, "view" )
           , 1, GLboolean(GL_FALSE)
           , getRawMatrix4( GLKMatrix4MakeLookAt( -camX, -camY, 3, -camX, -camY, -1, 0, 1, 0 ) )
         )
-        
+    
         glUniformMatrix4fv(
             glGetUniformLocation( glProgram, "projection" )
           , 1, GLboolean(GL_FALSE)
           , getRawMatrix4( GLKMatrix4MakePerspective( Float(zoom) * rPerDegree, Float(frame.width/frame.height), 0.1, 100 ) )
         )
+    
+        glUniform1f( glGetUniformLocation( glProgram, "frame" ), glFrame )
         
         glCullFace( GLenum(GL_BACK) )
         glClear( GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) )
@@ -327,6 +330,7 @@ class LSLGOpenGLView: NSOpenGLView {
     private var camX:Float = 0
     private var camY:Float = 0
     private var showNormal:Bool = false
+    private var glFrame:Float = 0
     
     var autoRotate:Bool = NSUserDefaults.standardUserDefaults().boolForKey("AutoYaxisRotation")
     
@@ -408,6 +412,7 @@ class LSLGOpenGLView: NSOpenGLView {
         rotateY = 0
         zoom = 30
         showNormal = false
+        glFrame = 0
     }
 }
 
