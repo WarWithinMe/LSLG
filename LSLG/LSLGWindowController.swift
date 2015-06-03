@@ -285,11 +285,13 @@ class LSLGWindowController: NSWindowController, NSWindowDelegate {
     }
     
     class func updateOpenGl() {
-        WindowControllerLock.lock()
-        for c in WindowControllerArray {
-            (c.window as! LSLGWindow).oglView.updateOpenGL()
+        autoreleasepool() {
+            WindowControllerLock.lock()
+            for c in WindowControllerArray {
+                (c.window as! LSLGWindow).oglView.updateOpenGL()
+            }
+            WindowControllerLock.unlock()
         }
-        WindowControllerLock.unlock()
     }
     
     deinit {
