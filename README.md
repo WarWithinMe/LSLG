@@ -5,9 +5,9 @@ I was thinking learning swift and opengl/glsl. So I made LSLG, an OSX applicatio
 
 Interface
 ----------
-<img src="https://raw.githubusercontent.com/WarWithinMe/LSLG/master/Screenshot.jpg" width="363">
+<img src="https://raw.githubusercontent.com/WarWithinMe/LSLG/master/Screenshot.png" width="372">
 
-Buttons in the top-left corner : Close, Pin, 50% Transparent
+Buttons in the top-left corner : Close, Always on top, 50% Transparent
 
 Buttons in the bottom-right corner : VertexShader, GeometryShader, FragmentShader, Model, Log, Settings.
 
@@ -17,7 +17,7 @@ Notice that Shader button is only visible when your working folder has shaders.
 Get started
 ----------
 Drag your working folder to an LSLG window, then the window will try to visualize your assets.
-Your working folder would contain your shader source, model and texture.
+Your working folder contains your shader source, model and texture.
 Whenever your assets change, LSLG will automatically reload.
 
 
@@ -92,7 +92,7 @@ The face can be triangle or quad. Texture Coordinate or Normal is optional.
 Texture
 ----------
 All images(png, bmp, jpg) in working folder are imported as texture.
-If there're two images, you can reference them in shader by `texture1`, `texture2`.
+You can reference them in shader by `texture1`, `texture2`...
 Images are sorted by its name.
 
 For example, if there're `apple.jpg` `banana.png` `cherry.bmp` in the working folder.
